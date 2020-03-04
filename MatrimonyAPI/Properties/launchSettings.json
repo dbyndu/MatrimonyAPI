@@ -12,7 +12,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "matrimonyAPI",
+      "launchUrl": "User",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
@@ -20,7 +20,7 @@
     "MatrimonyAPI": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "matrimonyAPI",
+      "launchUrl": "User",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
