@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Matrimony.Service.Contracts;
+using Matrimony.Service.User;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +29,9 @@ namespace MatrimonyAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddDbContext<DataAccessLayer.DBContext>(
+
+
+            services.AddDbContext<Matrimony.Data.MatrimonyContext>(
                 options => options.UseSqlServer(Configuration.GetConnectionString("MatrimonyDB")));
             services.AddCors(options =>
             {
@@ -46,6 +50,8 @@ namespace MatrimonyAPI
             });
             //services.AddMvc(options => options.EnableEndpointRouting = false);
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
+            services.AddTransient<IUserDetailsService, UserDetailsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
