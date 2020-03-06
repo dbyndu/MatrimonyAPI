@@ -15,7 +15,9 @@ namespace Matrimony.Model.Base
         /// <param name="description">The description of the required resource</param>
         public Metadata(bool success, string responseId, string description)
         {
-            
+            Success = success;
+            ResponseId = responseId;
+            Description = description;
         }
         /// <summary>
         /// True/False value to indicate the success/failure pof the request
