@@ -1,5 +1,5 @@
 ﻿using System;
-using Matrimony.Data.Models;
+using Matrimony.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -7,10 +7,6 @@ namespace Matrimony.Data
 {
     public partial class MatrimonyContext : DbContext
     {
-        public MatrimonyContext()
-        {
-        }
-
         public MatrimonyContext(DbContextOptions<MatrimonyContext> options)
             : base(options)
         {

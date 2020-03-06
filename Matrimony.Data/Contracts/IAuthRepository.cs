@@ -1,14 +1,14 @@
-﻿using Models.UserModels;
+﻿using Matrimony.Model.User;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataAccessLayer.Contracts
+namespace Matrimony.Data.Contracts
 {
     public interface IAuthRepository
     {
-        bool CreateUser(UserBasic user);
+        bool CreateUser(UserBasicModel user);
         bool IsUserExists(string userId);
-        bool LoginUser(UserBasic user);
+        bool LoginUser(UserBasicModel user);
     }
 }

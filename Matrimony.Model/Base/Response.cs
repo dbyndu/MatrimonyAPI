@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Models.Base
+namespace Matrimony.Model.Base
 {
     public abstract class Response
     {

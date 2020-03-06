@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Matrimony.Service.Contracts;
-using Models.Base;
-using Models.UserModels;
+using Matrimony.Model.Base;
+using Matrimony.Model.User;
 
 namespace MatrimonyAPI.Controllers
 {
@@ -25,11 +25,11 @@ namespace MatrimonyAPI.Controllers
         }
 
         [HttpGet]
-        public ActionResult Register()
-        {
-            //APIResponse aPIResponse = new APIResponse("Created", new HttpRequest().HttpContext);
-            return Ok("Created");
-        }
+        //public ActionResult Register()
+        //{
+        //    //APIResponse aPIResponse = new APIResponse("Created", new HttpRequest().HttpContext);
+        //    return Ok("Created");
+        //}
         [HttpGet]
         public ActionResult GetUser(int blabla)
         {

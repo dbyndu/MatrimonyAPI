@@ -1,4 +1,4 @@
-﻿using Models.Base;
+﻿using Matrimony.Model.Base;
 using ServiceLayer.Contracts;
 using System;
 using System.Collections.Generic;

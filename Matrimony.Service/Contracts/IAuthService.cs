@@ -1,9 +1,9 @@
-﻿using Matrimony.Model.User;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Matrimony.Model.User;
 
-namespace ServiceLayer.Contracts
+namespace Matrimony.Service.Contracts
 {
     public interface IAuthService
     {

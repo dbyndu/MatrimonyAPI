@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Matrimony.Data.Models
+namespace Matrimony.Data.Entities
 {
     public partial class User
     {

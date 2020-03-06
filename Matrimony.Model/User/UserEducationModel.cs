@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Models.UserModels
+namespace Matrimony.Model.User
 {
-    public class UserEducation
+    public class UserEducationModel
     {
     }
 }

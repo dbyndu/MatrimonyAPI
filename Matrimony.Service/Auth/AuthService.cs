@@ -1,11 +1,11 @@
-﻿using DataAccessLayer.Contracts;
-using Matrimony.Model.User;
-using ServiceLayer.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Matrimony.Data.Contracts;
+using Matrimony.Model.User;
+using Matrimony.Service.Contracts;
 
-namespace ServiceLayer.AccessLayer
+namespace Matrimony.Service.Auth
 {
     public class AuthService : IAuthService
     {

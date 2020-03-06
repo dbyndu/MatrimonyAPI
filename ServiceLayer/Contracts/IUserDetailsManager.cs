@@ -1,5 +1,5 @@
-﻿using Models.Base;
-using Models.UserModels;
+﻿using Matrimony.Model.Base;
+using Matrimony.Model.User;
 using System;
 using System.Collections.Generic;
 using System.Text;

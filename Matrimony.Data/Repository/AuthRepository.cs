@@ -1,19 +1,20 @@
-﻿using DataAccessLayer.Contracts;
-using Models.UserModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Matrimony.Data;
+using Matrimony.Data.Contracts;
+using Matrimony.Model.User;
 
-namespace DataAccessLayer.Repository
+namespace Matrimony.Data.Repository
 {
     public class AuthRepository : IAuthRepository
     {
-        private readonly DBContext _dbContext;
-        public AuthRepository(DBContext dbContext)
+        private readonly MatrimonyContext _dbContext;
+        public AuthRepository(MatrimonyContext dbContext)
         {
             this._dbContext = dbContext;
         }
-        public bool CreateUser(UserBasic user)
+        public bool CreateUser(UserBasicModel user)
         {
             throw new NotImplementedException();
         }
@@ -23,7 +24,7 @@ namespace DataAccessLayer.Repository
             throw new NotImplementedException();
         }
 
-        public bool LoginUser(UserBasic user)
+        public bool LoginUser(UserBasicModel user)
         {
             throw new NotImplementedException();
         }

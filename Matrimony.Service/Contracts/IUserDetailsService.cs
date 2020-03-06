@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Models.Base;
+using Matrimony.Model.Base;
 
 namespace Matrimony.Service.Contracts
 {

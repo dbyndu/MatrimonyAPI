@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Models.UserModels
+namespace Matrimony.Model.User
 {
-    public class UserBasicInformation : UserBasic
+    public class UserBasicInformation : UserBasicModel
     {
         public string GenderId { get; set; }
         public DateTime DateOfBirth { get; set; }
