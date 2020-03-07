@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Matrimony.Model.User
+namespace Matrimony.Data.Entities
 {
-    public class UserBasicInformation
+    public partial class UserBasicInfo
     {
         public int Id { get; set; }
         public int UserId { get; set; }
@@ -22,5 +21,14 @@ namespace Matrimony.Model.User
         public string Gothra { get; set; }
         public bool? IsIgnorCast { get; set; }
         public string About { get; set; }
+
+        public virtual MasterFieldValue BloodGroup { get; set; }
+        public virtual MasterFieldValue Comunity { get; set; }
+        public virtual MasterFieldValue Gender { get; set; }
+        public virtual MasterFieldValue HealthInfo { get; set; }
+        public virtual MasterFieldValue MaritalStatus { get; set; }
+        public virtual MasterFieldValue MotherTongue { get; set; }
+        public virtual MasterFieldValue Religion { get; set; }
+        public virtual User User { get; set; }
     }
 }

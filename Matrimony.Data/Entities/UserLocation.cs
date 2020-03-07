@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Matrimony.Model.User
+namespace Matrimony.Data.Entities
 {
-    public class UserLocationModel
+    public partial class UserLocation
     {
         public int Id { get; set; }
         public int UserId { get; set; }
@@ -14,5 +13,9 @@ namespace Matrimony.Model.User
         public string GrewUpIn { get; set; }
         public string Origin { get; set; }
         public long? Pin { get; set; }
+
+        public virtual MasterFieldValue Country { get; set; }
+        public virtual MasterFieldValue State { get; set; }
+        public virtual User User { get; set; }
     }
 }
