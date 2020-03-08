@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Matrimony.Helper;
+using Matrimony.Service.Auth;
 using Matrimony.Service.Contracts;
 using Matrimony.Service.User;
+using MatrimonyAPI.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace MatrimonyAPI
 {
@@ -29,7 +34,6 @@ namespace MatrimonyAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
 
             services.AddDbContext<Matrimony.Data.MatrimonyContext>(
                 options => options.UseSqlServer(Configuration.GetConnectionString("MatrimonyDB")));
@@ -52,6 +56,11 @@ namespace MatrimonyAPI
             //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             services.AddTransient<IUserDetailsService, UserDetailsService>();
+            //services.AddTransient<IAuthService, AuthService>();
+            services.Configure<JwtAuthentication>(Configuration.GetSection(ConfigurationHelper.JWTAUTHENTICATIONKEY));
+            services.AddSingleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

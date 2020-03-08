@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Model", "Matrimon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Helper", "Matrimony.Helper\Matrimony.Helper.csproj", "{877B0881-E1D0-4817-A12A-AF1FE554A6FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateSecurityKey", "Matrimony.Utility\GenerateSecurityKey\GenerateSecurityKey.csproj", "{01438101-D989-4997-98C7-6CBCF98641EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{877B0881-E1D0-4817-A12A-AF1FE554A6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{877B0881-E1D0-4817-A12A-AF1FE554A6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{877B0881-E1D0-4817-A12A-AF1FE554A6FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
