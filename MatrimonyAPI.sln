@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Model", "Matrimon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Helper", "Matrimony.Helper\Matrimony.Helper.csproj", "{877B0881-E1D0-4817-A12A-AF1FE554A6FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateSecurityKey", "Matrimony.Utility\GenerateSecurityKey\GenerateSecurityKey.csproj", "{01438101-D989-4997-98C7-6CBCF98641EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenerateSecurityKey", "Matrimony.Utility\GenerateSecurityKey\GenerateSecurityKey.csproj", "{01438101-D989-4997-98C7-6CBCF98641EF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utility", "Utility", "{FDC4FC80-BEB0-4761-8548-F19F8C95DFB5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +50,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{01438101-D989-4997-98C7-6CBCF98641EF} = {FDC4FC80-BEB0-4761-8548-F19F8C95DFB5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {21981AA0-4414-44F4-81F1-CB3053B85C58}
