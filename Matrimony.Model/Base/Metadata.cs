@@ -35,6 +35,10 @@ namespace Matrimony.Model.Base
         /// The TotalRecordCount of the required resource
         /// </summary>
         public int TotalRecordCount { get; set; }
+        /// <summary>
+        /// Token in the Request-Response Pipeline
+        /// </summary>
+        public string Token { get; set; }
 
     }
 }

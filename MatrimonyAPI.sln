@@ -3,15 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatrimonyAPI", "MatrimonyAPI.csproj", "{640B8D80-5618-4E98-92C6-DF82543313BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MatrimonyAPI", "MatrimonyAPI\MatrimonyAPI.csproj", "{640B8D80-5618-4E98-92C6-DF82543313BC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Data", "..\Matrimony.Data\Matrimony.Data.csproj", "{CB23C629-E2ED-43BD-8931-2A11CD02F19D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Data", "Matrimony.Data\Matrimony.Data.csproj", "{CB23C629-E2ED-43BD-8931-2A11CD02F19D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Service", "..\Matrimony.Service\Matrimony.Service.csproj", "{C4459D5E-445E-4C7E-98ED-773603451224}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Service", "Matrimony.Service\Matrimony.Service.csproj", "{C4459D5E-445E-4C7E-98ED-773603451224}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Model", "..\Matrimony.Model\Matrimony.Model.csproj", "{3910172C-54DB-4524-AC35-BEBA63F3CB20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Model", "Matrimony.Model\Matrimony.Model.csproj", "{3910172C-54DB-4524-AC35-BEBA63F3CB20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Matrimony.Helper", "..\Matrimony.Helper\Matrimony.Helper.csproj", "{877B0881-E1D0-4817-A12A-AF1FE554A6FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matrimony.Helper", "Matrimony.Helper\Matrimony.Helper.csproj", "{877B0881-E1D0-4817-A12A-AF1FE554A6FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateSecurityKey", "Matrimony.Utility\GenerateSecurityKey\GenerateSecurityKey.csproj", "{01438101-D989-4997-98C7-6CBCF98641EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{877B0881-E1D0-4817-A12A-AF1FE554A6FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{877B0881-E1D0-4817-A12A-AF1FE554A6FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{877B0881-E1D0-4817-A12A-AF1FE554A6FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01438101-D989-4997-98C7-6CBCF98641EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
