@@ -43,7 +43,7 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
-            return new Model.User.UserModelListResponse(metadata,lstUsers);
+            return new UserModelListResponse(metadata,lstUsers);
         }
     }
 }

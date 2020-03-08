@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace Matrimony.Model.User
+namespace Matrimony.Data.Entities
 {
-    public class UserFamilyInformationModel
+    public partial class UserFamilyInfo
     {
         public int Id { get; set; }
         public int UserId { get; set; }
@@ -21,5 +20,12 @@ namespace Matrimony.Model.User
         public int? FamilyTypeId { get; set; }
         public int? FamilyValuesId { get; set; }
         public int? FamilyAffluenceId { get; set; }
+
+        public virtual MasterFieldValue FamilyAffluence { get; set; }
+        public virtual MasterFieldValue FamilyType { get; set; }
+        public virtual MasterFieldValue FamilyValues { get; set; }
+        public virtual MasterFieldValue FatherStatus { get; set; }
+        public virtual MasterFieldValue MotherStatus { get; set; }
+        public virtual User User { get; set; }
     }
 }
