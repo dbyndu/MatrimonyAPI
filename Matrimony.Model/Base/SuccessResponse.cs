@@ -8,7 +8,7 @@ namespace Matrimony.Model.Base
     /// Abstract response class
     /// </summary>
     /// <typeparam name="T">Data object type</typeparam>
-    public abstract class SuccessResponse<T>: Response
+    public abstract class SuccessResponse<T>: ResponseType
     {
         /// <summary>
         /// Public constractor for successful response object

@@ -6,7 +6,6 @@ namespace Matrimony.Model.User
 {
     public class UserModel : UserBasicModel
     {
-        public int Id { get; set; }
         public string FirstName { get; set; }
         public string MiddleNmae { get; set; }
         public string LastName { get; set; }

@@ -9,6 +9,6 @@ namespace Matrimony.Helper
 
     public static class ConfigurationHelper
     {
-        public static readonly string JWTAUTHENTICATIONKEY = "JwtAuthentication";
+        public static readonly string JWTAUTHENTICATIONKEY = "Jwt";
     }
 }

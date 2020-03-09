@@ -10,7 +10,7 @@ namespace Matrimony.Model.Base
         /// <summary>
         /// Public constractor for Metadata object
         /// </summary>
-        /// <param name="success">True/False value to indicate the success/failure pof the request</param>
+        /// <param name="success">True/False value to indicate the success/failure of the request</param>
         /// <param name="responseId">Unique identifier for the resource</param>
         /// <param name="description">The description of the required resource</param>
         public Metadata(bool success, string responseId, string description)
