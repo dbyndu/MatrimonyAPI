@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Matrimony.Model.User
 {
-    class UserModelResponse: SuccessResponse<UserModel>
+    public class UserModelResponse: SuccessResponse<UserModel>
     {
         public UserModelResponse(Metadata metadata, UserModel userModel)
             :base(metadata, userModel)

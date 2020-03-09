@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Matrimony.Model.Base
 {
-    public class ErrorResponse: Response
+    public class ErrorResponse: ResponseType
     {
         public ErrorResponse(Metadata metadata, List<Error> errors)
             :base(metadata)

@@ -4,27 +4,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Matrimony.Model.Base;
 
 namespace MatrimonyAPI.Response
 {
-    public class APIResponse : IActionResult
+    public sealed class APIResponse
     {
-        string _value;
-        HttpRequestMessage _request;
+        string _token;
+        ResponseType _response;
 
-        public APIResponse(string value, HttpRequestMessage request)
+        public static ResponseType CreateResponse(string token, ResponseType response)
         {
-            _value = value;
-            _request = request;
-        }
-        public Task ExecuteResultAsync(ActionContext context)
-        {
-            var response = new HttpResponseMessage()
+            if (response != null)
             {
-                Content = new StringContent(_value),
-                RequestMessage = _request
-            };
-            return Task.FromResult(response);
+                response.Metadata.Token = token;
+                return response;
+            }
+            return null;
         }
     }
 }

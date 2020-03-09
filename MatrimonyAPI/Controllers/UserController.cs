@@ -12,9 +12,17 @@ using Matrimony.Model.User;
 using Microsoft.Extensions.Options;
 using MatrimonyAPI.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using MatrimonyAPI.Helper;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace MatrimonyAPI.Controllers
 {
+    //[Authorize]
     [ApiController]
     [Route("[controller]")]
     public class UserController : Controller
@@ -22,11 +30,17 @@ namespace MatrimonyAPI.Controllers
         private readonly ILogger<UserController> _logger;
         private readonly IUserDetailsService _userService;
         private readonly IOptions<JwtAuthentication> _jwtAuthentication;
-        public UserController(ILogger<UserController> logger, IUserDetailsService userService, IOptions<JwtAuthentication> jwtAuthentication)
+        private IHttpContextAccessor _httpContextAccessor;
+        private AuthenticationHelper _helper;
+        private IConfiguration _config;
+        public UserController(IConfiguration config,ILogger<UserController> logger, IUserDetailsService userService, IOptions<JwtAuthentication> jwtAuthentication, IHttpContextAccessor httpContextAccessor)
         {
+            _config = config;
             _logger = logger;
             _userService = userService;
             _jwtAuthentication = jwtAuthentication ?? throw new ArgumentNullException(nameof(jwtAuthentication));
+            _httpContextAccessor = httpContextAccessor;
+            _helper = new AuthenticationHelper();
         }
 
         [HttpGet]
@@ -35,21 +49,60 @@ namespace MatrimonyAPI.Controllers
         //    //APIResponse aPIResponse = new APIResponse("Created", new HttpRequest().HttpContext);
         //    return Ok("Created");
         //}
+
         [HttpGet]
+        //[Authorize]
+        //[Authorize(JwtBearerDefaults.AuthenticationScheme)]
         public ActionResult GetUser(int blabla)
         {
+            //var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            //var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            //return Ok(_userService.GetUserDetails());
+            return Ok(_userService.GetOneUserDetails("Srijit"));
+        }
 
-            return Ok(_userService.GetUserDetails());
+        [HttpGet]
+        [Authorize]
+        [Route("{GetOneUserDetails}")]
+        [QueryStringConstraint("UserID",true)]
+        [QueryStringConstraint("lob", false)]
+        public ActionResult GetOneUserDetails(string UserID)
+        {
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            return Ok(APIResponse.CreateResponse(token, _userService.GetOneUserDetails(UserID)));
         }
 
         [HttpGet]
         [AllowAnonymous]
         [Route("{Login}")]
-        public ActionResult LoginUser()
+        [QueryStringConstraint("UserID", false)]
+        [QueryStringConstraint("lob", true)]
+        public ActionResult LoginUser(string lob)
         {
             AuthenticationHelper helper = new AuthenticationHelper();
-            var token = helper.GenerateToken(_jwtAuthentication.Value, "Srijit", "srijit.das@gmail.com");
-            return Ok(_userService.GetUserDetails());
+            var token = BuildToken("Srijit", "srijit.das@gmail.com","Admin");
+            return Ok(APIResponse.CreateResponse(token,_userService.GetUserDetails()));
+        }
+        private string BuildToken(string user, string email, string role)
+        {
+            var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.Sub, user),
+                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(JwtRegisteredClaimNames.Birthdate, DateTime.Now.ToString("yyyy-MM-dd")),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+               };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+              _config["Jwt:Issuer"],
+              claims,
+              expires: DateTime.Now.AddMinutes(30),
+              signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

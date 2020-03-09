@@ -17,7 +17,20 @@ namespace Matrimony.Service.User
         {
             _context = context;
         }
-        public Response GetUserDetails()
+        public ResponseType GetOneUserDetails(string user)
+        {
+            var errors = new List<Error>();
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "User Information");
+            UserModel model = new UserModel()
+            {
+                Email = "Srijit.das@gmail.com",
+                ContactName = "Srijit",
+                FirstName = "Srijit",
+                UserID = "4587580"
+            };
+            return new UserModelResponse(metadata, model);
+        }
+        public ResponseType GetUserDetails()
         {
             var errors = new List<Error>();
             IQueryable<UserModel> IQueryUsers = null;
