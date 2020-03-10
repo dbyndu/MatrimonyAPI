@@ -17,7 +17,7 @@ namespace Matrimony.Service.User
         {
             _context = context;
         }
-        public ResponseType GetOneUserDetails(string user)
+        public Response GetOneUserDetails(string user)
         {
             var errors = new List<Error>();
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "User Information");
@@ -30,7 +30,7 @@ namespace Matrimony.Service.User
             };
             return new UserModelResponse(metadata, model);
         }
-        public ResponseType GetUserDetails()
+        public Response GetUserDetails()
         {
             var errors = new List<Error>();
             IQueryable<UserModel> IQueryUsers = null;

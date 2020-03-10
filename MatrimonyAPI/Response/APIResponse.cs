@@ -11,9 +11,9 @@ namespace MatrimonyAPI.Response
     public sealed class APIResponse
     {
         string _token;
-        ResponseType _response;
+        Matrimony.Model.Base.Response _response;
 
-        public static ResponseType CreateResponse(string token, ResponseType response)
+        public static Matrimony.Model.Base.Response CreateResponse(string token, Matrimony.Model.Base.Response response)
         {
             if (response != null)
             {
