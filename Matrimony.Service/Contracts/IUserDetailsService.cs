@@ -7,7 +7,7 @@ namespace Matrimony.Service.Contracts
 {
     public interface IUserDetailsService
     {
-        ResponseType GetUserDetails();
-        ResponseType GetOneUserDetails(string user);
+        Response GetUserDetails();
+        Response GetOneUserDetails(string user);
     }
 }
