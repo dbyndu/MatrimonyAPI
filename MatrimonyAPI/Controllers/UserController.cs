@@ -55,9 +55,6 @@ namespace MatrimonyAPI.Controllers
         //[Authorize(JwtBearerDefaults.AuthenticationScheme)]
         public ActionResult GetUser(int blabla)
         {
-            //var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
-            //var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
-            //return Ok(_userService.GetUserDetails());
             return Ok(_userService.GetOneUserDetails("Srijit"));
         }
 
@@ -81,28 +78,28 @@ namespace MatrimonyAPI.Controllers
         public ActionResult LoginUser(string lob)
         {
             AuthenticationHelper helper = new AuthenticationHelper();
-            var token = BuildToken("Srijit", "srijit.das@gmail.com","Admin");
+            var token = _helper.GenerateToken(_jwtAuthentication.Value,"Srijit", "srijit.das@gmail.com","Admin");
             return Ok(APIResponse.CreateResponse(token,_userService.GetUserDetails()));
         }
-        private string BuildToken(string user, string email, string role)
-        {
-            var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, user),
-                new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(JwtRegisteredClaimNames.Birthdate, DateTime.Now.ToString("yyyy-MM-dd")),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-               };
+        //private string BuildToken(string user, string email, string role)
+        //{
+        //    var claims = new[] {
+        //        new Claim(JwtRegisteredClaimNames.Sub, user),
+        //        new Claim(JwtRegisteredClaimNames.Email, email),
+        //        new Claim(JwtRegisteredClaimNames.Birthdate, DateTime.Now.ToString("yyyy-MM-dd")),
+        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        //       };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-              _config["Jwt:Issuer"],
-              claims,
-              expires: DateTime.Now.AddMinutes(30),
-              signingCredentials: creds);
+        //    var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+        //      _config["Jwt:Issuer"],
+        //      claims,
+        //      expires: DateTime.Now.AddMinutes(30),
+        //      signingCredentials: creds);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
     }
 }
