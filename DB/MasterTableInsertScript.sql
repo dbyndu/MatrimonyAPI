@@ -21,6 +21,8 @@ INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('AnualIncome')
 INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('Employer')
 INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('Smoking')
 INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('Drinking')
+----------------------------------------------------------------------------
+INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('ProfileCreatedFor')
 GO
 
 
