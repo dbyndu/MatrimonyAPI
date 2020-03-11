@@ -7,6 +7,7 @@ using Matrimony.Helper;
 using Matrimony.Service.Auth;
 using Matrimony.Service.Contracts;
 using Matrimony.Service.User;
+using Matrimony.Service.Common;
 using MatrimonyAPI.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -71,6 +72,7 @@ namespace MatrimonyAPI
             });
             services.AddMvc(options => options.EnableEndpointRouting = false);
             services.AddTransient<IUserDetailsService, UserDetailsService>();
+            services.AddTransient<IMasterDataService, MasterDataService>();
             //services.AddTransient<IAuthService, AuthService>();
             services.Configure<JwtAuthentication>(Configuration.GetSection(ConfigurationHelper.JWTAUTHENTICATIONKEY));
 
@@ -98,7 +100,7 @@ namespace MatrimonyAPI
             {
                 endpoints.MapControllers();
             });
-
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "MatriMama API V1");
