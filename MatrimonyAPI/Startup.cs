@@ -21,6 +21,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MatrimonyAPI.Interceptor;
 
 namespace MatrimonyAPI
 {
@@ -91,6 +92,7 @@ namespace MatrimonyAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseMiddleware<HttpPipelineInterceptor>();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMvc();
