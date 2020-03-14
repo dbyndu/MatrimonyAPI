@@ -6,6 +6,7 @@ using Matrimony.Service.Contracts;
 using MatrimonyAPI.Authentication;
 using MatrimonyAPI.Response;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace MatrimonyAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [EnableCors("AllowAll"), Route("api/[controller]")]
     [ApiController]
     public class CommonController : ControllerBase
     {
