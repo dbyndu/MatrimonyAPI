@@ -59,13 +59,12 @@ namespace MatrimonyAPI
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
-                    builder =>
-                    {
-                        builder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                    });
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
             });
             services.AddSwaggerGen(c =>
             {
@@ -92,7 +91,7 @@ namespace MatrimonyAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            app.UseMiddleware<HttpPipelineInterceptor>();
+            //app.UseMiddleware<HttpPipelineInterceptor>();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMvc();

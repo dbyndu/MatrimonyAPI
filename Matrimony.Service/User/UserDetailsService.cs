@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Matrimony_Model.User;
 
 namespace Matrimony.Service.User
 {
@@ -57,6 +58,40 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
             return new UserModelListResponse(metadata,lstUsers);
+        }
+
+        public Response CreateNewUser(UserShortRegister user)
+        {
+            var errors = new List<Error>();
+            int outPutResult = 0;
+            Matrimony.Data.Entities.User dbUser = new Data.Entities.User() { Password = user.password, FirstName = "default", LastName = "default", 
+                CreatedDate = DateTime.Now, Email = user.email, ProfileCreatedForId = int.Parse(user.profile), PhoneNumber = user.phone };
+            try
+            {
+                _context.User.Add(dbUser);
+                outPutResult = _context.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }            
+            if(outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Can not Add User.."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
+            if (!errors.Any())
+            {
+                var insertedUser = _context.User.Where(x => x.Email == user.email).Select(u => new UserModel { UserID = u.Id.ToString(), Email = u.Email,FirstName
+                = u.FirstName == "default"? " " : u.FirstName, LastName
+                =u.LastName == "default" ? " " : u.LastName, PhoneNumber = u.PhoneNumber, CreatedDate = u.CreatedDate
+                }).FirstOrDefault();
+                return new UserModelResponse(metadata, insertedUser);
+            }
+            else
+            {
+                return new ErrorResponse(metadata, errors);
+            }
         }
     }
 }

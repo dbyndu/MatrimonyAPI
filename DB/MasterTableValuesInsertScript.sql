@@ -11,16 +11,16 @@ DECLARE @Values NVARCHAR(MAX)
 
 
 /****** Gender  ******/
---SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Gender'
---SET @Values = 'Male,Female'
---INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
---SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Gender'
+SET @Values = 'Male,Female'
+INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
+SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
 
 /****** Religion  ******/
---SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Religion'
---SET @Values = 'Hindu,Muslim,Christian,Sikh,Parsi,Jain,Buddhist,Jewish,No Religion,Spiritual,Other'
---INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
---SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Religion'
+SET @Values = 'Hindu,Muslim,Christian,Sikh,Parsi,Jain,Buddhist,Jewish,No Religion,Spiritual,Other'
+INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
+SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
 
 /****** MotherTongue  ******/
 SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'MotherTongue'

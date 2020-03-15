@@ -62,7 +62,7 @@ namespace MatrimonyAPI.Interceptor
 
             //..and finally, assign the read body back to the request body, which is allowed because of EnableRewind()
             request.Body = body;
-
+            
             return $"{request.Scheme} {request.Host}{request.Path} {request.QueryString} {bodyAsText}";
         }
 

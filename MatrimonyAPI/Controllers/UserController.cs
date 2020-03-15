@@ -19,10 +19,13 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Matrimony_Model.User;
+using Microsoft.AspNetCore.Cors;
 
 namespace MatrimonyAPI.Controllers
 {
     //[Authorize]
+    [EnableCors("AllowAll")]
     [ApiController]
     [Route("[controller]")]
     public class UserController : Controller
@@ -81,6 +84,17 @@ namespace MatrimonyAPI.Controllers
             var token = _helper.GenerateToken(_jwtAuthentication.Value,"Srijit", "srijit.das@gmail.com","Admin");
             return Ok(APIResponse.CreateResponse(token,_userService.GetUserDetails()));
         }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("{register}")]
+        public ActionResult RegisterUser(UserShortRegister userShortRegister)
+        {
+            var response = _userService.CreateNewUser(userShortRegister) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+
         //private string BuildToken(string user, string email, string role)
         //{
         //    var claims = new[] {
