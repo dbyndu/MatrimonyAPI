@@ -65,7 +65,7 @@ namespace Matrimony.Service.User
             var errors = new List<Error>();
             int outPutResult = 0;
             Matrimony.Data.Entities.User dbUser = new Data.Entities.User() { Password = user.password, FirstName = "default", LastName = "default", 
-                CreatedDate = DateTime.Now, Email = user.email, ProfileCreatedForId = int.Parse(user.profile), PhoneNumber = user.phone };
+                CreatedDate = DateTime.Now, Email = user.email, ProfileCreatedForId = user.profile, PhoneNumber = user.phone };
             try
             {
                 _context.User.Add(dbUser);
