@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Matrimony.Helper;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,7 +54,10 @@ namespace MatrimonyAPI.Interceptor
 
             //We now need to read the request stream.  First, we create a new byte[] with the same length as the request stream...
             var buffer = new byte[Convert.ToInt32(request.ContentLength)];
-
+            string bodyMessage = new StreamReader(request.Body).ReadToEnd();
+            string decodedString = AESEncryDecry.DecryptStringAES(bodyMessage);
+            request.ContentType = "application/json";
+            //request.Body = decodedString;
             //...Then we copy the entire request stream into the new buffer.
             await request.Body.ReadAsync(buffer, 0, buffer.Length);
 
@@ -62,7 +66,7 @@ namespace MatrimonyAPI.Interceptor
 
             //..and finally, assign the read body back to the request body, which is allowed because of EnableRewind()
             request.Body = body;
-            
+            request.Body.Seek(0, SeekOrigin.Begin);
             return $"{request.Scheme} {request.Host}{request.Path} {request.QueryString} {bodyAsText}";
         }
 

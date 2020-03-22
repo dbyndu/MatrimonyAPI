@@ -6,7 +6,7 @@ namespace Matrimony_Model.User
 {
     public class UserShortRegister
     {
-        public string profile { get; set; }
+        public int profile { get; set; }
         public string email { get; set; }
         public string phone { get; set; }
         public string password { get; set; }
