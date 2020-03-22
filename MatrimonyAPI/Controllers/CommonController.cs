@@ -37,7 +37,7 @@ namespace MatrimonyAPI.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route("MasterData")]
-        public ActionResult LoginUser(string tableNames)//coma separeted table names
+        public ActionResult MasterData(string tableNames)//coma separeted table names
         {
             AuthenticationHelper helper = new AuthenticationHelper();
             var token = _helper.GenerateToken(_jwtAuthentication.Value, "Srijit", "srijit.das@gmail.com", "Admin");
