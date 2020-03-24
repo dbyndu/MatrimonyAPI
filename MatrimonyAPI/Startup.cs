@@ -22,6 +22,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MatrimonyAPI.Interceptor;
+using AutoMapper;
+using MatrimonyAPI.Helper;
 
 namespace MatrimonyAPI
 {
@@ -77,7 +79,12 @@ namespace MatrimonyAPI
             services.Configure<JwtAuthentication>(Configuration.GetSection(ConfigurationHelper.JWTAUTHENTICATIONKEY));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

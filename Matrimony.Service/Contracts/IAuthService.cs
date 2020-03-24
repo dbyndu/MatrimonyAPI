@@ -8,7 +8,7 @@ namespace Matrimony.Service.Contracts
 {
     public interface IAuthService
     {
-        bool LoginUser(UserBasicModel user);
-        bool RegisterUser(UserBasicModel user);
+        bool LoginUser(UserRegister user);
+        bool RegisterUser(UserRegister user);
     }
 }

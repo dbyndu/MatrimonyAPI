@@ -8,8 +8,8 @@ namespace Matrimony.Data.Contracts
 {
     public interface IAuthRepository
     {
-        bool CreateUser(UserBasicModel user);
+        bool CreateUser(UserRegister user);
         bool IsUserExists(string userId);
-        bool LoginUser(UserBasicModel user);
+        bool LoginUser(UserRegister user);
     }
 }

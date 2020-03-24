@@ -15,7 +15,7 @@ namespace Matrimony.Data.Repository
         {
             this._dbContext = dbContext;
         }
-        public bool CreateUser(UserBasicModel user)
+        public bool CreateUser(UserRegister user)
         {
             throw new NotImplementedException();
         }
@@ -25,7 +25,7 @@ namespace Matrimony.Data.Repository
             throw new NotImplementedException();
         }
 
-        public bool LoginUser(UserBasicModel user)
+        public bool LoginUser(UserRegister user)
         {
             throw new NotImplementedException();
         }
