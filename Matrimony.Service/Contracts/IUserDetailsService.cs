@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Matrimony.Model.Base;
-using Matrimony_Model.User;
+using Matrimony.Model.User;
 
 namespace Matrimony.Service.Contracts
 {
@@ -12,5 +12,6 @@ namespace Matrimony.Service.Contracts
         Response GetOneUserDetails(string user);
 
         Response CreateNewUser(UserShortRegister user);
+        Response Register(Object obj, string type);
     }
 }

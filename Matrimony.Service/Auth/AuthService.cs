@@ -15,16 +15,16 @@ namespace Matrimony.Service.Auth
         {
             this._iAuthRepository = authRepository;
         }
-        public bool RegisterUser(UserBasicModel user)
+        public bool RegisterUser(UserRegister user)
         {
             if (!_iAuthRepository.CreateUser(user))
             {
-                throw new Exception($"This userId {user.UserID} already in use");
+                throw new Exception($"This userId {user.Email} already in use");
             }
             else
                 return true;
         }
-        public bool LoginUser(UserBasicModel user)
+        public bool LoginUser(UserRegister user)
         {
             return true;
 

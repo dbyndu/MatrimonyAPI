@@ -19,7 +19,6 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Matrimony_Model.User;
 using Microsoft.AspNetCore.Cors;
 
 namespace MatrimonyAPI.Controllers
@@ -27,7 +26,7 @@ namespace MatrimonyAPI.Controllers
     //[Authorize]
     [EnableCors("AllowAll")]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UserController : Controller
     {
         private readonly ILogger<UserController> _logger;
@@ -87,14 +86,59 @@ namespace MatrimonyAPI.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        [Route("{register}")]
-        public ActionResult RegisterUser(UserShortRegister userShortRegister)
+        [Route("register/short-register")]
+        public ActionResult CreateNewUser(UserShortRegister userShortRegister)
         {
             var response = _userService.CreateNewUser(userShortRegister) as UserModelResponse;
             var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
             return Ok(APIResponse.CreateResponse(token, response));
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register/user-update")]
+        public ActionResult UpdateUser(UserRegister user)
+        {
+            var response = _userService.Register(user, user.GetType().Name) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register/user-basic-info")]
+        public ActionResult UpdateUserBasicInfo(UserBasicInformation userBasic)
+        {
+            var response = _userService.Register(userBasic, userBasic.GetType().Name) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register/user-education")]
+        public ActionResult UpdateUserEducation(List<UserEducationModel> userEducations)
+        {
+            var response = _userService.Register(userEducations, typeof(UserEducationModel).Name) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register/user-career")]
+        public ActionResult UpdateUserCareer(List<UserCareerModel> userCareer)
+        {
+            var response = _userService.Register(userCareer, typeof(UserCareerModel).Name) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register/family-info")]
+        public ActionResult UpdateUserFamilyInfo(UserFamilyInformationModel userFamily)
+        {
+            var response = _userService.Register(userFamily, typeof(UserFamilyInformationModel).Name) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
         //private string BuildToken(string user, string email, string role)
         //{
         //    var claims = new[] {
