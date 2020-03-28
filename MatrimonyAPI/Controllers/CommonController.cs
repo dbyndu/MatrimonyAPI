@@ -39,8 +39,16 @@ namespace MatrimonyAPI.Controllers
         [Route("MasterData")]
         public ActionResult MasterData(string tableNames)//coma separeted table names
         {
-            AuthenticationHelper helper = new AuthenticationHelper();
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, "Srijit", "srijit.das@gmail.com", "Admin");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            string token = string.Empty;
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                token = _helper.GenerateToken(_jwtAuthentication.Value, "default", "default@default.com", "User");
+            }
+            else
+            {
+                token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            }
             List<string> lstTable = tableNames.Split(',').ToList();
             return Ok(APIResponse.CreateResponse(token, _masterDataService.GetMasterDate(lstTable)));
         }

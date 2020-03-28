@@ -90,74 +90,65 @@ namespace MatrimonyAPI.Controllers
         public ActionResult CreateNewUser(UserShortRegister userShortRegister)
         {
             var response = _userService.CreateNewUser(userShortRegister) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
             return Ok(APIResponse.CreateResponse(token, response));
         }
 
         [HttpPost]
+        //Needs to be changed to Authorize
         [AllowAnonymous]
         [Route("register/user-update")]
         public ActionResult UpdateUser(UserRegister user)
         {
             var response = _userService.Register(user, user.GetType().Name) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
             return Ok(APIResponse.CreateResponse(token, response));
         }
         [HttpPost]
+        //Needs to be changed to Authorize
         [AllowAnonymous]
         [Route("register/user-basic-info")]
         public ActionResult UpdateUserBasicInfo(UserBasicInformation userBasic)
         {
             var response = _userService.Register(userBasic, userBasic.GetType().Name) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
             return Ok(APIResponse.CreateResponse(token, response));
         }
         [HttpPost]
+        //Needs to be changed to Authorize
         [AllowAnonymous]
         [Route("register/user-education")]
         public ActionResult UpdateUserEducation(List<UserEducationModel> userEducations)
         {
             var response = _userService.Register(userEducations, typeof(UserEducationModel).Name) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
             return Ok(APIResponse.CreateResponse(token, response));
         }
         [HttpPost]
+        //Needs to be changed to Authorize
         [AllowAnonymous]
         [Route("register/user-career")]
         public ActionResult UpdateUserCareer(List<UserCareerModel> userCareer)
         {
             var response = _userService.Register(userCareer, typeof(UserCareerModel).Name) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
             return Ok(APIResponse.CreateResponse(token, response));
         }
         [HttpPost]
+        //Needs to be changed to Authorize
         [AllowAnonymous]
         [Route("register/family-info")]
         public ActionResult UpdateUserFamilyInfo(UserFamilyInformationModel userFamily)
         {
             var response = _userService.Register(userFamily, typeof(UserFamilyInformationModel).Name) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
             return Ok(APIResponse.CreateResponse(token, response));
         }
-        //private string BuildToken(string user, string email, string role)
-        //{
-        //    var claims = new[] {
-        //        new Claim(JwtRegisteredClaimNames.Sub, user),
-        //        new Claim(JwtRegisteredClaimNames.Email, email),
-        //        new Claim(JwtRegisteredClaimNames.Birthdate, DateTime.Now.ToString("yyyy-MM-dd")),
-        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        //       };
-
-        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        //    var token = new JwtSecurityToken(_config["Jwt:Issuer"],
-        //      _config["Jwt:Issuer"],
-        //      claims,
-        //      expires: DateTime.Now.AddMinutes(30),
-        //      signingCredentials: creds);
-
-        //    return new JwtSecurityTokenHandler().WriteToken(token);
-        //}
     }
 }
