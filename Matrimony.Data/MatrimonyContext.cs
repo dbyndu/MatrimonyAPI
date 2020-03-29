@@ -27,6 +27,7 @@ namespace Matrimony.Data
         public virtual DbSet<UserLifeStyle> UserLifeStyle { get; set; }
         public virtual DbSet<UserLocation> UserLocation { get; set; }
         public virtual DbSet<UserPreferenceSetting> UserPreferenceSetting { get; set; }
+        public virtual DbSet<UserImage> UserImage { get; set; }
 
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //        {

@@ -25,6 +25,7 @@ using MatrimonyAPI.Interceptor;
 using AutoMapper;
 using MatrimonyAPI.Helper;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using MatrimonyAPI.Handler;
 
 namespace MatrimonyAPI
 {
@@ -77,6 +78,8 @@ namespace MatrimonyAPI
             services.AddTransient<IUserDetailsService, UserDetailsService>();
             services.AddTransient<IMasterDataService, MasterDataService>();
             //services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IImageHandler, ImageHandler>();
+            services.AddTransient<IImageWriterService, ImageWriterService>();
             services.Configure<JwtAuthentication>(Configuration.GetSection(ConfigurationHelper.JWTAUTHENTICATIONKEY));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

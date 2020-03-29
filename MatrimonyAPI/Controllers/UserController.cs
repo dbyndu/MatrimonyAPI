@@ -20,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Cors;
+using MatrimonyAPI.Handler;
 
 namespace MatrimonyAPI.Controllers
 {
@@ -35,7 +36,9 @@ namespace MatrimonyAPI.Controllers
         private IHttpContextAccessor _httpContextAccessor;
         private AuthenticationHelper _helper;
         private IConfiguration _config;
-        public UserController(IConfiguration config,ILogger<UserController> logger, IUserDetailsService userService, IOptions<JwtAuthentication> jwtAuthentication, IHttpContextAccessor httpContextAccessor)
+        private readonly IImageHandler _imageHandler;
+        public UserController(IConfiguration config,ILogger<UserController> logger, IUserDetailsService userService, IOptions<JwtAuthentication> jwtAuthentication, IHttpContextAccessor httpContextAccessor,
+            IImageHandler imageHandler)
         {
             _config = config;
             _logger = logger;
@@ -43,6 +46,7 @@ namespace MatrimonyAPI.Controllers
             _jwtAuthentication = jwtAuthentication ?? throw new ArgumentNullException(nameof(jwtAuthentication));
             _httpContextAccessor = httpContextAccessor;
             _helper = new AuthenticationHelper();
+            _imageHandler = imageHandler;
         }
 
         [HttpGet]
@@ -142,5 +146,58 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.Register(userFamily, typeof(UserFamilyInformationModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register/images/{userId}")]
+        public async Task<IActionResult> UploadImage(IFormFile file, int userId)
+        {
+            //userId = 9;
+            UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
+            userImg.UserId = userId;
+            var response = _userService.Register(userImg, typeof(UserImage).Name) as UserModelResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("user-list")]
+        public ActionResult GestUserList()
+        {
+            var response = _userService.GestUserList();
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, "", "", "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("register/images/userID/{userId}/width/{width}/height/{height}")]
+        public ActionResult GetImages(int userId, int width, int height)
+        {
+            var response = _userService.GetImages(userId, width, height) as UserImageListResponse;
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, "", "", "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+        //private string BuildToken(string user, string email, string role)
+        //{
+        //    var claims = new[] {
+        //        new Claim(JwtRegisteredClaimNames.Sub, user),
+        //        new Claim(JwtRegisteredClaimNames.Email, email),
+        //        new Claim(JwtRegisteredClaimNames.Birthdate, DateTime.Now.ToString("yyyy-MM-dd")),
+        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        //       };
+
+        //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+        //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        //    var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+        //      _config["Jwt:Issuer"],
+        //      claims,
+        //      expires: DateTime.Now.AddMinutes(30),
+        //      signingCredentials: creds);
+
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
     }
 }

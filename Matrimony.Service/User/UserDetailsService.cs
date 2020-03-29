@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Matrimony.Helper;
 
 namespace Matrimony.Service.User
 {
@@ -111,6 +113,48 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
         }
+
+        public Response GestUserList()
+        {
+            var errors = new List<Error>();
+            //Queryable<UserModel> IQueryUsers = null;
+            //List<UserModel> lstImages = new List<UserModel>();
+            var lstUsers = _context.User
+                .Include(user => user.UserBasicInfo)
+                    .ThenInclude(ubi=> ubi.MotherTongue)
+                .Include(user => user.UserLocation)
+                .Include(user => user.UserEducation)
+                    .ThenInclude(ue => ue.EducationField)
+                    .ThenInclude(ue => ue.UserEducationEducationLevel)
+                .Include(user => user.UserCareer)
+                     .ThenInclude(ue => ue.WorkingSector)
+                .Select(u => new
+                {
+                    Id = u.Id,
+                    Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),
+                    Age = GenericHelper.CalculateAge(u.UserBasicInfo.FirstOrDefault().Dob),
+                    Height = u.UserBasicInfo.FirstOrDefault().Height,
+                    Education = string.Concat(u.UserEducation.FirstOrDefault().EducationLevel.Value, ", ", (u.UserEducation.FirstOrDefault().EducationField.Value)),
+                    City = u.UserLocation.FirstOrDefault().City,
+                    Profession = u.UserCareer.FirstOrDefault().WorkingSector.Value,
+                    Language = u.UserBasicInfo.FirstOrDefault().MotherTongue.Value,
+                    Url = ""
+                }).ToList();
+            //var users = (from u in _context.User
+            //             join ubi in _context.UserBasicInfo on u.Id equals ubi.UserId
+            //             join ul in _context.UserLocation on u.Id equals ul.UserId
+            //             join)
+            if(lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
+            {
+                errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains list Of User");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, lstUsers);
+        }
        public Response Register(Object obj, string type)
         {
             var errors = new List<Error>();
@@ -133,6 +177,11 @@ namespace Matrimony.Service.User
                         UserFamilyInformationModel userFamily = (UserFamilyInformationModel)obj;
                         outPutResult = InsertUpdateUserFamilyInfo(userFamily);
                         userId = userFamily.UserId;
+                        break;
+                    case "UserImage":
+                        UserImage userImage = (UserImage)obj;
+                        outPutResult = InsertUpdateUserImage(userImage);
+                        userId = userImage.UserId;
                         break;
                     case "UserEducationModel":
                         List<UserEducationModel> userEducations = (List<UserEducationModel>)obj;
@@ -183,6 +232,64 @@ namespace Matrimony.Service.User
             }
         }
 
+        public Response GetImages(int userId, int width, int height)
+        {
+            var errors = new List<Error>();
+            IQueryable<UserImage> IQueryImages = null;
+            List<UserImage> lstImages = new List<UserImage>();
+            try
+            {
+                IQueryImages = _context.UserImage.Where(i=> i.UserId == userId).Select(u => new UserImage 
+                { 
+                    Id = u.Id,
+                    UserId = u.UserId,
+                    ImageString = "data:" + u.ContentType + ";base64," + Convert.ToBase64String((byte[])u.Image) // ImageResizer((byte[])u.Image, width, height)
+                });
+                lstImages = IQueryImages.ToList();
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (lstImages == null || Convert.ToInt32(lstImages.Count) == 0)
+            {
+                errors.Add(new Error("Err102", "No iage found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Images Of User");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new UserImageListResponse(metadata, lstImages);
+        }
+        private int InsertUpdateUserImage(UserImage userImg)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
+            {
+                Id = userImg.Id,
+                UserId = userImg.UserId,
+                Image = userImg.Image,
+                ContentType = userImg.ContentType
+            };
+            try
+            {
+                if (userImg.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserImage>(dbUserImage);
+                }
+                else
+                {
+                    _context.UserImage.Add(dbUserImage);
+                }
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
+        }
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)
         {
             int outPutResult = 0;
@@ -406,6 +513,15 @@ namespace Matrimony.Service.User
                 throw ex;
             }
             return outPutResult;
+        }
+
+        private string ImageResizer(byte[] byteArray, int width, int height)
+        {
+            string resizedImageString = string.Empty;
+
+
+
+            return resizedImageString;
         }
 
     }
