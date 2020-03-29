@@ -117,34 +117,36 @@ namespace Matrimony.Service.User
         public Response GestUserList()
         {
             var errors = new List<Error>();
-            //Queryable<UserModel> IQueryUsers = null;
-            //List<UserModel> lstImages = new List<UserModel>();
-            var lstUsers = _context.User
-                .Include(user => user.UserBasicInfo)
-                    .ThenInclude(ubi=> ubi.MotherTongue)
-                .Include(user => user.UserLocation)
-                .Include(user => user.UserEducation)
-                    .ThenInclude(ue => ue.EducationField)
-                    .ThenInclude(ue => ue.UserEducationEducationLevel)
-                .Include(user => user.UserCareer)
-                     .ThenInclude(ue => ue.WorkingSector)
-                .Select(u => new
-                {
-                    Id = u.Id,
-                    Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),
-                    Age = GenericHelper.CalculateAge(u.UserBasicInfo.FirstOrDefault().Dob),
-                    Height = u.UserBasicInfo.FirstOrDefault().Height,
-                    Education = string.Concat(u.UserEducation.FirstOrDefault().EducationLevel.Value, ", ", (u.UserEducation.FirstOrDefault().EducationField.Value)),
-                    City = u.UserLocation.FirstOrDefault().City,
-                    Profession = u.UserCareer.FirstOrDefault().WorkingSector.Value,
-                    Language = u.UserBasicInfo.FirstOrDefault().MotherTongue.Value,
-                    Url = ""
-                }).ToList();
-            //var users = (from u in _context.User
-            //             join ubi in _context.UserBasicInfo on u.Id equals ubi.UserId
-            //             join ul in _context.UserLocation on u.Id equals ul.UserId
-            //             join)
-            if(lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
+            var lstUsers = (from u in _context.User
+                            join ubi in _context.UserBasicInfo on u.Id equals ubi.UserId into user_basic
+                            from ub in user_basic.DefaultIfEmpty()
+                            join ul in _context.UserLocation on u.Id equals ul.UserId into user_loc
+                            from uloc in user_loc.DefaultIfEmpty()
+                            join ue in _context.UserEducation on u.Id equals ue.Id into user_edu
+                            from uedu in user_edu.DefaultIfEmpty()
+                            join uc in _context.UserCareer on u.Id equals uc.Id into user_career
+                            from ucar in user_career.DefaultIfEmpty()
+                            join mvfb in _context.MasterFieldValue on ub.MotherTongueId equals mvfb.Id into basic_fieldValue
+                            from fvb in basic_fieldValue.DefaultIfEmpty()
+                            join mvfel in _context.MasterFieldValue on uedu.EducationLevelId equals mvfel.Id into edu_lev_fieldValue
+                            from fvel in edu_lev_fieldValue.DefaultIfEmpty()
+                            join mvfeField in _context.MasterFieldValue on uedu.EducationFieldId equals mvfeField.Id into edu_field_fieldValue
+                            from fvField in edu_field_fieldValue.DefaultIfEmpty()
+                            join mvfc in _context.MasterFieldValue on ucar.WorkDesignationId equals mvfc.Id into car_fieldValue
+                            from fvc in car_fieldValue.DefaultIfEmpty()
+                            select new
+                            {
+                                Id = u.Id,
+                                Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),
+                                Age = GenericHelper.CalculateAge(ub.Dob),
+                                Height = ub.Height,
+                                Education = string.Concat(fvel.Value ?? string.Empty, ", ", fvField.Value ?? string.Empty),
+                                City = uloc.City ?? string.Empty,
+                                Profession = fvc.Value ?? string.Empty,
+                                Language = fvb.Value ?? string.Empty,
+                                Url = ""
+                            }).ToList();
+            if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
             {
                 errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
             }

@@ -148,7 +148,7 @@ namespace MatrimonyAPI.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
+        [AllowAnonymous]//Needs to be changed to Authorize
         [Route("register/images/{userId}")]
         public async Task<IActionResult> UploadImage(IFormFile file, int userId)
         {
@@ -156,18 +156,16 @@ namespace MatrimonyAPI.Controllers
             UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
             userImg.UserId = userId;
             var response = _userService.Register(userImg, typeof(UserImage).Name) as UserModelResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.FirstName, response.Data.Email, "User");
-            return Ok(APIResponse.CreateResponse(token, response));
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }
         [HttpGet]
-        [AllowAnonymous]
+        [AllowAnonymous]//Needs to be changed to Authorize
         [Route("user-list")]
         public ActionResult GestUserList()
         {
             var response = _userService.GestUserList();
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, "", "", "User");
-            return Ok(APIResponse.CreateResponse(token, response));
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
         [HttpGet]
@@ -176,8 +174,7 @@ namespace MatrimonyAPI.Controllers
         public ActionResult GetImages(int userId, int width, int height)
         {
             var response = _userService.GetImages(userId, width, height) as UserImageListResponse;
-            var token = _helper.GenerateToken(_jwtAuthentication.Value, "", "", "User");
-            return Ok(APIResponse.CreateResponse(token, response));
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         //private string BuildToken(string user, string email, string role)
         //{
