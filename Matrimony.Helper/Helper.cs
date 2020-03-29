@@ -2,6 +2,9 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace Matrimony.Helper
 {
@@ -16,6 +19,14 @@ namespace Matrimony.Helper
 
             return age;
         }
+
+        //public static BitMap BinaryToImage(byte[] buffer)
+        //{
+        //    if (buffer == null) return null;
+        //    MemoryStream memStream = new MemoryStream();
+        //    memStream.Write(buffer, 0, buffer.Length);
+        //    return Image.FromStream(memStream);
+        //}
     }
 
     public static class ConfigurationHelper
