@@ -5,9 +5,17 @@ using System.Text;
 
 namespace Matrimony.Helper
 {
-    public static class Helper
+    public static class GenericHelper
     {
+        public static int CalculateAge(DateTime dateOfBirth)
+        {
+            int age = 0;
+            age = DateTime.Now.Year - dateOfBirth.Year;
+            if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
+                age = age - 1;
 
+            return age;
+        }
     }
 
     public static class ConfigurationHelper

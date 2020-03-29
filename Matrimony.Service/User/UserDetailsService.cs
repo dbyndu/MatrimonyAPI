@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Matrimony.Helper;
 
 namespace Matrimony.Service.User
 {
@@ -110,6 +112,48 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
+        }
+
+        public Response GestUserList()
+        {
+            var errors = new List<Error>();
+            //Queryable<UserModel> IQueryUsers = null;
+            //List<UserModel> lstImages = new List<UserModel>();
+            var lstUsers = _context.User
+                .Include(user => user.UserBasicInfo)
+                    .ThenInclude(ubi=> ubi.MotherTongue)
+                .Include(user => user.UserLocation)
+                .Include(user => user.UserEducation)
+                    .ThenInclude(ue => ue.EducationField)
+                    .ThenInclude(ue => ue.UserEducationEducationLevel)
+                .Include(user => user.UserCareer)
+                     .ThenInclude(ue => ue.WorkingSector)
+                .Select(u => new
+                {
+                    Id = u.Id,
+                    Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),
+                    Age = GenericHelper.CalculateAge(u.UserBasicInfo.FirstOrDefault().Dob),
+                    Height = u.UserBasicInfo.FirstOrDefault().Height,
+                    Education = string.Concat(u.UserEducation.FirstOrDefault().EducationLevel.Value, ", ", (u.UserEducation.FirstOrDefault().EducationField.Value)),
+                    City = u.UserLocation.FirstOrDefault().City,
+                    Profession = u.UserCareer.FirstOrDefault().WorkingSector.Value,
+                    Language = u.UserBasicInfo.FirstOrDefault().MotherTongue.Value,
+                    Url = ""
+                }).ToList();
+            //var users = (from u in _context.User
+            //             join ubi in _context.UserBasicInfo on u.Id equals ubi.UserId
+            //             join ul in _context.UserLocation on u.Id equals ul.UserId
+            //             join)
+            if(lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
+            {
+                errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains list Of User");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, lstUsers);
         }
        public Response Register(Object obj, string type)
         {

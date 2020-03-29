@@ -162,6 +162,16 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpGet]
         [AllowAnonymous]
+        [Route("user-list")]
+        public ActionResult GestUserList()
+        {
+            var response = _userService.GestUserList();
+            var token = _helper.GenerateToken(_jwtAuthentication.Value, "", "", "User");
+            return Ok(APIResponse.CreateResponse(token, response));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
         [Route("register/images/userID/{userId}/width/{width}/height/{height}")]
         public ActionResult GetImages(int userId, int width, int height)
         {

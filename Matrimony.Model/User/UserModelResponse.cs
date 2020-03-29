@@ -18,4 +18,10 @@ namespace Matrimony.Model.User
             : base(metadata, userImage)
         { }
     }
+    public class AnonymousResponse : SuccessResponse<object>
+    {
+        public AnonymousResponse(Metadata metadata, object obj)
+            : base(metadata, obj)
+        { }
+    }
 }
