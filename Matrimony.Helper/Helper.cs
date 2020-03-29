@@ -2,9 +2,10 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.Primitives;
 
 namespace Matrimony.Helper
 {
@@ -20,13 +21,43 @@ namespace Matrimony.Helper
             return age;
         }
 
-        //public static BitMap BinaryToImage(byte[] buffer)
-        //{
-        //    if (buffer == null) return null;
-        //    MemoryStream memStream = new MemoryStream();
-        //    memStream.Write(buffer, 0, buffer.Length);
-        //    return Image.FromStream(memStream);
-        //}
+        public static Image ByteArrayToImage(byte[] buffer)
+        {
+            if (buffer == null) return null;
+            MemoryStream memStream = new MemoryStream();
+            memStream.Write(buffer, 0, buffer.Length);
+            return Image.Load(memStream);
+        }
+
+        public static string ResizeImage(byte[] byteArray, int width, int height)
+        {
+            string resizedImageString = string.Empty;
+            if (byteArray != null)
+            {
+                if (width > 0 && height > 0)
+                {
+
+                    Image img = ByteArrayToImage(byteArray);
+                    img.Mutate(x => x
+                    .Resize(new ResizeOptions
+                    {
+                        Size = new Size(width, height),
+                        Mode = ResizeMode.Max
+                    })
+                    .Grayscale());
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        img.Save(ms, new JpegEncoder());
+                        resizedImageString = Convert.ToBase64String(ms.ToArray());
+                    }
+                }
+                else
+                {
+                    resizedImageString = Convert.ToBase64String(byteArray);
+                }
+            }
+            return resizedImageString;
+        }
     }
 
     public static class ConfigurationHelper
