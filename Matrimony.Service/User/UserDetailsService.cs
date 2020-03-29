@@ -241,11 +241,11 @@ namespace Matrimony.Service.User
             List<UserImage> lstImages = new List<UserImage>();
             try
             {
-                IQueryImages = _context.UserImage.Where(i=> i.UserId == userId).Select(u => new UserImage 
-                { 
+                IQueryImages = _context.UserImage.Where(i => i.UserId == userId).Select(u => new UserImage
+                {
                     Id = u.Id,
                     UserId = u.UserId,
-                    ImageString = "data:" + u.ContentType + ";base64," + Convert.ToBase64String((byte[])u.Image) // ImageResizer((byte[])u.Image, width, height)
+                    ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0) // ImageResizer((byte[])u.Image, width, height)
                 });
                 lstImages = IQueryImages.ToList();
             }
@@ -517,14 +517,6 @@ namespace Matrimony.Service.User
             return outPutResult;
         }
 
-        private string ImageResizer(byte[] byteArray, int width, int height)
-        {
-            string resizedImageString = string.Empty;
-
-
-
-            return resizedImageString;
-        }
 
     }
 }
