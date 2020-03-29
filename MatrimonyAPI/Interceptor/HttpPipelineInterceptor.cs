@@ -33,12 +33,6 @@ namespace MatrimonyAPI.Interceptor
                     dynamic json = JsonConvert.DeserializeObject(decodedString);
                     var obj = JsonConvert.DeserializeObject<dynamic>(decodedString);
                     var response= JsonConvert.SerializeObject(obj);
-                    //var requestContent = new StringContent(response, Encoding.UTF8, "application/json");
-                    //byte[] byteArray = Encoding.ASCII.GetBytes(requestContent.);
-                    //Stream info = ((JArray)obj.A)[0].ToObject<Stream>();
-                    //var bytesToWrite = Encoding.UTF8.GetBytes(json);
-                    //injectedRequestStream.Write(bytesToWrite, 0, bytesToWrite.Length);
-                    //injectedRequestStream.Seek(0, SeekOrigin.Begin);
                     MemoryStream mStrm = new MemoryStream(Encoding.UTF8.GetBytes(response));
                     context.Request.Body = mStrm;
                     context.Request.ContentType = "application/json";

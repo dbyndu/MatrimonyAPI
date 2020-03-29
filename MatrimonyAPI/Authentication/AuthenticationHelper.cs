@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,16 @@ namespace MatrimonyAPI.Authentication
         public string GenerateToken(JwtAuthentication jwtAuthentication, string userId, string email, string role)
         {
             return this.GenerateToken(jwtAuthentication, this.GetClaims(userId, email, role));
+        }
+        public string VerifyToken(JwtAuthentication jwtAuthentication, HttpRequest httpRequest)
+        {
+            var returnToken = string.Empty;
+            var accessToken = httpRequest.Headers["Authorization"];
+            if(string.IsNullOrEmpty(accessToken))
+            {
+                returnToken = ValidateToken(jwtAuthentication, accessToken);
+            }
+            return returnToken;
         }
         private string GenerateToken(JwtAuthentication jwtAuthentication, IEnumerable<Claim> allClaims)
         {
