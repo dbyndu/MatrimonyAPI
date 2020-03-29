@@ -73,7 +73,8 @@ namespace Matrimony.Service.User
                 CreatedDate = DateTime.Now,
                 Email = user.Email,
                 ProfileCreatedForId = user.ProfileCreatedForId,
-                PhoneNumber = user.PhoneNumber
+                PhoneNumber = user.PhoneNumber,
+                ContactName = user.Email + "_" + user.PhoneNumber
             };
             try
             {
@@ -100,7 +101,8 @@ namespace Matrimony.Service.User
                     LastName
                 = u.LastName == "default" ? " " : u.LastName,
                     PhoneNumber = u.PhoneNumber,
-                    CreatedDate = u.CreatedDate
+                    CreatedDate = u.CreatedDate,
+                    ContactName =u.ContactName
                 }).FirstOrDefault();
                 return new UserModelResponse(metadata, insertedUser);
             }

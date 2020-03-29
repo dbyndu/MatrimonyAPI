@@ -1,9 +1,12 @@
 ﻿using Matrimony.Helper;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,31 +24,68 @@ namespace MatrimonyAPI.Interceptor
         public async Task Invoke(HttpContext context)
         {
             //First, get the incoming request
-            var request = await FormatRequest(context.Request);
-
-            //Copy a pointer to the original response body stream
-            var originalBodyStream = context.Response.Body;
-
-            //Create a new memory stream...
-            using (var responseBody = new MemoryStream())
+            if(context.Request.Method != "GET")
             {
-                //...and use that for the temporary response body
-                context.Response.Body = responseBody;
+                using (var bodyReader = new StreamReader(context.Request.Body))
+                {
+                    var bodyAsText = bodyReader.ReadToEnd();
+                    string decodedString = AESEncryDecry.DecryptStringAES(bodyAsText);
+                    dynamic json = JsonConvert.DeserializeObject(decodedString);
+                    var obj = JsonConvert.DeserializeObject<dynamic>(decodedString);
+                    var response= JsonConvert.SerializeObject(obj);
+                    MemoryStream mStrm = new MemoryStream(Encoding.UTF8.GetBytes(response));
+                    context.Request.Body = mStrm;
+                    context.Request.ContentType = "application/json";
+                }
 
-                //Continue down the Middleware pipeline, eventually returning to this class
-                await _next(context);
+                //Copy a pointer to the original response body stream
+                var originalBodyStream = context.Response.Body;
 
-                //Format the response from the server
-                var response = await FormatResponse(context.Response);
+                //Create a new memory stream...
+                using (var responseBody = new MemoryStream())
+                {
+                    //...and use that for the temporary response body
+                    context.Response.Body = responseBody;
 
-                //TODO: Save log to chosen datastore
+                    //Continue down the Middleware pipeline, eventually returning to this class
+                    await _next(context);
 
-                //Copy the contents of the new memory stream (which contains the response) to the original stream, which is then returned to the client.
-                await responseBody.CopyToAsync(originalBodyStream);
+                    //Format the response from the server
+                    var response = await FormatResponse(context.Response);
+
+                    //TODO: Save log to chosen datastore
+
+                    //Copy the contents of the new memory stream (which contains the response) to the original stream, which is then returned to the client.
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
             }
+            else
+            {
+                //Copy a pointer to the original response body stream
+                var originalBodyStream = context.Response.Body;
+
+                //Create a new memory stream...
+                using (var responseBody = new MemoryStream())
+                {
+                    //...and use that for the temporary response body
+                    context.Response.Body = responseBody;
+
+                    //Continue down the Middleware pipeline, eventually returning to this class
+                    await _next(context);
+
+                    //Format the response from the server
+                    var response = await FormatResponse(context.Response);
+
+                    //TODO: Save log to chosen datastore
+
+                    //Copy the contents of the new memory stream (which contains the response) to the original stream, which is then returned to the client.
+                    await responseBody.CopyToAsync(originalBodyStream);
+                }
+            }
+            
         }
 
-        private async Task<string> FormatRequest(HttpRequest request)
+        private string FormatRequest(HttpRequest request)
         {
             var body = request.Body;
 
@@ -56,10 +96,11 @@ namespace MatrimonyAPI.Interceptor
             var buffer = new byte[Convert.ToInt32(request.ContentLength)];
             string bodyMessage = new StreamReader(request.Body).ReadToEnd();
             string decodedString = AESEncryDecry.DecryptStringAES(bodyMessage);
+            dynamic json = JsonConvert.DeserializeObject(decodedString);
             request.ContentType = "application/json";
             //request.Body = decodedString;
             //...Then we copy the entire request stream into the new buffer.
-            await request.Body.ReadAsync(buffer, 0, buffer.Length);
+            request.Body.ReadAsync(buffer, 0, buffer.Length);
 
             //We convert the byte[] into a string using UTF8 encoding...
             var bodyAsText = Encoding.UTF8.GetString(buffer);

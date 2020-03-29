@@ -24,6 +24,7 @@ using Microsoft.IdentityModel.Tokens;
 using MatrimonyAPI.Interceptor;
 using AutoMapper;
 using MatrimonyAPI.Helper;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using MatrimonyAPI.Handler;
 
 namespace MatrimonyAPI
@@ -88,6 +89,16 @@ namespace MatrimonyAPI
             });
             IMapper mapper = mappingConfig.CreateMapper();
             services.AddSingleton(mapper);
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
+            // If using IIS:
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -101,7 +112,8 @@ namespace MatrimonyAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            //app.UseMiddleware<HttpPipelineInterceptor>();
+            app.UseCors("AllowAll");
+            app.UseMiddleware<HttpPipelineInterceptor>();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseMvc();
