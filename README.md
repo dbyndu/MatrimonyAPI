@@ -9,3 +9,5 @@ Install-Package Microsoft.EntityFrameworkCore.SqlServer -Version 3.0.0-preview8.
 ==>Run the following scaffold command in Package Manager Console to reverse engineer the database to create database context and entity POCO classes from tables.
 
 Scaffold-DbContext "Server=LAPTOP-DVGRKESI\SQL2017;Database=Matrimony;Integrated Security=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Entities -force
+
+Install-Package Microsoft.AspNetCore.Http -Version 2.2.2

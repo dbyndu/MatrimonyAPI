@@ -14,6 +14,7 @@ namespace Matrimony.Data.Entities
             UserLifeStyle = new HashSet<UserLifeStyle>();
             UserLocation = new HashSet<UserLocation>();
             UserPreferenceSetting = new HashSet<UserPreferenceSetting>();
+            UserImage = new HashSet<UserImage>();
         }
 
         public int Id { get; set; }
@@ -35,5 +36,6 @@ namespace Matrimony.Data.Entities
         public virtual ICollection<UserLifeStyle> UserLifeStyle { get; set; }
         public virtual ICollection<UserLocation> UserLocation { get; set; }
         public virtual ICollection<UserPreferenceSetting> UserPreferenceSetting { get; set; }
+        public virtual ICollection<UserImage> UserImage { get; set; }
     }
 }

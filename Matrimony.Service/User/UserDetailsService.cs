@@ -132,6 +132,11 @@ namespace Matrimony.Service.User
                         outPutResult = InsertUpdateUserFamilyInfo(userFamily);
                         userId = userFamily.UserId;
                         break;
+                    case "UserImage":
+                        UserImage userImage = (UserImage)obj;
+                        outPutResult = InsertUpdateUserImage(userImage);
+                        userId = userImage.UserId;
+                        break;
                     case "UserEducationModel":
                         List<UserEducationModel> userEducations = (List<UserEducationModel>)obj;
                         outPutResult = InsertUpdateUserEducation(userEducations);
@@ -181,6 +186,64 @@ namespace Matrimony.Service.User
             }
         }
 
+        public Response GetImages(int userId, int width, int height)
+        {
+            var errors = new List<Error>();
+            IQueryable<UserImage> IQueryImages = null;
+            List<UserImage> lstImages = new List<UserImage>();
+            try
+            {
+                IQueryImages = _context.UserImage.Where(i=> i.UserId == userId).Select(u => new UserImage 
+                { 
+                    Id = u.Id,
+                    UserId = u.UserId,
+                    ImageString = "data:" + u.ContentType + ";base64," + Convert.ToBase64String((byte[])u.Image) // ImageResizer((byte[])u.Image, width, height)
+                });
+                lstImages = IQueryImages.ToList();
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (lstImages == null || Convert.ToInt32(lstImages.Count) == 0)
+            {
+                errors.Add(new Error("Err102", "No iage found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Images Of User");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new UserImageListResponse(metadata, lstImages);
+        }
+        private int InsertUpdateUserImage(UserImage userImg)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
+            {
+                Id = userImg.Id,
+                UserId = userImg.UserId,
+                Image = userImg.Image,
+                ContentType = userImg.ContentType
+            };
+            try
+            {
+                if (userImg.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserImage>(dbUserImage);
+                }
+                else
+                {
+                    _context.UserImage.Add(dbUserImage);
+                }
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
+        }
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)
         {
             int outPutResult = 0;
@@ -404,6 +467,15 @@ namespace Matrimony.Service.User
                 throw ex;
             }
             return outPutResult;
+        }
+
+        private string ImageResizer(byte[] byteArray, int width, int height)
+        {
+            string resizedImageString = string.Empty;
+
+
+
+            return resizedImageString;
         }
 
     }
