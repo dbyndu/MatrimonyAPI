@@ -170,10 +170,10 @@ namespace MatrimonyAPI.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [Route("register/images/userID/{userId}/width/{width}/height/{height}")]
-        public ActionResult GetImages(int userId, int width, int height)
+        [Route("register/images/userID/{userId}/width/{width}/height/{height}/mode/{mode}")]
+        public ActionResult GetImages(int userId, int width, int height, string mode)
         {
-            var response = _userService.GetImages(userId, width, height) as UserImageListResponse;
+            var response = _userService.GetImages(userId, width, height, mode) as UserImageListResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         //private string BuildToken(string user, string email, string role)

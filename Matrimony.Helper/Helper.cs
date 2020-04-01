@@ -14,22 +14,24 @@ namespace Matrimony.Helper
         public static int CalculateAge(DateTime dateOfBirth)
         {
             int age = 0;
-            age = DateTime.Now.Year - dateOfBirth.Year;
-            if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
-                age = age - 1;
-
+            if (dateOfBirth == DateTime.MinValue)
+            {                
+                age = DateTime.Now.Year - dateOfBirth.Year;
+                if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
+                    age = age - 1;
+            }
             return age;
         }
 
         public static Image ByteArrayToImage(byte[] buffer)
         {
             if (buffer == null) return null;
-            MemoryStream memStream = new MemoryStream();
-            memStream.Write(buffer, 0, buffer.Length);
-            return Image.Load(memStream);
+            //MemoryStream memStream = new MemoryStream();
+            //memStream.Write(buffer, 0, buffer.Length);
+            return Image.Load(buffer);
         }
 
-        public static string ResizeImage(byte[] byteArray, int width, int height)
+        public static string ResizeImage(byte[] byteArray, int width, int height, string mode)
         {
             string resizedImageString = string.Empty;
             if (byteArray != null)
@@ -38,13 +40,20 @@ namespace Matrimony.Helper
                 {
 
                     Image img = ByteArrayToImage(byteArray);
+                    //img.Mutate(x => x
+                    //.Resize(new ResizeOptions
+                    //{
+                    //    Size = new Size(width, height),
+                    //    Mode = ResizeMode.Max
+                    //})
+                    //.BoxBlur()); 
                     img.Mutate(x => x
                     .Resize(new ResizeOptions
                     {
                         Size = new Size(width, height),
-                        Mode = ResizeMode.Max
+                        Mode = ResizeMode.Crop
                     })
-                    .Grayscale());
+                    );
                     using (MemoryStream ms = new MemoryStream())
                     {
                         img.Save(ms, new JpegEncoder());
