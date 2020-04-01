@@ -13,7 +13,7 @@ namespace Matrimony.Service.Contracts
 
         Response CreateNewUser(UserShortRegister user);
         Response Register(Object obj, string type);
-        Response GetImages(int userId, int width, int height);
+        Response GetImages(int userId, int width, int height, string mode);
         Response GestUserList();
     }
 }

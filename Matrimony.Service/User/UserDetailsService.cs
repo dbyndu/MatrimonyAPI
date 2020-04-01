@@ -118,32 +118,34 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             var lstUsers = (from u in _context.User
-                            join ubi in _context.UserBasicInfo on u.Id equals ubi.UserId into user_basic
+                            join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                             from ub in user_basic.DefaultIfEmpty()
-                            join ul in _context.UserLocation on u.Id equals ul.UserId into user_loc
-                            from uloc in user_loc.DefaultIfEmpty()
-                            join ue in _context.UserEducation on u.Id equals ue.Id into user_edu
-                            from uedu in user_edu.DefaultIfEmpty()
-                            join uc in _context.UserCareer on u.Id equals uc.Id into user_career
-                            from ucar in user_career.DefaultIfEmpty()
-                            join mvfb in _context.MasterFieldValue on ub.MotherTongueId equals mvfb.Id into basic_fieldValue
-                            from fvb in basic_fieldValue.DefaultIfEmpty()
-                            join mvfel in _context.MasterFieldValue on uedu.EducationLevelId equals mvfel.Id into edu_lev_fieldValue
-                            from fvel in edu_lev_fieldValue.DefaultIfEmpty()
-                            join mvfeField in _context.MasterFieldValue on uedu.EducationFieldId equals mvfeField.Id into edu_field_fieldValue
-                            from fvField in edu_field_fieldValue.DefaultIfEmpty()
-                            join mvfc in _context.MasterFieldValue on ucar.WorkDesignationId equals mvfc.Id into car_fieldValue
-                            from fvc in car_fieldValue.DefaultIfEmpty()
+                            //join ul in _context.UserLocation on u.Id equals ul.UserId into user_loc
+                            //from uloc in user_loc.DefaultIfEmpty()
+                            //join ue in _context.UserEducation on u.Id equals ue.Id into user_edu
+                            //from uedu in user_edu.DefaultIfEmpty()
+                            //join uc in _context.UserCareer on u.Id equals uc.Id into user_career
+                            //from ucar in user_career.DefaultIfEmpty()
+                            join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
+                            from l in language.DefaultIfEmpty()
+                            join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
+                            from he in highstEducation.DefaultIfEmpty()
+                            join mEduField in _context.MasterFieldValue on ub.HighestSpecializationId equals mEduField.Id into highstEducationField
+                            from hef in highstEducationField.DefaultIfEmpty()
+                            join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
+                            from w in workDesignation.DefaultIfEmpty()
+                            join mCity in _context.MasterFieldValue on ub.CityId equals mCity.Id into city
+                            from c in city.DefaultIfEmpty()
                             select new
                             {
                                 Id = u.Id,
                                 Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),
-                                Age = GenericHelper.CalculateAge(ub.Dob),
+                                Age = GenericHelper.CalculateAge(Convert.ToDateTime(ub.Dob)),
                                 Height = ub.Height,
-                                Education = string.Concat(fvel.Value ?? string.Empty, ", ", fvField.Value ?? string.Empty),
-                                City = uloc.City ?? string.Empty,
-                                Profession = fvc.Value ?? string.Empty,
-                                Language = fvb.Value ?? string.Empty,
+                                Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
+                                City = c.Value ?? string.Empty,
+                                Profession = w.Value ?? string.Empty,
+                                Language = l.Value ?? string.Empty,
                                 Url = ""
                             }).ToList();
             if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
@@ -234,7 +236,7 @@ namespace Matrimony.Service.User
             }
         }
 
-        public Response GetImages(int userId, int width, int height)
+        public Response GetImages(int userId, int width, int height, string mode)
         {
             var errors = new List<Error>();
             IQueryable<UserImage> IQueryImages = null;
@@ -245,7 +247,7 @@ namespace Matrimony.Service.User
                 {
                     Id = u.Id,
                     UserId = u.UserId,
-                    ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0) // ImageResizer((byte[])u.Image, width, height)
+                    ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, width, height, mode) // ImageResizer((byte[])u.Image, width, height)
                 });
                 lstImages = IQueryImages.ToList();
             }
@@ -295,7 +297,7 @@ namespace Matrimony.Service.User
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.UserBasicInfo dbUserBasic = new Data.Entities.UserBasicInfo()
+            Matrimony.Data.Entities.UserInfo dbUserBasic = new Data.Entities.UserInfo()
             {
                 Id = userBasic.Id,
                 UserId = userBasic.UserId,
@@ -307,7 +309,7 @@ namespace Matrimony.Service.User
                 MaritalStatusId = userBasic.MaritalStatusId,
                 Height = userBasic.Height,
                 Weight = userBasic.Weight,
-                HealthInfoId = userBasic.HealthInfoId,
+                BodyTypeId = userBasic.HealthInfoId,
                 IsDisability = userBasic.IsDisability,
                 ReligionId = userBasic.ReligionId,
                 MotherTongueId = userBasic.MotherTongueId,
@@ -318,11 +320,11 @@ namespace Matrimony.Service.User
             {
                 if (userBasic.Id > 0)
                 {
-                    _context.Update<Matrimony.Data.Entities.UserBasicInfo>(dbUserBasic);
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserBasic);
                 }
                 else
                 {
-                    _context.UserBasicInfo.Add(dbUserBasic);
+                    _context.UserInfo.Add(dbUserBasic);
                 }
                 outPutResult = _context.SaveChanges();
             }
@@ -336,7 +338,7 @@ namespace Matrimony.Service.User
         private int InsertUpdateUserFamilyInfo(UserFamilyInformationModel userFamily)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.UserFamilyInfo dbUserFamilyInfo = _mapper.Map<Matrimony.Data.Entities.UserFamilyInfo>(userFamily);
+            Matrimony.Data.Entities.UserInfo dbUserFamilyInfo = _mapper.Map<Matrimony.Data.Entities.UserInfo>(userFamily);
             //Matrimony.Data.Entities.UserFamilyInfo dbUserFamilyInfo = new Data.Entities.UserFamilyInfo()
             //{
             //    Id = userBasic.Id,
@@ -359,11 +361,11 @@ namespace Matrimony.Service.User
             {
                 if (dbUserFamilyInfo.Id > 0)
                 {
-                    _context.Update<Matrimony.Data.Entities.UserFamilyInfo>(dbUserFamilyInfo);
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserFamilyInfo);
                 }
                 else
                 {
-                    _context.UserFamilyInfo.Add(dbUserFamilyInfo);
+                    _context.UserInfo.Add(dbUserFamilyInfo);
                 }
                 outPutResult = _context.SaveChanges();
             }
@@ -379,22 +381,22 @@ namespace Matrimony.Service.User
             try
             {
                 foreach (UserEducationModel userEducation in UserEducations) {
-                    Matrimony.Data.Entities.UserEducation dbUserEdu = new Data.Entities.UserEducation()
+                    Matrimony.Data.Entities.UserInfo dbUserEdu = new Data.Entities.UserInfo()
                     {
                         Id = userEducation.Id,
                         UserId = userEducation.UserId,
-                        EducationLevelId = userEducation.EducationLevelId,
-                        EducationFieldId = userEducation.EducationFieldId,
+                        HighestQualificationId = userEducation.EducationLevelId,
+                        HighestSpecializationId = userEducation.EducationFieldId,
                         Institution = userEducation.Institution,
                         University = userEducation.University
                     };
                     if (userEducation.Id > 0)
                     {
-                        _context.Update<Matrimony.Data.Entities.UserEducation>(dbUserEdu);
+                        _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserEdu);
                     }
                     else 
                     {
-                        _context.UserEducation.Add(dbUserEdu);
+                        _context.UserInfo.Add(dbUserEdu);
                     }                    
                 }
                 outPutResult = _context.SaveChanges();
@@ -488,7 +490,7 @@ namespace Matrimony.Service.User
             {
                 foreach (UserCareerModel userCareer in userCareers)
                 {
-                    Matrimony.Data.Entities.UserCareer dbUserCareer = new Data.Entities.UserCareer()
+                    Matrimony.Data.Entities.UserInfo dbUserCareer = new Data.Entities.UserInfo()
                     {
                         Id = userCareer.Id,
                         UserId = userCareer.UserId,
@@ -501,11 +503,11 @@ namespace Matrimony.Service.User
                     };
                     if (userCareer.Id > 0)
                     {
-                        _context.Update<Matrimony.Data.Entities.UserCareer>(dbUserCareer);
+                        _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserCareer);
                     }
                     else
                     {
-                        _context.UserCareer.Add(dbUserCareer);
+                        _context.UserInfo.Add(dbUserCareer);
                     }
                 }
                 outPutResult = _context.SaveChanges();
