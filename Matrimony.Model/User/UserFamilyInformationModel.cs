@@ -11,8 +11,6 @@ namespace Matrimony.Model.User
         public int? FatherStatusId { get; set; }
         public int? MotherStatusId { get; set; }
         public string NativePlace { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime? ModifiedDate { get; set; }
         public string FamilyLocation { get; set; }
         public int? MarriedSiblingMale { get; set; }
         public int? NotMarriedSiblingMale { get; set; }
@@ -20,6 +18,6 @@ namespace Matrimony.Model.User
         public int? NotMarriedSiblingFemale { get; set; }
         public int? FamilyTypeId { get; set; }
         public int? FamilyValuesId { get; set; }
-        public int? FamilyAffluenceId { get; set; }
+        public int? FamilyIncomeId { get; set; }
     }
 }
