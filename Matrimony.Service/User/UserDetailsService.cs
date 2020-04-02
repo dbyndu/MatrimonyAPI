@@ -70,8 +70,6 @@ namespace Matrimony.Service.User
             Matrimony.Data.Entities.User dbUser = new Data.Entities.User()
             {
                 Password = user.Password,
-                FirstName = "default",
-                LastName = "default",
                 CreatedDate = DateTime.Now,
                 Email = user.Email,
                 ProfileCreatedForId = user.ProfileCreatedForId,
@@ -187,15 +185,20 @@ namespace Matrimony.Service.User
                         outPutResult = InsertUpdateUserImage(userImage);
                         userId = userImage.UserId;
                         break;
-                    case "UserEducationModel":
-                        List<UserEducationModel> userEducations = (List<UserEducationModel>)obj;
-                        outPutResult = InsertUpdateUserEducation(userEducations);
-                        userId = userEducations[0].UserId;
+                    case "UserEducationCareerModel":
+                        UserEducationCareerModel userEducationsCareer = (UserEducationCareerModel)obj;
+                        outPutResult = InsertUpdateUserEducationCareer(userEducationsCareer);
+                        userId = userEducationsCareer.UserId;
                         break;
-                    case "UserCareerModel":
-                        List<UserCareerModel> userCarrer = (List<UserCareerModel>)obj;
-                        outPutResult = InsertUpdateUserCareer(userCarrer);
-                        userId = userCarrer[0].UserId;
+                    case "UserReligionCasteModel":
+                        UserReligionCasteModel userReligion = (UserReligionCasteModel)obj;
+                        outPutResult = InsertUpdateUserReligion(userReligion);
+                        userId = userReligion.UserId;
+                        break;
+                    case "UserAboutModel":
+                        UserAboutModel userAbout = (UserAboutModel)obj;
+                        outPutResult = InsertUpdateUserAboutInfo(userAbout);
+                        userId = userAbout.UserId;
                         break;
                     default:
                         // code block
@@ -297,34 +300,46 @@ namespace Matrimony.Service.User
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.UserInfo dbUserBasic = new Data.Entities.UserInfo()
+            Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(userBasic.UserId)).FirstOrDefault();
+            if (uInfo == null)
             {
-                Id = userBasic.Id,
-                UserId = userBasic.UserId,
-                GenderId = userBasic.GenderId,
-                Dob = userBasic.Dob,
-                About = userBasic.About,
-                BloodGroupId = userBasic.BloodGroupId,
-                ComunityId = userBasic.ComunityId,
-                MaritalStatusId = userBasic.MaritalStatusId,
-                Height = userBasic.Height,
-                Weight = userBasic.Weight,
-                BodyTypeId = userBasic.HealthInfoId,
-                IsDisability = userBasic.IsDisability,
-                ReligionId = userBasic.ReligionId,
-                MotherTongueId = userBasic.MotherTongueId,
-                Gothra = userBasic.Gothra,
-                IsIgnorCast = userBasic.IsIgnorCast
-            };
+                uInfo = new Data.Entities.UserInfo();
+                uInfo.Id = userBasic.Id;
+            }            
+            uInfo.UserId = userBasic.UserId;
+            uInfo.GenderId = userBasic.GenderId;
+            uInfo.Dob = userBasic.Dob;
+            //uInfo.About = userBasic.About;
+            uInfo.BloodGroupId = userBasic.BloodGroupId;
+            uInfo.ComunityId = userBasic.ComunityId;
+            uInfo.MaritalStatusId = userBasic.MaritalStatusId;
+            uInfo.Height = userBasic.Height;
+            uInfo.Weight = userBasic.Weight;
+            uInfo.BodyTypeId = userBasic.BodyTypeId;
+            uInfo.IsDisability = userBasic.IsDisability;
+            //uInfo.ReligionId = userBasic.ReligionId;
+            uInfo.MotherTongueId = userBasic.MotherTongueId;
+            //uInfo.Gothra = userBasic.Gothra;
+            //uInfo.IsIgnorCast = userBasic.IsIgnorCast;
+            uInfo.ComplexionId = userBasic.ComplexionId;
+            //uInfo.Caste = userBasic.Caste;
+            uInfo.CountryId = userBasic.CountryId;
+            uInfo.CitizenshipId = userBasic.CitizenshipId;
+            uInfo.StateId = userBasic.StateId;
+            uInfo.CityId = userBasic.CityId;
+            uInfo.GrewUpIn = userBasic.GrewUpIn;
+            uInfo.Origin = userBasic.Origin;
+            uInfo.Pin = userBasic.Pin;
+
             try
             {
-                if (userBasic.Id > 0)
+                if (uInfo.Id > 0)
                 {
-                    _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserBasic);
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(uInfo);
                 }
                 else
                 {
-                    _context.UserInfo.Add(dbUserBasic);
+                    _context.UserInfo.Add(uInfo);
                 }
                 outPutResult = _context.SaveChanges();
             }
@@ -338,34 +353,33 @@ namespace Matrimony.Service.User
         private int InsertUpdateUserFamilyInfo(UserFamilyInformationModel userFamily)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.UserInfo dbUserFamilyInfo = _mapper.Map<Matrimony.Data.Entities.UserInfo>(userFamily);
-            //Matrimony.Data.Entities.UserFamilyInfo dbUserFamilyInfo = new Data.Entities.UserFamilyInfo()
-            //{
-            //    Id = userBasic.Id,
-            //    UserId = userBasic.UserId,
-            //    FatherStatusId = userBasic.GenderId,
-            //    MotherStatusId = userBasic.Dob,
-            //    NativePlace = userBasic.About,
-            //    CreatedDate = userBasic.BloodGroupId,
-            //    ModifiedDate = userBasic.ComunityId,
-            //    FamilyLocation = userBasic.MaritalStatusId,
-            //    MarriedSiblingMale = userBasic.Height,
-            //    NotMarriedSiblingMale = userBasic.Weight,
-            //    MarriedSiblingFemale = userBasic.HealthInfoId,
-            //    NotMarriedSiblingFemale = userBasic.IsDisability,
-            //    FamilyTypeId = userBasic.ReligionId,
-            //    FamilyValuesId = userBasic.MotherTongueId,
-            //    FamilyAffluenceId = userBasic.Gothra
-            //};
+            Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(userFamily.UserId)).FirstOrDefault();
+            if (uInfo == null)
+            {
+                uInfo = new Data.Entities.UserInfo();
+                uInfo.Id = userFamily.Id;
+            }
+            uInfo.UserId = userFamily.UserId;
+            uInfo.FatherStatusId = userFamily.FatherStatusId;
+            uInfo.MotherStatusId = userFamily.MotherStatusId;
+            uInfo.NativePlace = userFamily.NativePlace;
+            uInfo.FamilyLocation = userFamily.FamilyLocation;
+            uInfo.MarriedSiblingMale = userFamily.MarriedSiblingMale;
+            uInfo.NotMarriedSiblingMale = userFamily.NotMarriedSiblingMale;
+            uInfo.MarriedSiblingFemale = userFamily.MarriedSiblingFemale;
+            uInfo.NotMarriedSiblingFemale = userFamily.NotMarriedSiblingFemale;
+            uInfo.FamilyTypeId = userFamily.FamilyTypeId;
+            uInfo.FamilyValuesId = userFamily.FamilyValuesId;
+            uInfo.FamilyIncomeId = userFamily.FamilyIncomeId;
             try
             {
-                if (dbUserFamilyInfo.Id > 0)
+                if (uInfo.Id > 0)
                 {
-                    _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserFamilyInfo);
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(uInfo);
                 }
                 else
                 {
-                    _context.UserInfo.Add(dbUserFamilyInfo);
+                    _context.UserInfo.Add(uInfo);
                 }
                 outPutResult = _context.SaveChanges();
             }
@@ -375,30 +389,39 @@ namespace Matrimony.Service.User
             }
             return outPutResult;
         }
-        private int InsertUpdateUserEducation(List<UserEducationModel> UserEducations)
+        private int InsertUpdateUserEducationCareer(UserEducationCareerModel user_edu_car)
         {
             int outPutResult = 0;
             try
             {
-                foreach (UserEducationModel userEducation in UserEducations) {
-                    Matrimony.Data.Entities.UserInfo dbUserEdu = new Data.Entities.UserInfo()
-                    {
-                        Id = userEducation.Id,
-                        UserId = userEducation.UserId,
-                        HighestQualificationId = userEducation.EducationLevelId,
-                        HighestSpecializationId = userEducation.EducationFieldId,
-                        Institution = userEducation.Institution,
-                        University = userEducation.University
-                    };
-                    if (userEducation.Id > 0)
-                    {
-                        _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserEdu);
-                    }
-                    else 
-                    {
-                        _context.UserInfo.Add(dbUserEdu);
-                    }                    
+                Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(user_edu_car.UserId)).FirstOrDefault();
+                if (uInfo == null)
+                {
+                    uInfo = new Data.Entities.UserInfo();
+                    uInfo.Id = user_edu_car.Id;
                 }
+                uInfo.UserId = user_edu_car.UserId;
+                uInfo.HighestQualificationId = user_edu_car.HighestQualificationId;
+                uInfo.HighestSpecializationId = user_edu_car.HighestSpecializationId;
+                uInfo.SecondaryQualificationId = user_edu_car.SecondaryQualificationId;
+                uInfo.SecondarySpecializationId = user_edu_car.SecondarySpecializationId;
+                uInfo.Institution = user_edu_car.Institution;
+                uInfo.University = user_edu_car.University;
+                uInfo.WorkingSectorId = user_edu_car.WorkingSectorId;
+                uInfo.WorkDesignationId = user_edu_car.WorkDesignationId;
+                uInfo.EmployerId = user_edu_car.EmployerId;
+                uInfo.AnualIncomeId = user_edu_car.AnualIncomeId;
+                uInfo.IsDisplayIncome = user_edu_car.IsDisplayIncome;
+
+                if (uInfo.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(uInfo);
+                }
+                else
+                {
+                    _context.UserInfo.Add(uInfo);
+                }
+
                 outPutResult = _context.SaveChanges();
             }
             catch (Exception ex)
@@ -483,33 +506,32 @@ namespace Matrimony.Service.User
             return outPutResult;
         }
 
-        private int InsertUpdateUserCareer(List<UserCareerModel> userCareers)
+        private int InsertUpdateUserReligion(UserReligionCasteModel user_rel)
         {
             int outPutResult = 0;
+            Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(user_rel.UserId)).FirstOrDefault();
+            if (uInfo == null)
+            {
+                uInfo = new Data.Entities.UserInfo();
+                uInfo.Id = user_rel.Id;
+            }
             try
             {
-                foreach (UserCareerModel userCareer in userCareers)
-                {
-                    Matrimony.Data.Entities.UserInfo dbUserCareer = new Data.Entities.UserInfo()
-                    {
-                        Id = userCareer.Id,
-                        UserId = userCareer.UserId,
-                        WorkingSectorId = userCareer.WorkingSectorId,
-                        WorkDesignationId = userCareer.WorkDesignationId,
-                        EmployerId = userCareer.EmployerId,
-                        AnualIncomeId = userCareer.AnualIncomeId,
-                        IsDisplayIncome = userCareer.IsDisplayIncome
+                uInfo.UserId = user_rel.UserId;
+                uInfo.ReligionId = user_rel.ReligionId;
+                uInfo.Gothra = user_rel.Gothra;
+                uInfo.IsIgnorCast = user_rel.IsIgnorCast;
+                uInfo.Caste = user_rel.Caste;
 
-                    };
-                    if (userCareer.Id > 0)
-                    {
-                        _context.Update<Matrimony.Data.Entities.UserInfo>(dbUserCareer);
-                    }
-                    else
-                    {
-                        _context.UserInfo.Add(dbUserCareer);
-                    }
+                if (uInfo.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(uInfo);
                 }
+                else
+                {
+                    _context.UserInfo.Add(uInfo);
+                }
+
                 outPutResult = _context.SaveChanges();
             }
             catch (Exception ex)
@@ -518,7 +540,37 @@ namespace Matrimony.Service.User
             }
             return outPutResult;
         }
+        private int InsertUpdateUserAboutInfo(UserAboutModel user_about)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(user_about.UserId)).FirstOrDefault();
+            if (uInfo == null)
+            {
+                uInfo = new Data.Entities.UserInfo();
+                uInfo.Id = user_about.Id;
+            }
+            try
+            {
+                uInfo.UserId = user_about.UserId;
+                uInfo.About = user_about.About;
 
+                if (uInfo.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(uInfo);
+                }
+                else
+                {
+                    _context.UserInfo.Add(uInfo);
+                }
+
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
+        }
 
     }
 }

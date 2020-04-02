@@ -8,19 +8,28 @@ namespace Matrimony.Model.User
     {
         public int Id { get; set; }
         public int UserId { get; set; }
-        public int GenderId { get; set; }
-        public DateTime Dob { get; set; }
+        public int? GenderId { get; set; }
+        public DateTime? Dob { get; set; }
         public int? MaritalStatusId { get; set; }
         public int? Height { get; set; }
         public int? Weight { get; set; }
-        public int? HealthInfoId { get; set; }
+        public int? BodyTypeId { get; set; }
+        public int? ComplexionId { get; set; }
         public bool? IsDisability { get; set; }
         public int? BloodGroupId { get; set; }
-        public int? ReligionId { get; set; }
+        //public int? ReligionId { get; set; }
+        //public string Caste { get; set; }
         public int? MotherTongueId { get; set; }
         public int? ComunityId { get; set; }
-        public string Gothra { get; set; }
-        public bool? IsIgnorCast { get; set; }
-        public string About { get; set; }
+        //public string Gothra { get; set; }
+        //public bool? IsIgnorCast { get; set; }
+        public int? CountryId { get; set; }
+        public int? CitizenshipId { get; set; }
+        public int? StateId { get; set; }
+        public int? CityId { get; set; }
+        public string GrewUpIn { get; set; }
+        public string Origin { get; set; }
+        public long? Pin { get; set; }
+        //public string About { get; set; }
     }
 }

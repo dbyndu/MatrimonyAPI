@@ -122,19 +122,28 @@ namespace MatrimonyAPI.Controllers
         [HttpPost]
         //Needs to be changed to Authorize
         [AllowAnonymous]
-        [Route("register/user-education")]
-        public ActionResult UpdateUserEducation(List<UserEducationModel> userEducations)
+        [Route("register/user-education-carrer")]
+        public ActionResult UpdateUserEducation(UserEducationCareerModel userEducationCareer)
         {
-            var response = _userService.Register(userEducations, typeof(UserEducationModel).Name) as UserModelResponse;
+            var response = _userService.Register(userEducationCareer, typeof(UserEducationCareerModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
         //Needs to be changed to Authorize
         [AllowAnonymous]
-        [Route("register/user-career")]
-        public ActionResult UpdateUserCareer(List<UserCareerModel> userCareer)
+        [Route("register/user-religion")]
+        public ActionResult UpdateUserCareer(UserReligionCasteModel userReligion)
         {
-            var response = _userService.Register(userCareer, typeof(UserCareerModel).Name) as UserModelResponse;
+            var response = _userService.Register(userReligion, typeof(UserReligionCasteModel).Name) as UserModelResponse;
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpPost]
+        //Needs to be changed to Authorize
+        [AllowAnonymous]
+        [Route("register/user-about")]
+        public ActionResult UpdateUserCareer(UserAboutModel userAbout)
+        {
+            var response = _userService.Register(userAbout, typeof(UserAboutModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
