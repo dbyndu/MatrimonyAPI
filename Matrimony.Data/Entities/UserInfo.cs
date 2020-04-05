@@ -57,10 +57,10 @@ namespace Matrimony.Data.Entities
         public virtual MasterFieldValue BloodGroup { get; set; }
         public virtual MasterFieldValue BodyType { get; set; }
         public virtual MasterFieldValue Citizenship { get; set; }
-        public virtual MasterFieldValue City { get; set; }
+        public virtual Cities City { get; set; }
         public virtual MasterFieldValue Complexion { get; set; }
         public virtual MasterFieldValue Comunity { get; set; }
-        public virtual MasterFieldValue Country { get; set; }
+        public virtual Countries Country { get; set; }
         public virtual MasterFieldValue Employer { get; set; }
         public virtual MasterFieldValue FamilyIncome { get; set; }
         public virtual MasterFieldValue FamilyType { get; set; }
@@ -75,7 +75,7 @@ namespace Matrimony.Data.Entities
         public virtual MasterFieldValue Religion { get; set; }
         public virtual MasterFieldValue SecondaryQualification { get; set; }
         public virtual MasterFieldValue SecondarySpecialization { get; set; }
-        public virtual MasterFieldValue State { get; set; }
+        public virtual States State { get; set; }
         public virtual User User { get; set; }
         public virtual MasterFieldValue WorkDesignation { get; set; }
         public virtual MasterFieldValue WorkingSector { get; set; }

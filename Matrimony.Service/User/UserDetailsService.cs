@@ -118,12 +118,6 @@ namespace Matrimony.Service.User
             var lstUsers = (from u in _context.User
                             join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                             from ub in user_basic.DefaultIfEmpty()
-                            //join ul in _context.UserLocation on u.Id equals ul.UserId into user_loc
-                            //from uloc in user_loc.DefaultIfEmpty()
-                            //join ue in _context.UserEducation on u.Id equals ue.Id into user_edu
-                            //from uedu in user_edu.DefaultIfEmpty()
-                            //join uc in _context.UserCareer on u.Id equals uc.Id into user_career
-                            //from ucar in user_career.DefaultIfEmpty()
                             join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
                             from l in language.DefaultIfEmpty()
                             join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
@@ -132,7 +126,7 @@ namespace Matrimony.Service.User
                             from hef in highstEducationField.DefaultIfEmpty()
                             join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
                             from w in workDesignation.DefaultIfEmpty()
-                            join mCity in _context.MasterFieldValue on ub.CityId equals mCity.Id into city
+                            join ct in _context.Cities on ub.CityId equals ct.Id into city
                             from c in city.DefaultIfEmpty()
                             select new
                             {
@@ -141,7 +135,7 @@ namespace Matrimony.Service.User
                                 Age = GenericHelper.CalculateAge(Convert.ToDateTime(ub.Dob)),
                                 Height = ub.Height,
                                 Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
-                                City = c.Value ?? string.Empty,
+                                City = c.Name ?? string.Empty,
                                 Profession = w.Value ?? string.Empty,
                                 Language = l.Value ?? string.Empty,
                                 Url = ""

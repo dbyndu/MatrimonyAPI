@@ -11,10 +11,8 @@ namespace Matrimony.Data.Entities
             UserInfoBloodGroup = new HashSet<UserInfo>();
             UserInfoBodyType = new HashSet<UserInfo>();
             UserInfoCitizenship = new HashSet<UserInfo>();
-            UserInfoCity = new HashSet<UserInfo>();
             UserInfoComplexion = new HashSet<UserInfo>();
             UserInfoComunity = new HashSet<UserInfo>();
-            UserInfoCountry = new HashSet<UserInfo>();
             UserInfoEmployer = new HashSet<UserInfo>();
             UserInfoFamilyIncome = new HashSet<UserInfo>();
             UserInfoFamilyType = new HashSet<UserInfo>();
@@ -29,7 +27,6 @@ namespace Matrimony.Data.Entities
             UserInfoReligion = new HashSet<UserInfo>();
             UserInfoSecondaryQualification = new HashSet<UserInfo>();
             UserInfoSecondarySpecialization = new HashSet<UserInfo>();
-            UserInfoState = new HashSet<UserInfo>();
             UserInfoWorkDesignation = new HashSet<UserInfo>();
             UserInfoWorkingSector = new HashSet<UserInfo>();
             UserLifeStyleChildrenChoice = new HashSet<UserLifeStyle>();
@@ -50,10 +47,8 @@ namespace Matrimony.Data.Entities
         public virtual ICollection<UserInfo> UserInfoBloodGroup { get; set; }
         public virtual ICollection<UserInfo> UserInfoBodyType { get; set; }
         public virtual ICollection<UserInfo> UserInfoCitizenship { get; set; }
-        public virtual ICollection<UserInfo> UserInfoCity { get; set; }
         public virtual ICollection<UserInfo> UserInfoComplexion { get; set; }
         public virtual ICollection<UserInfo> UserInfoComunity { get; set; }
-        public virtual ICollection<UserInfo> UserInfoCountry { get; set; }
         public virtual ICollection<UserInfo> UserInfoEmployer { get; set; }
         public virtual ICollection<UserInfo> UserInfoFamilyIncome { get; set; }
         public virtual ICollection<UserInfo> UserInfoFamilyType { get; set; }
@@ -68,7 +63,6 @@ namespace Matrimony.Data.Entities
         public virtual ICollection<UserInfo> UserInfoReligion { get; set; }
         public virtual ICollection<UserInfo> UserInfoSecondaryQualification { get; set; }
         public virtual ICollection<UserInfo> UserInfoSecondarySpecialization { get; set; }
-        public virtual ICollection<UserInfo> UserInfoState { get; set; }
         public virtual ICollection<UserInfo> UserInfoWorkDesignation { get; set; }
         public virtual ICollection<UserInfo> UserInfoWorkingSector { get; set; }
         public virtual ICollection<UserLifeStyle> UserLifeStyleChildrenChoice { get; set; }

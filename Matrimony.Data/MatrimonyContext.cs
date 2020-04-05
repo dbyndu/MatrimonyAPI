@@ -16,9 +16,12 @@ namespace Matrimony.Data
         {
         }
 
+        public virtual DbSet<Cities> Cities { get; set; }
+        public virtual DbSet<Countries> Countries { get; set; }
         public virtual DbSet<MasterFieldValue> MasterFieldValue { get; set; }
         public virtual DbSet<MasterTableMetadata> MasterTableMetadata { get; set; }
         public virtual DbSet<PreferenceMaster> PreferenceMaster { get; set; }
+        public virtual DbSet<States> States { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserImage> UserImage { get; set; }
         public virtual DbSet<UserInfo> UserInfo { get; set; }
@@ -36,6 +39,42 @@ namespace Matrimony.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Cities>(entity =>
+            {
+                entity.HasIndex(e => new { e.StateId, e.Id })
+                    .HasName("UQ__Cities__A09B75FBE449741E")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.HasOne(d => d.State)
+                    .WithMany(p => p.Cities)
+                    .HasForeignKey(d => d.StateId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Cities_States");
+            });
+
+            modelBuilder.Entity<Countries>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(e => e.Phonecode)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Sortname)
+                    .IsRequired()
+                    .HasMaxLength(10);
+            });
+
             modelBuilder.Entity<MasterFieldValue>(entity =>
             {
                 entity.Property(e => e.Value)
@@ -74,6 +113,21 @@ namespace Matrimony.Data
                     .WithMany(p => p.PreferenceMaster)
                     .HasForeignKey(d => d.ReferenceTableId)
                     .HasConstraintName("FK_PreferenceMaster_MasterTableMetadata");
+            });
+
+            modelBuilder.Entity<States>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.HasOne(d => d.Country)
+                    .WithMany(p => p.States)
+                    .HasForeignKey(d => d.CountryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_States_Countries");
             });
 
             modelBuilder.Entity<User>(entity =>
@@ -178,9 +232,9 @@ namespace Matrimony.Data
                     .HasConstraintName("FK_UserInfo_MasterFieldValueCitizenship");
 
                 entity.HasOne(d => d.City)
-                    .WithMany(p => p.UserInfoCity)
+                    .WithMany(p => p.UserInfo)
                     .HasForeignKey(d => d.CityId)
-                    .HasConstraintName("FK_UserInfo_MasterFieldValueCity");
+                    .HasConstraintName("FK_UserInfo_Cities");
 
                 entity.HasOne(d => d.Complexion)
                     .WithMany(p => p.UserInfoComplexion)
@@ -193,9 +247,9 @@ namespace Matrimony.Data
                     .HasConstraintName("FK_UserInfo_MasterFieldValueComunity");
 
                 entity.HasOne(d => d.Country)
-                    .WithMany(p => p.UserInfoCountry)
+                    .WithMany(p => p.UserInfo)
                     .HasForeignKey(d => d.CountryId)
-                    .HasConstraintName("FK_UserInfo_MasterFieldValueCountry");
+                    .HasConstraintName("FK_UserInfo_Countries");
 
                 entity.HasOne(d => d.Employer)
                     .WithMany(p => p.UserInfoEmployer)
@@ -268,9 +322,9 @@ namespace Matrimony.Data
                     .HasConstraintName("FK_UserInfo_MasterFieldValueSecondarySpecialization");
 
                 entity.HasOne(d => d.State)
-                    .WithMany(p => p.UserInfoState)
+                    .WithMany(p => p.UserInfo)
                     .HasForeignKey(d => d.StateId)
-                    .HasConstraintName("FK_UserInfo_MasterFieldValueState");
+                    .HasConstraintName("FK_UserInfo_States");
 
                 entity.HasOne(d => d.User)
                     .WithMany(p => p.UserInfo)
