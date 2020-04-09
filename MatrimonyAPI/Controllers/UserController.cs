@@ -159,12 +159,18 @@ namespace MatrimonyAPI.Controllers
         [HttpPost]
         [AllowAnonymous]//Needs to be changed to Authorize
         [Route("register/images/{userId}")]
-        public async Task<IActionResult> UploadImage(IFormFile file, int userId)
+        public async Task<IActionResult> UploadImage(List<UserImage> images)
         {
             //userId = 9;
-            UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
-            userImg.UserId = userId;
-            var response = _userService.Register(userImg, typeof(UserImage).Name) as UserModelResponse;
+            List<UserImage> userImages = new List<UserImage>();
+            images.ForEach(async img => {
+                UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(img.FormData);
+                userImg.UserId = img.UserId;
+                userImages.Add(img);
+            });
+            //UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
+            //userImg.UserId = userId;
+            var response = await _userService.SaveImage(userImages);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }
@@ -174,6 +180,15 @@ namespace MatrimonyAPI.Controllers
         public ActionResult GestUserList()
         {
             var response = _userService.GestUserList();
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]//Needs to be changed to Authorize
+        [Route("user-details/{id}")]
+        public ActionResult GestUser(int id)
+        {
+            var response = _userService.GetUserDetails(id);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
