@@ -31,7 +31,7 @@ namespace Matrimony.Helper
             return Image.Load(buffer);
         }
 
-        public static string ResizeImage(byte[] byteArray, int width, int height, string mode)
+        public static string ResizeImage(byte[] byteArray, int width, int height, string mode = "")
         {
             string resizedImageString = string.Empty;
             if (byteArray != null)

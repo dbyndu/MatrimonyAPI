@@ -10,6 +10,7 @@ using System.Linq;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Matrimony.Helper;
+using System.Threading.Tasks;
 
 namespace Matrimony.Service.User
 {
@@ -61,7 +62,38 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
-            return new UserModelListResponse(metadata,lstUsers);
+            return new UserModelListResponse(metadata, lstUsers);
+        }
+        public Response GetUserDetails(int id)
+        {
+            var errors = new List<Error>();
+            IQueryable<UserModel> IQueryUsers = null;
+            UserModel lstUsers = new UserModel();
+            try
+            {
+                if (!errors.Any())
+                {
+                    IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel 
+                    { 
+                        ID = u.Id, Email = u.Email, FirstName = u.FirstName, LastName = u.LastName, MiddleNmae = u.MiddleNmae, PhoneNumber = u.PhoneNumber
+                    });
+                    lstUsers = IQueryUsers.FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (lstUsers == null)
+            {
+                errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of User.");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new UserModelResponse(metadata, lstUsers);
         }
         public Response CreateNewUser(UserShortRegister user)
         {
@@ -102,7 +134,7 @@ namespace Matrimony.Service.User
                 = u.LastName == "default" ? " " : u.LastName,
                     PhoneNumber = u.PhoneNumber,
                     CreatedDate = u.CreatedDate,
-                    ContactName =u.ContactName
+                    ContactName = u.ContactName
                 }).FirstOrDefault();
                 return new UserModelResponse(metadata, insertedUser);
             }
@@ -151,7 +183,7 @@ namespace Matrimony.Service.User
             }
             return new AnonymousResponse(metadata, lstUsers);
         }
-       public Response Register(Object obj, string type)
+        public Response Register(Object obj, string type)
         {
             var errors = new List<Error>();
             int outPutResult = 0;
@@ -199,11 +231,11 @@ namespace Matrimony.Service.User
                         break;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 errors.Add(new Error("Err101", ex.Message));
-            }            
-            if(outPutResult == 0)
+            }
+            if (outPutResult == 0)
             {
                 errors.Add(new Error("Err102", "Can not Add User.."));
             }
@@ -233,6 +265,34 @@ namespace Matrimony.Service.User
             }
         }
 
+        public async Task<Response> SaveImage(List<UserImage> userImages)
+        {
+            int stat = 0;
+            var errors = new List<Error>();
+            try
+            {
+                stat = await SaveUserImage(userImages);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (stat == 0)
+            {
+                errors.Add(new Error("Err102", "Can not Add User.."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Image Of User");
+            if (!errors.Any())
+            {               
+
+                return new AnonymousResponse(metadata, stat);
+            }
+            else
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+        }
+
         public Response GetImages(int userId, int width, int height, string mode)
         {
             var errors = new List<Error>();
@@ -254,7 +314,7 @@ namespace Matrimony.Service.User
             }
             if (lstImages == null || Convert.ToInt32(lstImages.Count) == 0)
             {
-                errors.Add(new Error("Err102", "No iage found. Verify user entitlements."));
+                errors.Add(new Error("Err102", "No image found. Verify user entitlements."));
             }
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Images Of User");
             if (errors.Any())
@@ -289,6 +349,38 @@ namespace Matrimony.Service.User
             {
                 throw ex;
             }
+            return outPutResult;
+        }
+        private async Task<int> SaveUserImage(List<UserImage> userImgs)
+        {
+            int outPutResult = 0;
+            userImgs.ForEach(img =>
+            {
+                Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
+                {
+                    Id = img.Id,
+                    UserId = img.UserId,
+                    Image = img.Image,
+                    ContentType = img.ContentType
+                };
+                try
+                {
+                    if (img.Id > 0)
+                    {
+                        _context.Update<Matrimony.Data.Entities.UserImage>(dbUserImage);
+                    }
+                    else
+                    {
+                        _context.UserImage.Add(dbUserImage);
+                    }
+                   
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            });
+            outPutResult = await _context.SaveChangesAsync();
             return outPutResult;
         }
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)

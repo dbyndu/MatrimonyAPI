@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -17,5 +18,6 @@ namespace Matrimony.Model.User
         [JsonIgnore]
         public string ImageTitle { get; set; }
         public string ContentType { get; set; }
+        public IFormFile FormData { get; set; }
     }
 }
