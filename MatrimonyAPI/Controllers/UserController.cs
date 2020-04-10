@@ -91,14 +91,22 @@ namespace MatrimonyAPI.Controllers
         [Route("register/short-register")]
         public ActionResult CreateNewUser(UserShortRegister userShortRegister)
         {
-            var response = _userService.CreateNewUser(userShortRegister) as UserModelResponse;
+            var response = _userService.CreateNewUser(userShortRegister);
+            var userResposne = response as UserModelResponse;
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
             var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
-            if(token != null)
+            if (userResposne != null)
             {
-                token = _helper.GenerateToken(_jwtAuthentication.Value, response.Data.ContactName, response.Data.Email, "Admin");
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
             }
-            return Ok(APIResponse.CreateResponse(token, response));
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
         }
 
         [HttpPost]
@@ -184,7 +192,7 @@ namespace MatrimonyAPI.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]//Needs to be changed to Authorize
+        [Authorize]//Needs to be changed to Authorize
         [Route("user-details/{id}")]
         public ActionResult GestUser(int id)
         {

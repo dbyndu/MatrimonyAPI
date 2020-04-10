@@ -73,10 +73,16 @@ namespace Matrimony.Service.User
             {
                 if (!errors.Any())
                 {
-                    IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel 
-                    { 
-                        ID = u.Id, Email = u.Email, FirstName = u.FirstName, LastName = u.LastName, MiddleNmae = u.MiddleNmae, PhoneNumber = u.PhoneNumber
-                    });
+                    IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
+                    {
+                        ID = u.Id,
+                        Email = u.Email,
+                        FirstName = u.FirstName,
+                        LastName = u.LastName,
+                        MiddleNmae = u.MiddleNmae,
+                        PhoneNumber = u.PhoneNumber,
+                        ProfileCreatedForId = u.ProfileCreatedForId
+                    }) ;
                     lstUsers = IQueryUsers.FirstOrDefault();
                 }
             }
@@ -99,6 +105,21 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             int outPutResult = 0;
+            var alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Select(u => new UserModel
+            {
+                ID = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                CreatedDate = u.CreatedDate,
+                ContactName = u.ContactName
+            }).FirstOrDefault();
+            if (alreadyInsertedUser != null && alreadyInsertedUser.Email!=string.Empty)
+            {
+                errors.Add(new Error("Err105", "User Already Added.."));
+                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);                
+            }
             Matrimony.Data.Entities.User dbUser = new Data.Entities.User()
             {
                 Password = user.Password,
@@ -128,13 +149,12 @@ namespace Matrimony.Service.User
                 {
                     ID = u.Id,
                     Email = u.Email,
-                    FirstName
-                = u.FirstName == "default" ? " " : u.FirstName,
-                    LastName
-                = u.LastName == "default" ? " " : u.LastName,
+                    FirstName= u.FirstName ,
+                    LastName= u.LastName,
                     PhoneNumber = u.PhoneNumber,
                     CreatedDate = u.CreatedDate,
-                    ContactName = u.ContactName
+                    ContactName =u.ContactName,
+                    ProfileCreatedForId = u.ProfileCreatedForId
                 }).FirstOrDefault();
                 return new UserModelResponse(metadata, insertedUser);
             }

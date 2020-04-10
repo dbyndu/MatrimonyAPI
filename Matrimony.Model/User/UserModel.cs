@@ -6,7 +6,11 @@ namespace Matrimony.Model.User
 {
     public class UserModel : UserRegister
     {        
-        //public UserBasicInformation UserBasicInfo { get; set; }
+        public UserBasicInformation UserBasicInfo { get; set; }
+        public UserEducationCareerModel UserCareerInfo { get; set; }
+        public List<UserImage> UserImage { get; set; }
+
+
         //public ICollection<UserCareerModel> UserCareer { get; set; }
         //public ICollection<UserEducationModel> UserEducation { get; set; }
         //public UserFamilyInformationModel UserFamilyInfo { get; set; }
@@ -18,5 +22,7 @@ namespace Matrimony.Model.User
         //public virtual ICollection<UserFamilyInformationModel> UserFamilyInfo { get; set; }
         //public virtual ICollection<UserLifeStyleModel> UserLifeStyle { get; set; }
         //public virtual ICollection<UserLocationModel> UserLocation { get; set; }
+
+
     }
 }

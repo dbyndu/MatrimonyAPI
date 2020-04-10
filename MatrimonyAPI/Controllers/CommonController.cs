@@ -41,13 +41,23 @@ namespace MatrimonyAPI.Controllers
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
             string token = string.Empty;
+
             if (string.IsNullOrEmpty(accessToken))
             {
                 token = _helper.GenerateToken(_jwtAuthentication.Value, "default", "default@default.com", "User");
             }
             else
             {
-                token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+                var tokeValue = accessToken.ToString().Split(new[] { ' ' }, 2);
+                if(tokeValue!=null && tokeValue.Length > 1)
+                {
+                    token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+                }
+                else
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, "default", "default@default.com", "User");
+                }
+                
             }
             List<string> lstTable = tableNames.Split(',').ToList();
             return Ok(APIResponse.CreateResponse(token, _masterDataService.GetMasterDate(lstTable)));

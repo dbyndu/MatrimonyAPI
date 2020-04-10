@@ -24,7 +24,7 @@ namespace MatrimonyAPI.Authentication
         {
             var returnToken = string.Empty;
             var accessToken = httpRequest.Headers["Authorization"];
-            if(string.IsNullOrEmpty(accessToken))
+            if(!string.IsNullOrEmpty(accessToken))
             {
                 returnToken = ValidateToken(jwtAuthentication, accessToken);
             }
@@ -80,7 +80,7 @@ namespace MatrimonyAPI.Authentication
                 return null;
             }
             var tokeValue = token.Split(new[] { ' ' }, 2);
-            if(tokeValue!=null && tokeValue.Length > 0)
+            if(tokeValue!=null && tokeValue.Length > 1)
             {
                 var actualToken = tokeValue[1];
                 var singingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtAuthentication.Key));

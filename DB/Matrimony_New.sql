@@ -2,12 +2,7 @@ USE [master]
 GO
 /****** Object:  Database [Matrimony]    Script Date: 06-04-2020 01:38:08 ******/
 CREATE DATABASE [Matrimony]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'Matrimony', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.SQL2017\MSSQL\DATA\Matrimony.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'Matrimony_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.SQL2017\MSSQL\DATA\Matrimony_log.ldf' , SIZE = 73728KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT
+ 
 GO
 ALTER DATABASE [Matrimony] SET COMPATIBILITY_LEVEL = 150
 GO
