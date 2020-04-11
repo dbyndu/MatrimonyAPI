@@ -16,7 +16,7 @@ namespace Matrimony.Service.Common
         {
             _context = context;
         }
-        public Response GetMasterDate(List<string> tableNames)
+        public Response GetMasterDate()
         {
             var errors = new List<Error>();
             IQueryable<MasterDataModel> IQueryData = null;
@@ -34,11 +34,11 @@ namespace Matrimony.Service.Common
                     //    Select(u => new UserModel { UserID = u.Id.ToString() });
                     IQueryData = (from v in _context.MasterFieldValue
                                   join m in _context.MasterTableMetadata on v.MasterTableId equals m.Id
-                                  where tableNames.Contains(m.TableName)
+                                  //where tableNames.Contains(m.TableName)
                                   select new MasterDataModel
                                   {
                                       Id = v.Id,
-                                      Value = v.Value,
+                                      Name = v.Value,
                                       MasterTableId = m.Id,
                                       TableName= m.TableName
                                   }

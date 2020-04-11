@@ -7,6 +7,6 @@ namespace Matrimony.Service.Contracts
 {
     public interface IMasterDataService
     {
-        Response GetMasterDate(List<string> tableNames);
+        Response GetMasterDate();
     }
 }
