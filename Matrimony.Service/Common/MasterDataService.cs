@@ -6,6 +6,7 @@ using Matrimony.Model.Base;
 using Matrimony.Data;
 using System.Linq;
 using Matrimony_Model.Common;
+using Matrimony.Model.User;
 
 namespace Matrimony.Service.Common
 {
@@ -60,6 +61,81 @@ namespace Matrimony.Service.Common
                 return new ErrorResponse(metadata, errors);
             }
             return new MasterDataModelListResponse(metadata, lstMasterData);
+        }
+        public Response GetCountry()
+        {
+            var errors = new List<Error>();
+            try
+            {
+                var listCountry = _context.Countries.Select(c => new
+                {
+                    Name = c.Name,
+                    Id = c.Id
+                }).ToList();
+
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of Country.");
+                if (errors.Any())
+                {
+                    return new ErrorResponse(metadata, errors);
+                }
+                return new AnonymousResponse(metadata, listCountry);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of Country.");
+                return new ErrorResponse(metadata, errors);
+            }
+        }
+        public Response GetState(int countryId)
+        {
+            var errors = new List<Error>();
+            try
+            {
+                var listState = _context.States.Where(s=> s.CountryId.Equals(countryId)).Select(c => new
+                {
+                    Name = c.Name,
+                    Id = c.Id
+                }).ToList();
+
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of State.");
+                if (errors.Any())
+                {
+                    return new ErrorResponse(metadata, errors);
+                }
+                return new AnonymousResponse(metadata, listState);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of State.");
+                return new ErrorResponse(metadata, errors);
+            }
+        }
+        public Response GetCity(int stateId)
+        {
+            var errors = new List<Error>();
+            try
+            {
+                var listState = _context.Cities.Where(s => s.StateId.Equals(stateId)).Select(c => new
+                {
+                    Name = c.Name,
+                    Id = c.Id
+                }).ToList();
+
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of City.");
+                if (errors.Any())
+                {
+                    return new ErrorResponse(metadata, errors);
+                }
+                return new AnonymousResponse(metadata, listState);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of City.");
+                return new ErrorResponse(metadata, errors);
+            }
         }
     }
 }

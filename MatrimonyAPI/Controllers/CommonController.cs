@@ -62,5 +62,29 @@ namespace MatrimonyAPI.Controllers
             //List<string> lstTable = tableNames.Split(',').ToList();
             return Ok(APIResponse.CreateResponse(token, _masterDataService.GetMasterDate()));
         }
+        [HttpGet]
+        [Authorize]
+        [Route("country")]
+        public ActionResult GetCountry()
+        {
+            var response = _masterDataService.GetCountry();
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("state/{countryId}")]
+        public ActionResult GetState(int countryId)
+        {
+            var response = _masterDataService.GetState(countryId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("city/{stateId}")]
+        public ActionResult GetCity(int stateId)
+        {
+            var response = _masterDataService.GetCity(stateId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
     }
 }
