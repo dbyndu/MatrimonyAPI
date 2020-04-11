@@ -577,7 +577,7 @@ namespace Matrimony.Service.User
                         Email = user.Email,
                         PhoneNumber = user.PhoneNumber,
                         ProfileCreatedForId = user.ProfileCreatedForId,
-                        ContactName = user.ContactName,
+                        ContactName = user.FirstName + " " + user.MiddleNmae + " " + user.LastName,
                         UpdatedDate = DateTime.Now
                     };
                     _context.Entry(dbUser).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
