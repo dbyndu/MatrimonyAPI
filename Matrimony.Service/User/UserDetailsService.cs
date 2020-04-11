@@ -67,23 +67,22 @@ namespace Matrimony.Service.User
         public Response GetUserDetails(int id)
         {
             var errors = new List<Error>();
-            IQueryable<UserModel> IQueryUsers = null;
             UserModel lstUsers = new UserModel();
             try
             {
                 if (!errors.Any())
                 {
-                    IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
-                    {
-                        ID = u.Id,
-                        Email = u.Email,
-                        FirstName = u.FirstName,
-                        LastName = u.LastName,
-                        MiddleNmae = u.MiddleNmae,
-                        PhoneNumber = u.PhoneNumber,
-                        ProfileCreatedForId = u.ProfileCreatedForId
-                    }) ;
-                    lstUsers = IQueryUsers.FirstOrDefault();
+                    //IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
+                    //{
+                    //    ID = u.Id,
+                    //    Email = u.Email,
+                    //    FirstName = u.FirstName,
+                    //    LastName = u.LastName,
+                    //    MiddleNmae = u.MiddleNmae,
+                    //    PhoneNumber = u.PhoneNumber,
+                    //    ProfileCreatedForId = u.ProfileCreatedForId
+                    //}) ;
+                    lstUsers = GetUserInformation(id);
                 }
             }
             catch (Exception ex)
@@ -129,10 +128,26 @@ namespace Matrimony.Service.User
                 PhoneNumber = user.PhoneNumber,
                 ContactName = user.Email + "_" + user.PhoneNumber
             };
+            
+
             try
             {
                 _context.User.Add(dbUser);
+                //_context.UserInfo.Add(dbUserInfo);
                 outPutResult = _context.SaveChanges();
+                if (outPutResult != 0)
+                {
+                    var newinsertedUserID = _context.User.FirstOrDefault(x => x.Email == user.Email).Id;
+                    if(newinsertedUserID > 0)
+                    {
+                        Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
+                        {
+                            UserId = newinsertedUserID
+                        };
+                        _context.UserInfo.Add(dbUserInfo);
+                        outPutResult = _context.SaveChanges();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -145,17 +160,7 @@ namespace Matrimony.Service.User
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
             if (!errors.Any())
             {
-                var insertedUser = _context.User.Where(x => x.Email == user.Email).Select(u => new UserModel
-                {
-                    ID = u.Id,
-                    Email = u.Email,
-                    FirstName= u.FirstName ,
-                    LastName= u.LastName,
-                    PhoneNumber = u.PhoneNumber,
-                    CreatedDate = u.CreatedDate,
-                    ContactName =u.ContactName,
-                    ProfileCreatedForId = u.ProfileCreatedForId
-                }).FirstOrDefault();
+                var insertedUser = GetUserInformation(user.Email);
                 return new UserModelResponse(metadata, insertedUser);
             }
             else
@@ -163,7 +168,96 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
         }
+        private UserModel GetUserInformation(int id)
+        {
+            UserModel returnValue = new UserModel();
 
+            var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
+            {
+                ID = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                MiddleNmae = u.MiddleNmae,
+                PhoneNumber = u.PhoneNumber,
+                ProfileCreatedForId = u.ProfileCreatedForId
+            });
+            returnValue = IQueryUsers.FirstOrDefault();
+            returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
+                userinfo => new UserBasicInformation()
+                {
+                    Id = userinfo.Id,
+                    UserId = userinfo.UserId,
+                    GenderId = userinfo.GenderId,
+                    Dob = userinfo.Dob,
+                    MaritalStatusId = userinfo.MaritalStatusId,
+                    Height = userinfo.Height,
+                    Weight = userinfo.Weight,
+                    BodyTypeId = userinfo.BodyTypeId,
+                    ComplexionId = userinfo.ComplexionId,
+                    IsDisability = userinfo.IsDisability,
+                    BloodGroupId = userinfo.BloodGroupId,
+                    ReligionId = userinfo.ReligionId,
+                    Caste = userinfo.Caste,
+                    MotherTongueId = userinfo.MotherTongueId,
+                    ComunityId = userinfo.ComunityId,
+                    Gothra = userinfo.Gothra,
+                    CountryId = userinfo.CountryId,
+                    CitizenshipId = userinfo.CitizenshipId,
+                    StateId = userinfo.StateId,
+                    CityId = userinfo.CityId,
+                    GrewUpIn = userinfo.GrewUpIn,
+                    Origin = userinfo.Origin,
+                    Pin = userinfo.Pin
+                }).FirstOrDefault();
+
+            return returnValue;
+        }
+
+        private UserModel GetUserInformation(string userEmail)
+        {
+            UserModel returnValue = new UserModel();
+            returnValue = _context.User.Where(x => x.Email == userEmail).Select(u => new UserModel
+            {
+                ID = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                CreatedDate = u.CreatedDate,
+                ContactName = u.ContactName,
+                ProfileCreatedForId = u.ProfileCreatedForId
+            }).FirstOrDefault();
+            returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
+                userinfo => new UserBasicInformation()
+                {
+                    Id = userinfo.Id,
+                    UserId = userinfo.UserId,
+                    GenderId = userinfo.GenderId,
+                    Dob = userinfo.Dob,
+                    MaritalStatusId = userinfo.MaritalStatusId,
+                    Height = userinfo.Height,
+                    Weight = userinfo.Weight,
+                    BodyTypeId = userinfo.BodyTypeId,
+                    ComplexionId = userinfo.ComplexionId,
+                    IsDisability = userinfo.IsDisability,
+                    BloodGroupId = userinfo.BloodGroupId,
+                    ReligionId = userinfo.ReligionId,
+                    Caste = userinfo.Caste,
+                    MotherTongueId = userinfo.MotherTongueId,
+                    ComunityId = userinfo.ComunityId,
+                    Gothra = userinfo.Gothra,
+                    CountryId = userinfo.CountryId,
+                    CitizenshipId = userinfo.CitizenshipId,
+                    StateId = userinfo.StateId,
+                    CityId = userinfo.CityId,
+                    GrewUpIn = userinfo.GrewUpIn,
+                    Origin = userinfo.Origin,
+                    Pin = userinfo.Pin
+                }).FirstOrDefault();
+
+            return returnValue;
+        }
         public Response GestUserList()
         {
             var errors = new List<Error>();
