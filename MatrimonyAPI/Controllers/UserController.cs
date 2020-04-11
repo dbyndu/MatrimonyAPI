@@ -111,7 +111,7 @@ namespace MatrimonyAPI.Controllers
 
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-update")]
         public ActionResult UpdateUser(UserRegister user)
         {
