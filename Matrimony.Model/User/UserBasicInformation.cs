@@ -17,11 +17,11 @@ namespace Matrimony.Model.User
         public int? ComplexionId { get; set; }
         public bool? IsDisability { get; set; }
         public int? BloodGroupId { get; set; }
-        //public int? ReligionId { get; set; }
-        //public string Caste { get; set; }
+        public int? ReligionId { get; set; }
+        public string Caste { get; set; }
         public int? MotherTongueId { get; set; }
         public int? ComunityId { get; set; }
-        //public string Gothra { get; set; }
+        public string Gothra { get; set; }
         //public bool? IsIgnorCast { get; set; }
         public int? CountryId { get; set; }
         public int? CitizenshipId { get; set; }
