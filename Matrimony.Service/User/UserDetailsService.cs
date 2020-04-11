@@ -171,45 +171,92 @@ namespace Matrimony.Service.User
         private UserModel GetUserInformation(int id)
         {
             UserModel returnValue = new UserModel();
+            returnValue = (from u in _context.User
+                           join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
+                           from ub in user_basic.DefaultIfEmpty()
+                           select new UserModel
+                           {
+                               ID = u.Id,
+                               Email = u.Email,
+                               FirstName = u.FirstName,
+                               LastName = u.LastName,
+                               MiddleNmae = u.MiddleNmae,
+                               PhoneNumber = u.PhoneNumber,
+                               ProfileCreatedForId = u.ProfileCreatedForId,
+                               UserBasicInfo = new UserBasicInformation
+                               {
+                                   Id = ub.Id,
+                                   UserId = ub.UserId,
+                                   GenderId = ub.GenderId,
+                                   Dob = ub.Dob,
+                                   MaritalStatusId = ub.MaritalStatusId,
+                                   Height = ub.Height,
+                                   Weight = ub.Weight,
+                                   BodyTypeId = ub.BodyTypeId,
+                                   ComplexionId = ub.ComplexionId,
+                                   IsDisability = ub.IsDisability,
+                                   BloodGroupId = ub.BloodGroupId,
+                                   ReligionId = ub.ReligionId,
+                                   Caste = ub.Caste,
+                                   MotherTongueId = ub.MotherTongueId,
+                                   ComunityId = ub.ComunityId,
+                                   Gothra = ub.Gothra,
+                                   CountryId = ub.CountryId,
+                                   CitizenshipId = ub.CitizenshipId,
+                                   StateId = ub.StateId,
+                                   CityId = ub.CityId,
+                                   GrewUpIn = ub.GrewUpIn,
+                                   Origin = ub.Origin,
+                                   Pin = ub.Pin
+                               },
+                               UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
+                               {
+                                   Id = u.Id,
+                                   UserId = u.UserId,
+                                   ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0, "") // ImageResizer((byte[])u.Image, width, height)
+                               }).ToList()
 
-            var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
-            {
-                ID = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                MiddleNmae = u.MiddleNmae,
-                PhoneNumber = u.PhoneNumber,
-                ProfileCreatedForId = u.ProfileCreatedForId
-            });
-            returnValue = IQueryUsers.FirstOrDefault();
-            returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
-                userinfo => new UserBasicInformation()
-                {
-                    Id = userinfo.Id,
-                    UserId = userinfo.UserId,
-                    GenderId = userinfo.GenderId,
-                    Dob = userinfo.Dob,
-                    MaritalStatusId = userinfo.MaritalStatusId,
-                    Height = userinfo.Height,
-                    Weight = userinfo.Weight,
-                    BodyTypeId = userinfo.BodyTypeId,
-                    ComplexionId = userinfo.ComplexionId,
-                    IsDisability = userinfo.IsDisability,
-                    BloodGroupId = userinfo.BloodGroupId,
-                    ReligionId = userinfo.ReligionId,
-                    Caste = userinfo.Caste,
-                    MotherTongueId = userinfo.MotherTongueId,
-                    ComunityId = userinfo.ComunityId,
-                    Gothra = userinfo.Gothra,
-                    CountryId = userinfo.CountryId,
-                    CitizenshipId = userinfo.CitizenshipId,
-                    StateId = userinfo.StateId,
-                    CityId = userinfo.CityId,
-                    GrewUpIn = userinfo.GrewUpIn,
-                    Origin = userinfo.Origin,
-                    Pin = userinfo.Pin
-                }).FirstOrDefault();
+                           }).FirstOrDefault();
+
+
+           //var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
+           // {
+           //     ID = u.Id,
+           //     Email = u.Email,
+           //     FirstName = u.FirstName,
+           //     LastName = u.LastName,
+           //     MiddleNmae = u.MiddleNmae,
+           //     PhoneNumber = u.PhoneNumber,
+           //     ProfileCreatedForId = u.ProfileCreatedForId
+           // });
+           // returnValue = IQueryUsers.FirstOrDefault();
+           // returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
+           //     userinfo => new UserBasicInformation()
+           //     {
+           //         Id = userinfo.Id,
+           //         UserId = userinfo.UserId,
+           //         GenderId = userinfo.GenderId,
+           //         Dob = userinfo.Dob,
+           //         MaritalStatusId = userinfo.MaritalStatusId,
+           //         Height = userinfo.Height,
+           //         Weight = userinfo.Weight,
+           //         BodyTypeId = userinfo.BodyTypeId,
+           //         ComplexionId = userinfo.ComplexionId,
+           //         IsDisability = userinfo.IsDisability,
+           //         BloodGroupId = userinfo.BloodGroupId,
+           //         ReligionId = userinfo.ReligionId,
+           //         Caste = userinfo.Caste,
+           //         MotherTongueId = userinfo.MotherTongueId,
+           //         ComunityId = userinfo.ComunityId,
+           //         Gothra = userinfo.Gothra,
+           //         CountryId = userinfo.CountryId,
+           //         CitizenshipId = userinfo.CitizenshipId,
+           //         StateId = userinfo.StateId,
+           //         CityId = userinfo.CityId,
+           //         GrewUpIn = userinfo.GrewUpIn,
+           //         Origin = userinfo.Origin,
+           //         Pin = userinfo.Pin
+           //     }).FirstOrDefault();
 
             return returnValue;
         }
