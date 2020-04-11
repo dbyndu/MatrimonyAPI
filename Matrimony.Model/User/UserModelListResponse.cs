@@ -11,4 +11,11 @@ namespace Matrimony.Model.User
             : base(metadata, userModel)
         { }
     }
+
+    public class UserImageListResponse : SuccessResponse<List<UserImage>>
+    {
+        public UserImageListResponse(Metadata metadata, List<UserImage> userImage)
+            : base(metadata, userImage)
+        { }
+    }
 }

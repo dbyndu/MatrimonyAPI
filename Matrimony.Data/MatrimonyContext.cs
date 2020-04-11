@@ -1,50 +1,82 @@
 ﻿using System;
+using Matrimony.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Matrimony.Data.Entities;
 
 namespace Matrimony.Data
 {
     public partial class MatrimonyContext : DbContext
     {
-        //public MatrimonyContext()
-        //{
-        //}
+        public MatrimonyContext()
+        {
+        }
 
         public MatrimonyContext(DbContextOptions<MatrimonyContext> options)
             : base(options)
         {
         }
 
+        public virtual DbSet<Cities> Cities { get; set; }
+        public virtual DbSet<Countries> Countries { get; set; }
         public virtual DbSet<MasterFieldValue> MasterFieldValue { get; set; }
         public virtual DbSet<MasterTableMetadata> MasterTableMetadata { get; set; }
         public virtual DbSet<PreferenceMaster> PreferenceMaster { get; set; }
+        public virtual DbSet<States> States { get; set; }
         public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<UserBasicInfo> UserBasicInfo { get; set; }
-        public virtual DbSet<UserCareer> UserCareer { get; set; }
-        public virtual DbSet<UserEducation> UserEducation { get; set; }
-        public virtual DbSet<UserFamilyInfo> UserFamilyInfo { get; set; }
+        public virtual DbSet<UserImage> UserImage { get; set; }
+        public virtual DbSet<UserInfo> UserInfo { get; set; }
         public virtual DbSet<UserLifeStyle> UserLifeStyle { get; set; }
-        public virtual DbSet<UserLocation> UserLocation { get; set; }
         public virtual DbSet<UserPreferenceSetting> UserPreferenceSetting { get; set; }
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-        //                optionsBuilder.UseSqlServer("Server=LAPTOP-DVGRKESI\\SQL2017;Database=Matrimony;Integrated Security=True");
-        //            }
-        //        }
+//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//        {
+//            if (!optionsBuilder.IsConfigured)
+//            {
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+//                optionsBuilder.UseSqlServer("Server=LAPTOP-DVGRKESI\\SQL2017;Database=Matrimony;Integrated Security=True");
+//            }
+//        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MasterFieldValue>(entity =>
+            modelBuilder.Entity<Cities>(entity =>
+            {
+                entity.HasIndex(e => new { e.StateId, e.Id })
+                    .HasName("UQ__Cities__A09B75FBE449741E")
+                    .IsUnique();
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.HasOne(d => d.State)
+                    .WithMany(p => p.Cities)
+                    .HasForeignKey(d => d.StateId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Cities_States");
+            });
+
+            modelBuilder.Entity<Countries>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
-                entity.Property(e => e.MasterTableId).ValueGeneratedOnAdd();
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
 
+                entity.Property(e => e.Phonecode)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Sortname)
+                    .IsRequired()
+                    .HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<MasterFieldValue>(entity =>
+            {
                 entity.Property(e => e.Value)
                     .IsRequired()
                     .HasMaxLength(250)
@@ -83,11 +115,24 @@ namespace Matrimony.Data
                     .HasConstraintName("FK_PreferenceMaster_MasterTableMetadata");
             });
 
+            modelBuilder.Entity<States>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.HasOne(d => d.Country)
+                    .WithMany(p => p.States)
+                    .HasForeignKey(d => d.CountryId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_States_Countries");
+            });
+
             modelBuilder.Entity<User>(entity =>
             {
-                entity.Property(e => e.ContactName)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.ContactName).HasMaxLength(100);
 
                 entity.Property(e => e.CreatedDate)
                     .HasColumnType("datetime")
@@ -99,12 +144,10 @@ namespace Matrimony.Data
                     .IsUnicode(false);
 
                 entity.Property(e => e.FirstName)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
                 entity.Property(e => e.LastName)
-                    .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
 
@@ -119,171 +162,201 @@ namespace Matrimony.Data
 
                 entity.Property(e => e.PhoneNumber)
                     .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                    .HasMaxLength(50);
 
                 entity.Property(e => e.UpdatedDate).HasColumnType("datetime");
             });
 
-            modelBuilder.Entity<UserBasicInfo>(entity =>
+            modelBuilder.Entity<UserImage>(entity =>
             {
+                entity.Property(e => e.ContentType)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.CreatedDate)
+                    .HasColumnType("date")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Image).IsRequired();
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserImage)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("FK_UserImage_User");
+            });
+
+            modelBuilder.Entity<UserInfo>(entity =>
+            {
+                entity.Property(e => e.Caste).HasMaxLength(100);
+
                 entity.Property(e => e.Dob)
                     .HasColumnName("DOB")
                     .HasColumnType("date");
 
-                entity.Property(e => e.Gothra)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
+                entity.Property(e => e.FamilyIncomeId).HasColumnName("FamilyIncomeID");
+
+                entity.Property(e => e.FamilyLocation).HasMaxLength(100);
+
+                entity.Property(e => e.Gothra).HasMaxLength(100);
+
+                entity.Property(e => e.GrewUpIn).HasMaxLength(100);
+
+                entity.Property(e => e.Institution).HasMaxLength(200);
+
+                entity.Property(e => e.NativePlace).HasMaxLength(100);
+
+                entity.Property(e => e.Origin).HasMaxLength(100);
+
+                entity.Property(e => e.Pin).HasColumnName("PIN");
+
+                entity.Property(e => e.University).HasMaxLength(200);
+
+                entity.HasOne(d => d.AnualIncome)
+                    .WithMany(p => p.UserInfoAnualIncome)
+                    .HasForeignKey(d => d.AnualIncomeId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueAnualIncome");
 
                 entity.HasOne(d => d.BloodGroup)
-                    .WithMany(p => p.UserBasicInfoBloodGroup)
+                    .WithMany(p => p.UserInfoBloodGroup)
                     .HasForeignKey(d => d.BloodGroupId)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueBlood");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueBlood");
+
+                entity.HasOne(d => d.BodyType)
+                    .WithMany(p => p.UserInfoBodyType)
+                    .HasForeignKey(d => d.BodyTypeId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueBody");
+
+                entity.HasOne(d => d.Citizenship)
+                    .WithMany(p => p.UserInfoCitizenship)
+                    .HasForeignKey(d => d.CitizenshipId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueCitizenship");
+
+                entity.HasOne(d => d.City)
+                    .WithMany(p => p.UserInfo)
+                    .HasForeignKey(d => d.CityId)
+                    .HasConstraintName("FK_UserInfo_Cities");
+
+                entity.HasOne(d => d.Complexion)
+                    .WithMany(p => p.UserInfoComplexion)
+                    .HasForeignKey(d => d.ComplexionId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueComplexion");
 
                 entity.HasOne(d => d.Comunity)
-                    .WithMany(p => p.UserBasicInfoComunity)
+                    .WithMany(p => p.UserInfoComunity)
                     .HasForeignKey(d => d.ComunityId)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueComunity");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueComunity");
 
-                entity.HasOne(d => d.Gender)
-                    .WithMany(p => p.UserBasicInfoGender)
-                    .HasForeignKey(d => d.GenderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueGender");
-
-                entity.HasOne(d => d.HealthInfo)
-                    .WithMany(p => p.UserBasicInfoHealthInfo)
-                    .HasForeignKey(d => d.HealthInfoId)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueHealth");
-
-                entity.HasOne(d => d.MaritalStatus)
-                    .WithMany(p => p.UserBasicInfoMaritalStatus)
-                    .HasForeignKey(d => d.MaritalStatusId)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueStatus");
-
-                entity.HasOne(d => d.MotherTongue)
-                    .WithMany(p => p.UserBasicInfoMotherTongue)
-                    .HasForeignKey(d => d.MotherTongueId)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueMotherTongue");
-
-                entity.HasOne(d => d.Religion)
-                    .WithMany(p => p.UserBasicInfoReligion)
-                    .HasForeignKey(d => d.ReligionId)
-                    .HasConstraintName("FK_UserBasicInfo_MasterFieldValueReligion");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserBasicInfo)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserBasicInfo_User");
-            });
-
-            modelBuilder.Entity<UserCareer>(entity =>
-            {
-                entity.HasOne(d => d.AnualIncome)
-                    .WithMany(p => p.UserCareerAnualIncome)
-                    .HasForeignKey(d => d.AnualIncomeId)
-                    .HasConstraintName("FK_UserCareer_MasterFieldValueAnualIncome");
+                entity.HasOne(d => d.Country)
+                    .WithMany(p => p.UserInfo)
+                    .HasForeignKey(d => d.CountryId)
+                    .HasConstraintName("FK_UserInfo_Countries");
 
                 entity.HasOne(d => d.Employer)
-                    .WithMany(p => p.UserCareerEmployer)
+                    .WithMany(p => p.UserInfoEmployer)
                     .HasForeignKey(d => d.EmployerId)
-                    .HasConstraintName("FK_UserCareer_MasterFieldValueEmployer");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueEmployer");
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserCareer)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserCareer_User");
-
-                entity.HasOne(d => d.WorkDesignation)
-                    .WithMany(p => p.UserCareerWorkDesignation)
-                    .HasForeignKey(d => d.WorkDesignationId)
-                    .HasConstraintName("FK_UserCareer_MasterFieldValueDesignation");
-
-                entity.HasOne(d => d.WorkingSector)
-                    .WithMany(p => p.UserCareerWorkingSector)
-                    .HasForeignKey(d => d.WorkingSectorId)
-                    .HasConstraintName("FK_UserCareer_MasterFieldValueSector");
-            });
-
-            modelBuilder.Entity<UserEducation>(entity =>
-            {
-                entity.Property(e => e.Institution)
-                    .HasMaxLength(250)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.University)
-                    .HasMaxLength(250)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.EducationField)
-                    .WithMany(p => p.UserEducationEducationField)
-                    .HasForeignKey(d => d.EducationFieldId)
-                    .HasConstraintName("FK_UserEducation_MasterFieldValueField");
-
-                entity.HasOne(d => d.EducationLevel)
-                    .WithMany(p => p.UserEducationEducationLevel)
-                    .HasForeignKey(d => d.EducationLevelId)
-                    .HasConstraintName("FK_UserEducation_MasterFieldValueLevel");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserEducation)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("FK_UserEducation_User");
-            });
-
-            modelBuilder.Entity<UserFamilyInfo>(entity =>
-            {
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.FamilyLocation)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
-
-                entity.Property(e => e.NativePlace)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.FamilyAffluence)
-                    .WithMany(p => p.UserFamilyInfoFamilyAffluence)
-                    .HasForeignKey(d => d.FamilyAffluenceId)
-                    .HasConstraintName("FK_UserFamilyInfo_MasterFieldValueAffluence");
+                entity.HasOne(d => d.FamilyIncome)
+                    .WithMany(p => p.UserInfoFamilyIncome)
+                    .HasForeignKey(d => d.FamilyIncomeId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueFamilyIncome");
 
                 entity.HasOne(d => d.FamilyType)
-                    .WithMany(p => p.UserFamilyInfoFamilyType)
+                    .WithMany(p => p.UserInfoFamilyType)
                     .HasForeignKey(d => d.FamilyTypeId)
-                    .HasConstraintName("FK_UserFamilyInfo_MasterFieldValueFamilyType");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueFamilyType");
 
                 entity.HasOne(d => d.FamilyValues)
-                    .WithMany(p => p.UserFamilyInfoFamilyValues)
+                    .WithMany(p => p.UserInfoFamilyValues)
                     .HasForeignKey(d => d.FamilyValuesId)
-                    .HasConstraintName("FK_UserFamilyInfo_MasterFieldValueValues");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueFamilyValues");
 
                 entity.HasOne(d => d.FatherStatus)
-                    .WithMany(p => p.UserFamilyInfoFatherStatus)
+                    .WithMany(p => p.UserInfoFatherStatus)
                     .HasForeignKey(d => d.FatherStatusId)
-                    .HasConstraintName("FK_UserFamilyInfo_MasterFieldValueFather");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueFatherStatus");
+
+                entity.HasOne(d => d.Gender)
+                    .WithMany(p => p.UserInfoGender)
+                    .HasForeignKey(d => d.GenderId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueGender");
+
+                entity.HasOne(d => d.HighestQualification)
+                    .WithMany(p => p.UserInfoHighestQualification)
+                    .HasForeignKey(d => d.HighestQualificationId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueHighestQualification");
+
+                entity.HasOne(d => d.HighestSpecialization)
+                    .WithMany(p => p.UserInfoHighestSpecialization)
+                    .HasForeignKey(d => d.HighestSpecializationId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueHighestSpecialization");
+
+                entity.HasOne(d => d.MaritalStatus)
+                    .WithMany(p => p.UserInfoMaritalStatus)
+                    .HasForeignKey(d => d.MaritalStatusId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueStatus");
 
                 entity.HasOne(d => d.MotherStatus)
-                    .WithMany(p => p.UserFamilyInfoMotherStatus)
+                    .WithMany(p => p.UserInfoMotherStatus)
                     .HasForeignKey(d => d.MotherStatusId)
-                    .HasConstraintName("FK_UserFamilyInfo_MasterFieldValueMother");
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueMotherStatus");
+
+                entity.HasOne(d => d.MotherTongue)
+                    .WithMany(p => p.UserInfoMotherTongue)
+                    .HasForeignKey(d => d.MotherTongueId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueMotherTongue");
+
+                entity.HasOne(d => d.Religion)
+                    .WithMany(p => p.UserInfoReligion)
+                    .HasForeignKey(d => d.ReligionId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueReligion");
+
+                entity.HasOne(d => d.SecondaryQualification)
+                    .WithMany(p => p.UserInfoSecondaryQualification)
+                    .HasForeignKey(d => d.SecondaryQualificationId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueSecondaryQualification");
+
+                entity.HasOne(d => d.SecondarySpecialization)
+                    .WithMany(p => p.UserInfoSecondarySpecialization)
+                    .HasForeignKey(d => d.SecondarySpecializationId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueSecondarySpecialization");
+
+                entity.HasOne(d => d.State)
+                    .WithMany(p => p.UserInfo)
+                    .HasForeignKey(d => d.StateId)
+                    .HasConstraintName("FK_UserInfo_States");
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserFamilyInfo)
+                    .WithMany(p => p.UserInfo)
                     .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserFamilyInfo_User");
+                    .HasConstraintName("FK_UserInfo_User");
+
+                entity.HasOne(d => d.WorkDesignation)
+                    .WithMany(p => p.UserInfoWorkDesignation)
+                    .HasForeignKey(d => d.WorkDesignationId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueWorkDesignation");
+
+                entity.HasOne(d => d.WorkingSector)
+                    .WithMany(p => p.UserInfoWorkingSector)
+                    .HasForeignKey(d => d.WorkingSectorId)
+                    .HasConstraintName("FK_UserInfo_MasterFieldValueWorkingSector");
             });
 
             modelBuilder.Entity<UserLifeStyle>(entity =>
             {
-                entity.Property(e => e.Hobies)
-                    .HasMaxLength(500)
-                    .IsUnicode(false);
+                entity.Property(e => e.Books).HasMaxLength(500);
+
+                entity.Property(e => e.Cuisines).HasMaxLength(500);
+
+                entity.Property(e => e.Fitness).HasMaxLength(500);
+
+                entity.Property(e => e.Hobies).HasMaxLength(500);
+
+                entity.Property(e => e.Interests).HasMaxLength(500);
+
+                entity.Property(e => e.Movies).HasMaxLength(500);
+
+                entity.Property(e => e.Musics).HasMaxLength(500);
 
                 entity.HasOne(d => d.ChildrenChoice)
                     .WithMany(p => p.UserLifeStyleChildrenChoice)
@@ -294,6 +367,16 @@ namespace Matrimony.Data
                     .WithMany(p => p.UserLifeStyleDiet)
                     .HasForeignKey(d => d.DietId)
                     .HasConstraintName("FK_UserLifeStyle_MasterFieldValueDiet");
+
+                entity.HasOne(d => d.Drinking)
+                    .WithMany(p => p.UserLifeStyleDrinking)
+                    .HasForeignKey(d => d.DrinkingId)
+                    .HasConstraintName("FK_UserLifeStyle_MasterFieldValueDrinking");
+
+                entity.HasOne(d => d.HouseLivingIn)
+                    .WithMany(p => p.UserLifeStyleHouseLivingIn)
+                    .HasForeignKey(d => d.HouseLivingInId)
+                    .HasConstraintName("FK_UserLifeStyle_MasterFieldValueHouseLiving");
 
                 entity.HasOne(d => d.Smoking)
                     .WithMany(p => p.UserLifeStyleSmoking)
@@ -309,38 +392,6 @@ namespace Matrimony.Data
                     .WithMany(p => p.UserLifeStyleWeadingStyle)
                     .HasForeignKey(d => d.WeadingStyleId)
                     .HasConstraintName("FK_UserLifeStyle_MasterFieldValueWeadingStyle");
-            });
-
-            modelBuilder.Entity<UserLocation>(entity =>
-            {
-                entity.Property(e => e.City)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.GrewUpIn)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Origin)
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.Pin).HasColumnName("PIN");
-
-                entity.HasOne(d => d.Country)
-                    .WithMany(p => p.UserLocationCountry)
-                    .HasForeignKey(d => d.CountryId)
-                    .HasConstraintName("FK_UserLocation_MasterFieldValueCountry");
-
-                entity.HasOne(d => d.State)
-                    .WithMany(p => p.UserLocationState)
-                    .HasForeignKey(d => d.StateId)
-                    .HasConstraintName("FK_UserLocation_MasterFieldValueState");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserLocation)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserLocation_User");
             });
 
             modelBuilder.Entity<UserPreferenceSetting>(entity =>

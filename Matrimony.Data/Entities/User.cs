@@ -7,12 +7,9 @@ namespace Matrimony.Data.Entities
     {
         public User()
         {
-            UserBasicInfo = new HashSet<UserBasicInfo>();
-            UserCareer = new HashSet<UserCareer>();
-            UserEducation = new HashSet<UserEducation>();
-            UserFamilyInfo = new HashSet<UserFamilyInfo>();
+            UserImage = new HashSet<UserImage>();
+            UserInfo = new HashSet<UserInfo>();
             UserLifeStyle = new HashSet<UserLifeStyle>();
-            UserLocation = new HashSet<UserLocation>();
             UserPreferenceSetting = new HashSet<UserPreferenceSetting>();
         }
 
@@ -28,12 +25,9 @@ namespace Matrimony.Data.Entities
         public int ProfileCreatedForId { get; set; }
         public string ContactName { get; set; }
 
-        public virtual ICollection<UserBasicInfo> UserBasicInfo { get; set; }
-        public virtual ICollection<UserCareer> UserCareer { get; set; }
-        public virtual ICollection<UserEducation> UserEducation { get; set; }
-        public virtual ICollection<UserFamilyInfo> UserFamilyInfo { get; set; }
+        public virtual ICollection<UserImage> UserImage { get; set; }
+        public virtual ICollection<UserInfo> UserInfo { get; set; }
         public virtual ICollection<UserLifeStyle> UserLifeStyle { get; set; }
-        public virtual ICollection<UserLocation> UserLocation { get; set; }
         public virtual ICollection<UserPreferenceSetting> UserPreferenceSetting { get; set; }
     }
 }

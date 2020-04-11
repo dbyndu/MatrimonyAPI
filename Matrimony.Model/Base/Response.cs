@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Matrimony.Model.Base
 {
-    public abstract class ResponseType
+    public abstract class Response
     {
         //parameterless constructor for xmlSerializer
-        private ResponseType() { }
+        private Response() { }
 
-        protected ResponseType(Metadata metadata)
+        protected Response(Metadata metadata)
         {
             Metadata = metadata;
         }

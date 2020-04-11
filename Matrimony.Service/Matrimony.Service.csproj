@@ -5,7 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="3.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Matrimony.Data\Matrimony.Data.csproj" />
+    <ProjectReference Include="..\Matrimony.Helper\Matrimony.Helper.csproj" />
     <ProjectReference Include="..\Matrimony.Model\Matrimony.Model.csproj" />
   </ItemGroup>
 
