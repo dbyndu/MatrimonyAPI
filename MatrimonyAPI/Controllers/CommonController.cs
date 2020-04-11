@@ -37,7 +37,7 @@ namespace MatrimonyAPI.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route("MasterData")]
-        public ActionResult MasterData(string tableNames)//coma separeted table names
+        public ActionResult MasterData()//coma separeted table names
         {
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
             string token = string.Empty;
@@ -59,8 +59,8 @@ namespace MatrimonyAPI.Controllers
                 }
                 
             }
-            List<string> lstTable = tableNames.Split(',').ToList();
-            return Ok(APIResponse.CreateResponse(token, _masterDataService.GetMasterDate(lstTable)));
+            //List<string> lstTable = tableNames.Split(',').ToList();
+            return Ok(APIResponse.CreateResponse(token, _masterDataService.GetMasterDate()));
         }
     }
 }
