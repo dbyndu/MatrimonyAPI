@@ -416,7 +416,7 @@ namespace Matrimony.Service.User
                 //}).FirstOrDefault();
                 //return new UserModelResponse(metadata, insertedUser);
                 var insertedUser = _context.User.Where(x => x.Id == userId).FirstOrDefault();
-                UserModel userModel = _mapper.Map<UserModel>(insertedUser);
+                UserModel userModel = GetUserInformation(insertedUser.Id);
 
                 return new UserModelResponse(metadata, userModel);
             }
@@ -567,12 +567,12 @@ namespace Matrimony.Service.User
             uInfo.Weight = userBasic.Weight;
             uInfo.BodyTypeId = userBasic.BodyTypeId;
             uInfo.IsDisability = userBasic.IsDisability;
-            //uInfo.ReligionId = userBasic.ReligionId;
+            uInfo.ReligionId = userBasic.ReligionId;
             uInfo.MotherTongueId = userBasic.MotherTongueId;
-            //uInfo.Gothra = userBasic.Gothra;
+            uInfo.Gothra = userBasic.Gothra;
             //uInfo.IsIgnorCast = userBasic.IsIgnorCast;
             uInfo.ComplexionId = userBasic.ComplexionId;
-            //uInfo.Caste = userBasic.Caste;
+            uInfo.Caste = userBasic.Caste;
             uInfo.CountryId = userBasic.CountryId;
             uInfo.CitizenshipId = userBasic.CitizenshipId;
             uInfo.StateId = userBasic.StateId;
@@ -580,7 +580,6 @@ namespace Matrimony.Service.User
             uInfo.GrewUpIn = userBasic.GrewUpIn;
             uInfo.Origin = userBasic.Origin;
             uInfo.Pin = userBasic.Pin;
-
             try
             {
                 if (uInfo.Id > 0)
