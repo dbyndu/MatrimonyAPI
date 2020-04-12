@@ -120,7 +120,7 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-basic-info")]
         public ActionResult UpdateUserBasicInfo(UserBasicInformation userBasic)
         {
@@ -138,18 +138,18 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-religion")]
-        public ActionResult UpdateUserCareer(UserReligionCasteModel userReligion)
+        public ActionResult UpdateUserReligion(UserReligionCasteModel userReligion)
         {
             var response = _userService.Register(userReligion, typeof(UserReligionCasteModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-about")]
-        public ActionResult UpdateUserCareer(UserAboutModel userAbout)
+        public ActionResult UpdateUserAbout(UserAboutModel userAbout)
         {
             var response = _userService.Register(userAbout, typeof(UserAboutModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));

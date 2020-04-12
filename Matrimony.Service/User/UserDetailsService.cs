@@ -195,6 +195,9 @@ namespace Matrimony.Service.User
                                    BodyTypeId = ub.BodyTypeId,
                                    ComplexionId = ub.ComplexionId,
                                    IsDisability = ub.IsDisability,
+                                   Dosh = ub.Dosh,
+                                   Manglik  =ub.Manglik,
+                                   Horoscope = ub.Horoscope,
                                    BloodGroupId = ub.BloodGroupId,
                                    ReligionId = ub.ReligionId,
                                    Caste = ub.Caste,
@@ -207,7 +210,8 @@ namespace Matrimony.Service.User
                                    CityId = ub.CityId,
                                    GrewUpIn = ub.GrewUpIn,
                                    Origin = ub.Origin,
-                                   Pin = ub.Pin
+                                   Pin = ub.Pin,
+                                   About = ub.About
                                },
                                UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
                                {
@@ -288,6 +292,9 @@ namespace Matrimony.Service.User
                     BodyTypeId = userinfo.BodyTypeId,
                     ComplexionId = userinfo.ComplexionId,
                     IsDisability = userinfo.IsDisability,
+                    Dosh = userinfo.Dosh,
+                    Manglik = userinfo.Manglik,
+                    Horoscope = userinfo.Horoscope,
                     BloodGroupId = userinfo.BloodGroupId,
                     ReligionId = userinfo.ReligionId,
                     Caste = userinfo.Caste,
@@ -300,7 +307,8 @@ namespace Matrimony.Service.User
                     CityId = userinfo.CityId,
                     GrewUpIn = userinfo.GrewUpIn,
                     Origin = userinfo.Origin,
-                    Pin = userinfo.Pin
+                    Pin = userinfo.Pin,
+                    About = userinfo.About
                 }).FirstOrDefault();
 
             return returnValue;
@@ -564,12 +572,12 @@ namespace Matrimony.Service.User
             uInfo.Weight = userBasic.Weight;
             uInfo.BodyTypeId = userBasic.BodyTypeId;
             uInfo.IsDisability = userBasic.IsDisability;
-            uInfo.ReligionId = userBasic.ReligionId;
+            //uInfo.ReligionId = userBasic.ReligionId;
             uInfo.MotherTongueId = userBasic.MotherTongueId;
-            uInfo.Gothra = userBasic.Gothra;
+            //uInfo.Gothra = userBasic.Gothra;
             //uInfo.IsIgnorCast = userBasic.IsIgnorCast;
             uInfo.ComplexionId = userBasic.ComplexionId;
-            uInfo.Caste = userBasic.Caste;
+            //uInfo.Caste = userBasic.Caste;
             uInfo.CountryId = userBasic.CountryId;
             uInfo.CitizenshipId = userBasic.CitizenshipId;
             uInfo.StateId = userBasic.StateId;
@@ -759,15 +767,18 @@ namespace Matrimony.Service.User
             if (uInfo == null)
             {
                 uInfo = new Data.Entities.UserInfo();
-                uInfo.Id = user_rel.Id;
+                uInfo.UserId = user_rel.Id;
             }
             try
             {
-                uInfo.UserId = user_rel.UserId;
+                //uInfo.UserId = user_rel.UserId;
                 uInfo.ReligionId = user_rel.ReligionId;
                 uInfo.Gothra = user_rel.Gothra;
                 uInfo.IsIgnorCast = user_rel.IsIgnorCast;
+                uInfo.Dosh = user_rel.Dosh;
                 uInfo.Caste = user_rel.Caste;
+                uInfo.Manglik = user_rel.Manglik;
+                uInfo.Horoscope = user_rel.Horoscope;
 
                 if (uInfo.Id > 0)
                 {
@@ -793,11 +804,11 @@ namespace Matrimony.Service.User
             if (uInfo == null)
             {
                 uInfo = new Data.Entities.UserInfo();
-                uInfo.Id = user_about.Id;
+                uInfo.UserId = user_about.Id;
             }
             try
             {
-                uInfo.UserId = user_about.UserId;
+                //uInfo.UserId = user_about.UserId;
                 uInfo.About = user_about.About;
 
                 if (uInfo.Id > 0)
