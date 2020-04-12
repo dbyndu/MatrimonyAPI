@@ -18,6 +18,5 @@ namespace Matrimony.Model.User
         [JsonIgnore]
         public string ImageTitle { get; set; }
         public string ContentType { get; set; }
-        public IFormFile FormData { get; set; }
     }
 }
