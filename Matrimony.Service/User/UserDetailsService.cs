@@ -522,14 +522,17 @@ namespace Matrimony.Service.User
         }
         private async Task<int> SaveUserImage(List<UserImage> userImgs)
         {
+
             int outPutResult = 0;
             userImgs.ForEach(img =>
             {
+                string base64String = img.ImageString.Split(',')[1];
+                byte[] imageBytes = Convert.FromBase64String(base64String);
                 Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
                 {
                     Id = img.Id,
                     UserId = img.UserId,
-                    Image = img.Image,
+                    Image = imageBytes,
                     ContentType = img.ContentType
                 };
                 try
@@ -828,6 +831,8 @@ namespace Matrimony.Service.User
             }
             return outPutResult;
         }
+
+       
 
     }
 }
