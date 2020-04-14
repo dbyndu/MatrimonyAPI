@@ -18,5 +18,7 @@ namespace Matrimony.Service.Contracts
         Response GestUserList();
         Task<Response> SaveImage(List<UserImage> userImages);
         Response GetUserDetails(int id);
+
+        Response LoginUser(UserShortRegister user);
     }
 }

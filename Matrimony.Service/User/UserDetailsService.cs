@@ -100,6 +100,40 @@ namespace Matrimony.Service.User
             }
             return new UserModelResponse(metadata, lstUsers);
         }
+
+        public Response LoginUser(UserShortRegister user)
+        {
+            var errors = new List<Error>();
+            var alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email && x.Password == user.Password).Select(u => new UserModel
+            {
+                ID = u.Id,
+                Email = u.Email,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                PhoneNumber = u.PhoneNumber,
+                CreatedDate = u.CreatedDate,
+                ContactName = u.ContactName
+            }).FirstOrDefault();
+            if (alreadyInsertedUser != null && alreadyInsertedUser.Email != string.Empty)
+            {
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
+                if (!errors.Any())
+                {
+                    var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                    return new UserModelResponse(metadata, insertedUser);
+                }
+                else
+                {
+                    return new ErrorResponse(metadata, errors);
+                }
+            }
+            else
+            {
+                errors.Add(new Error("Err105", "Login Failed invalid Credentials.."));
+                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);
+            }
+        }
+
         public Response CreateNewUser(UserShortRegister user)
         {
             var errors = new List<Error>();
@@ -174,6 +208,7 @@ namespace Matrimony.Service.User
             returnValue = (from u in _context.User
                            join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                            from ub in user_basic.DefaultIfEmpty()
+                           where u.Id == id
                            select new UserModel
                            {
                                ID = u.Id,

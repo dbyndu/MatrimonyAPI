@@ -88,6 +88,29 @@ namespace MatrimonyAPI.Controllers
 
         [HttpPost]
         [Authorize]
+        [Route("register/login")]
+        public ActionResult LoginUser(UserShortRegister userShortRegister)
+        {
+            var response = _userService.LoginUser(userShortRegister);
+            var userResposne = response as UserModelResponse;
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            if (userResposne != null)
+            {
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
+            }
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         [Route("register/short-register")]
         public ActionResult CreateNewUser(UserShortRegister userShortRegister)
         {
