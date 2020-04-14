@@ -49,7 +49,7 @@ namespace MatrimonyAPI.Controllers
             else
             {
                 var tokeValue = accessToken.ToString().Split(new[] { ' ' }, 2);
-                if(tokeValue!=null && tokeValue.Length > 1)
+                if(tokeValue!=null && tokeValue.Length > 1 && tokeValue[1].ToString()!="null")
                 {
                     token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
                 }
