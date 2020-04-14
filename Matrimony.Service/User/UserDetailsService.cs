@@ -138,17 +138,18 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             int outPutResult = 0;
-            var alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Select(u => new UserModel
-            {
-                ID = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
-                CreatedDate = u.CreatedDate,
-                ContactName = u.ContactName
-            }).FirstOrDefault();
-            if (alreadyInsertedUser != null && alreadyInsertedUser.Email!=string.Empty)
+            int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Count();
+            //    .Select(u => new UserModel
+            //{
+            //    ID = u.Id,
+            //    Email = u.Email,
+            //    FirstName = u.FirstName,
+            //    LastName = u.LastName,
+            //    PhoneNumber = u.PhoneNumber,
+            //    CreatedDate = u.CreatedDate,
+            //    ContactName = u.ContactName
+            //}).FirstOrDefault();
+            if (alreadyInsertedUser > 0)
             {
                 errors.Add(new Error("Err105", "User Already Added.."));
                 return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);                
@@ -171,8 +172,8 @@ namespace Matrimony.Service.User
                 outPutResult = _context.SaveChanges();
                 if (outPutResult != 0)
                 {
-                    var newinsertedUserID = _context.User.FirstOrDefault(x => x.Email == user.Email).Id;
-                    if(newinsertedUserID > 0)
+                    var newinsertedUserID = dbUser.Id;
+                    if (newinsertedUserID > 0)
                     {
                         Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
                         {
@@ -208,7 +209,7 @@ namespace Matrimony.Service.User
             returnValue = (from u in _context.User
                            join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                            from ub in user_basic.DefaultIfEmpty()
-                           where u.Id == id
+                           where u.Id.Equals(id)
                            select new UserModel
                            {
                                ID = u.Id,
@@ -351,9 +352,12 @@ namespace Matrimony.Service.User
         public Response GestUserList()
         {
             var errors = new List<Error>();
-            var lstUsers = (from u in _context.User
+            Random rnd = new Random();
+            var lstUsers = (from u in _context.User.Where(u => !string.IsNullOrEmpty(u.FirstName) && !string.IsNullOrEmpty(u.LastName) && !u.FirstName.Equals("default"))
                             join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                             from ub in user_basic.DefaultIfEmpty()
+                            join uimg in _context.UserImage.Where(i=> i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
+                            from img in user_image.DefaultIfEmpty()
                             join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
                             from l in language.DefaultIfEmpty()
                             join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
@@ -367,14 +371,15 @@ namespace Matrimony.Service.User
                             select new
                             {
                                 Id = u.Id,
-                                Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),
+                                Name = string.Concat(u.FirstName, " ", u.MiddleNmae, " ", u.LastName),  
                                 Age = GenericHelper.CalculateAge(Convert.ToDateTime(ub.Dob)),
                                 Height = ub.Height,
                                 Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
                                 City = c.Name ?? string.Empty,
                                 Profession = w.Value ?? string.Empty,
                                 Language = l.Value ?? string.Empty,
-                                Url = ""
+                                Url = "",
+                                ImageString = "data:" + img.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 0, 0, "")
                             }).ToList();
             if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
             {
@@ -559,10 +564,12 @@ namespace Matrimony.Service.User
         {
 
             int outPutResult = 0;
+            int count = _context.UserImage.Where(u => u.UserId.Equals(userImgs[0].UserId) && u.IsProfilePicture.Equals(true)).Count();
             userImgs.ForEach(img =>
             {
                 string base64String = img.ImageString.Split(',')[1];
-                byte[] imageBytes = Convert.FromBase64String(base64String);
+                byte[] imageBytes = Convert.FromBase64String(base64String);               
+                    
                 Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
                 {
                     Id = img.Id,
@@ -570,6 +577,11 @@ namespace Matrimony.Service.User
                     Image = imageBytes,
                     ContentType = img.ContentType
                 };
+                if (count == 0)
+                {
+                    dbUserImage.IsProfilePicture = true;
+                    count = 1;
+                }
                 try
                 {
                     if (img.Id > 0)
@@ -867,7 +879,10 @@ namespace Matrimony.Service.User
             return outPutResult;
         }
 
-       
+        private IQueryable<Matrimony.Data.Entities.UserImage> GetRandomImage(int userId)
+        {
+            return _context.UserImage.Where(ui => ui.UserId.Equals(userId)).OrderBy(x => Guid.NewGuid()).Take(1);
+        }
 
     }
 }
