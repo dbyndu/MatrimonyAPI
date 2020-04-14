@@ -90,7 +90,7 @@ namespace MatrimonyAPI.Controllers
         [Authorize]
         [Route("register/short-register")]
         public ActionResult CreateNewUser(UserShortRegister userShortRegister)
-        {
+            {
             var response = _userService.CreateNewUser(userShortRegister);
             var userResposne = response as UserModelResponse;
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
@@ -165,7 +165,7 @@ namespace MatrimonyAPI.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]//Needs to be changed to Authorize
+        [Authorize]//Needs to be changed to Authorize
         [Route("register/images")]
         public async Task<IActionResult> UploadImage(List<UserImage> images)
         {
@@ -182,7 +182,7 @@ namespace MatrimonyAPI.Controllers
 
         }
         [HttpGet]
-        [AllowAnonymous]//Needs to be changed to Authorize
+        [Authorize]//Needs to be changed to Authorize
         [Route("user-list")]
         public ActionResult GestUserList()
         {
