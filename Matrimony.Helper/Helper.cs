@@ -14,7 +14,7 @@ namespace Matrimony.Helper
         public static int CalculateAge(DateTime dateOfBirth)
         {
             int age = 0;
-            if (dateOfBirth == DateTime.MinValue)
+            if (dateOfBirth != DateTime.MinValue)
             {                
                 age = DateTime.Now.Year - dateOfBirth.Year;
                 if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
@@ -47,13 +47,26 @@ namespace Matrimony.Helper
                     //    Mode = ResizeMode.Max
                     //})
                     //.BoxBlur()); 
-                    img.Mutate(x => x
-                    .Resize(new ResizeOptions
+                    if (string.IsNullOrEmpty(mode))
                     {
-                        Size = new Size(width, height),
-                        Mode = ResizeMode.Crop
-                    })
-                    );
+                        img.Mutate(x => x
+                        .Resize(new ResizeOptions
+                        {
+                            Size = new Size(width, height),
+                            Mode = ResizeMode.Crop
+                        })
+                        );
+                    }
+                    else
+                        {
+                        img.Mutate(x => x
+                        .Resize(new ResizeOptions
+                        {
+                            Size = new Size(width, height),
+                            Mode = ResizeMode.Crop
+                        })
+                        );
+                    }
                     using (MemoryStream ms = new MemoryStream())
                     {
                         img.Save(ms, new JpegEncoder());
@@ -62,13 +75,23 @@ namespace Matrimony.Helper
                 }
                 else
                 {
-                    resizedImageString = Convert.ToBase64String(byteArray);
+                    if (string.IsNullOrEmpty(mode))
+                        resizedImageString = Convert.ToBase64String(byteArray);
+                    else
+                    {
+                        Image img = ByteArrayToImage(byteArray);
+                        img.Mutate(x => x.BokehBlur());
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            img.Save(ms, new JpegEncoder());
+                            resizedImageString = Convert.ToBase64String(ms.ToArray());
+                        }
+                    }
                 }
             }
             return resizedImageString;
         }
     }
-
     public static class ConfigurationHelper
     {
         public static readonly string JWTAUTHENTICATIONKEY = "Jwt";
