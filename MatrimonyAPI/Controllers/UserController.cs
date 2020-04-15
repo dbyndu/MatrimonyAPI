@@ -21,6 +21,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Cors;
 using MatrimonyAPI.Handler;
+using Matrimony.Model.Common;
 
 namespace MatrimonyAPI.Controllers
 {
@@ -204,12 +205,12 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }
-        [HttpGet]
+        [HttpPost]
         [Authorize]//Needs to be changed to Authorize
         [Route("user-list")]
-        public ActionResult GestUserList()
+        public ActionResult GestUserList(SearchCritriaModel searchCritria)
         {
-            var response = _userService.GestUserList();
+            var response = _userService.GestUserList(searchCritria);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
