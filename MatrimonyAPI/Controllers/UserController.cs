@@ -21,6 +21,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Cors;
 using MatrimonyAPI.Handler;
+using Matrimony.Model.Common;
 
 namespace MatrimonyAPI.Controllers
 {
@@ -88,9 +89,32 @@ namespace MatrimonyAPI.Controllers
 
         [HttpPost]
         [Authorize]
+        [Route("register/login")]
+        public ActionResult LoginUser(UserShortRegister userShortRegister)
+        {
+            var response = _userService.LoginUser(userShortRegister);
+            var userResposne = response as UserModelResponse;
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            if (userResposne != null)
+            {
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
+            }
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         [Route("register/short-register")]
         public ActionResult CreateNewUser(UserShortRegister userShortRegister)
-        {
+            {
             var response = _userService.CreateNewUser(userShortRegister);
             var userResposne = response as UserModelResponse;
             var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
@@ -120,7 +144,7 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-basic-info")]
         public ActionResult UpdateUserBasicInfo(UserBasicInformation userBasic)
         {
@@ -138,18 +162,18 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-religion")]
-        public ActionResult UpdateUserCareer(UserReligionCasteModel userReligion)
+        public ActionResult UpdateUserReligion(UserReligionCasteModel userReligion)
         {
             var response = _userService.Register(userReligion, typeof(UserReligionCasteModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-about")]
-        public ActionResult UpdateUserCareer(UserAboutModel userAbout)
+        public ActionResult UpdateUserAbout(UserAboutModel userAbout)
         {
             var response = _userService.Register(userAbout, typeof(UserAboutModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
@@ -165,29 +189,28 @@ namespace MatrimonyAPI.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]//Needs to be changed to Authorize
-        [Route("register/images/{userId}")]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("register/images")]
         public async Task<IActionResult> UploadImage(List<UserImage> images)
         {
-            //userId = 9;
-            List<UserImage> userImages = new List<UserImage>();
-            images.ForEach(async img => {
-                UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(img.FormData);
-                userImg.UserId = img.UserId;
-                userImages.Add(img);
-            });
+            //List<UserImage> userImages = new List<UserImage>();
+            //images.ForEach(async img => {
+            //    UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(img.FormData);
+            //    userImg.UserId = img.UserId;
+            //    userImages.Add(img);
+            //});
             //UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
             //userImg.UserId = userId;
-            var response = await _userService.SaveImage(userImages);
+            var response = await _userService.SaveImage(images);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }
-        [HttpGet]
-        [AllowAnonymous]//Needs to be changed to Authorize
+        [HttpPost]
+        [Authorize]//Needs to be changed to Authorize
         [Route("user-list")]
-        public ActionResult GestUserList()
+        public ActionResult GestUserList(SearchCritriaModel searchCritria)
         {
-            var response = _userService.GestUserList();
+            var response = _userService.GestUserList(searchCritria);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 

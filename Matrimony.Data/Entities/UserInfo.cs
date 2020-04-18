@@ -18,6 +18,10 @@ namespace Matrimony.Data.Entities
         public int? BloodGroupId { get; set; }
         public int? ReligionId { get; set; }
         public string Caste { get; set; }
+
+        public bool? Dosh { get; set; }
+        public bool? Manglik { get; set; }
+        public bool? Horoscope { get; set; }
         public int? MotherTongueId { get; set; }
         public int? ComunityId { get; set; }
         public string Gothra { get; set; }

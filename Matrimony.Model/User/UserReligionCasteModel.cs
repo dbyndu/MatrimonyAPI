@@ -12,5 +12,8 @@ namespace Matrimony.Model.User
         public string Caste { get; set; }
         public string Gothra { get; set; }
         public bool? IsIgnorCast { get; set; }
+        public bool? Dosh { get; set; }
+        public bool? Manglik { get; set; }
+        public bool? Horoscope { get; set; }
     }
 }

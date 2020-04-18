@@ -16,6 +16,9 @@ namespace Matrimony.Model.User
         public int? BodyTypeId { get; set; }
         public int? ComplexionId { get; set; }
         public bool? IsDisability { get; set; }
+        public bool? Dosh { get; set; }
+        public bool? Manglik { get; set; }
+        public bool? Horoscope { get; set; }
         public int? BloodGroupId { get; set; }
         public int? ReligionId { get; set; }
         public string Caste { get; set; }
@@ -30,6 +33,6 @@ namespace Matrimony.Model.User
         public string GrewUpIn { get; set; }
         public string Origin { get; set; }
         public long? Pin { get; set; }
-        //public string About { get; set; }
+        public string About { get; set; }
     }
 }

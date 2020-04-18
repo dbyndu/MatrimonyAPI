@@ -3,49 +3,32 @@ GO
 
 DECLARE @tableId VARCHAR(100)
 DECLARE @Values NVARCHAR(MAX)
-/****** Profile Created For  ******/
---SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'ProfileCreatedFor'
---SET @Values = 'Self,Son,Daughter,Brother,Sister,Relative/Friend,Client-Marriage Bureau'
---INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
---SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
 
 
---/****** Gender  ******/
---SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Gender'
---SET @Values = 'Male,Female'
---INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
---SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
-
---/****** Religion  ******/
---SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Religion'
---SET @Values = 'Hindu,Muslim,Christian,Sikh,Parsi,Jain,Buddhist,Jewish,No Religion,Spiritual,Other'
---INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
---SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
-
---/****** MotherTongue  ******/
---SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'MotherTongue'
---SET @Values = 'Bengali,English,Gujarati,Hindi,Kannada,Konkani,Malayalam,Marathi,Marwari,Odia,Punjabi'
---INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
---SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')  
-
-/****** BodyType  ******/
-SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'BodyType'
-SET @Values = 'Slim,Athletic,Average,Heavy'
-INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
-SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',') 
-/****** Compexion  ******/
-SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'Compexion'
-SET @Values = 'Very Fair,Fair,Whiteish,Whiteish Brown,Dark'
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'EducationLevel'
+SET @Values = 'Doctorate,Masters,Honours degree,Bachelors,Diploma,High school,Less than high school,Trade school'
 INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
 SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',') 
 
-/****** BloodGroup  ******/
-
-SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'BloodGroup'
-SET @Values = 'A+,O+,B+,AB+,A-,O-,B-,AB-'
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'EducationField'
+SET @Values = 'Advertising/ Marketing,Administrative services,Architecture,Armed Forces,Arts,Commerce,Computers/ IT,Education'
 INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
 SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',') 
 
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'WorkingSector'
+SET @Values = 'Private Company,Government / Public Sector,Defense / Civil Services,Business / Self Employed,Non Working'
+INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
+SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',') 
+
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'WorkDesignation'
+SET @Values = 'Chartered Accountant,Banking Professional,Investment Professional,Admin Professional,Human Resources Professional,Advertising Professional,Entertainment Professional'
+INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
+SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',') 
+
+SELECT @tableId = Id FROM MasterTableMetadata WHERE TableName = 'AnualIncome'
+SET @Values = 'Upto INR 1 Lakh,INR 1 Lakh to 2 Lakh,INR 2 Lakh to 4 Lakh'
+INSERT INTO [dbo].[MasterFieldValue] ([Value],[MasterTableId])
+SELECT value,@tableId  FROM STRING_SPLIT ( @Values, ',')
 GO
 
 
