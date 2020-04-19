@@ -19,5 +19,6 @@ namespace Matrimony.Model.User
         public int? EmployerId { get; set; }
         public int? AnualIncomeId { get; set; }
         public bool? IsDisplayIncome { get; set; }
+        public string OtherEmployer { get; set; }
     }
 }

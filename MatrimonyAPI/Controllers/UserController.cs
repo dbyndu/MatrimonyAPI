@@ -153,7 +153,7 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/user-education-carrer")]
         public ActionResult UpdateUserEducation(UserEducationCareerModel userEducationCareer)
         {
