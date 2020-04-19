@@ -359,26 +359,31 @@ namespace Matrimony.Service.User
                                from ub in user_basic.DefaultIfEmpty()
                                join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
                                from img in user_image.DefaultIfEmpty()
-                               join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
-                               from l in language.DefaultIfEmpty()
-                               join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
-                               from he in highstEducation.DefaultIfEmpty()
-                               join mEduField in _context.MasterFieldValue on ub.HighestSpecializationId equals mEduField.Id into highstEducationField
-                               from hef in highstEducationField.DefaultIfEmpty()
-                               join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
-                               from w in workDesignation.DefaultIfEmpty()
-                               join ct in _context.Cities on ub.CityId equals ct.Id into city
-                               from c in city.DefaultIfEmpty()
+                               //join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
+                               //from l in language.DefaultIfEmpty()
+                               //join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
+                               //from he in highstEducation.DefaultIfEmpty()
+                               //join mEduField in _context.MasterFieldValue on ub.HighestSpecializationId equals mEduField.Id into highstEducationField
+                               //from hef in highstEducationField.DefaultIfEmpty()
+                               //join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
+                               //from w in workDesignation.DefaultIfEmpty()
+                               //join ct in _context.Cities on ub.CityId equals ct.Id into city
+                               //from c in city.DefaultIfEmpty()
                                select new
                                {
                                    Id = u.Id,
                                    Name = string.Concat(u.FirstName ?? "", " ", u.MiddleNmae ?? "", " ", u.LastName ?? ""),
                                    Age = GenericHelper.CalculateAge(Convert.ToDateTime(ub.Dob)),
                                    Height = ub.Height ?? 0,
-                                   Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
-                                   City = c.Name ?? string.Empty,
-                                   Profession = w.Value ?? string.Empty,
-                                   Language = l.Value ?? string.Empty,
+                                   Caste = ub.Caste,
+                                   //Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
+                                   //City = c.Name ?? string.Empty,
+                                   //Profession = w.Value ?? string.Empty,
+                                   //Language = l.Value ?? string.Empty,
+                                   ub.HighestQualificationId,
+                                   ub.HighestSpecializationId,
+                                   ub.WorkDesignationId,
+                                   ub.CityId,
                                    Url = "",
                                    ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 0, 0, (searchCritria.UserId.Equals(0)) ? "mask" : "") : "",
                                    GenderId = ub.GenderId ?? 0,
@@ -386,15 +391,15 @@ namespace Matrimony.Service.User
                                    MotherTongueId = ub.MotherTongueId ?? 0
                                });
             if (searchCritria.Gender > 0)
-                querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));
-            if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
-                //querySearch = querySearch.Where(u => u.Age > searchCritria.AgeFrom);
+                querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));            
             if (searchCritria.Religion > 0)
                 querySearch = querySearch.Where(u => u.ReligionId.Equals(searchCritria.Religion));
             if (searchCritria.MotherTongue > 0)
                 querySearch = querySearch.Where(u => u.MotherTongueId.Equals(searchCritria.MotherTongue));
 
             var lstUsers = querySearch.ToList();
+            if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
+                lstUsers = lstUsers.Where(u => u.Age > searchCritria.AgeFrom).ToList();
             if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
             {
                 errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
