@@ -20,22 +20,21 @@ namespace Matrimony.Data
         public virtual DbSet<Countries> Countries { get; set; }
         public virtual DbSet<MasterFieldValue> MasterFieldValue { get; set; }
         public virtual DbSet<MasterTableMetadata> MasterTableMetadata { get; set; }
-        public virtual DbSet<PreferenceMaster> PreferenceMaster { get; set; }
         public virtual DbSet<States> States { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserImage> UserImage { get; set; }
         public virtual DbSet<UserInfo> UserInfo { get; set; }
         public virtual DbSet<UserLifeStyle> UserLifeStyle { get; set; }
-        public virtual DbSet<UserPreferenceSetting> UserPreferenceSetting { get; set; }
+        public virtual DbSet<UserPreferences> UserPreferences { get; set; }
 
-//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//        {
-//            if (!optionsBuilder.IsConfigured)
-//            {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-//                optionsBuilder.UseSqlServer("Server=LAPTOP-DVGRKESI\\SQL2017;Database=Matrimony;Integrated Security=True");
-//            }
-//        }
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+        //                optionsBuilder.UseSqlServer("Server=LAPTOP-DVGRKESI\\SQL2017;Database=Matrimony;Integrated Security=True");
+        //            }
+        //        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -95,24 +94,6 @@ namespace Matrimony.Data
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false);
-            });
-
-            modelBuilder.Entity<PreferenceMaster>(entity =>
-            {
-                entity.Property(e => e.DataType)
-                    .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.FieldName)
-                    .IsRequired()
-                    .HasMaxLength(250)
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.ReferenceTable)
-                    .WithMany(p => p.PreferenceMaster)
-                    .HasForeignKey(d => d.ReferenceTableId)
-                    .HasConstraintName("FK_PreferenceMaster_MasterTableMetadata");
             });
 
             modelBuilder.Entity<States>(entity =>
@@ -394,26 +375,15 @@ namespace Matrimony.Data
                     .HasConstraintName("FK_UserLifeStyle_MasterFieldValueWeadingStyle");
             });
 
-            modelBuilder.Entity<UserPreferenceSetting>(entity =>
+            modelBuilder.Entity<UserPreferences>(entity =>
             {
-                entity.Property(e => e.UnconstraineValue)
-                    .HasMaxLength(250)
-                    .IsUnicode(false);
+                entity.Property(e => e.City).HasMaxLength(50);
 
-                entity.HasOne(d => d.FieldValue)
-                    .WithMany(p => p.UserPreferenceSetting)
-                    .HasForeignKey(d => d.FieldValueId)
-                    .HasConstraintName("FK_UserPreferenceSetting_MasterFieldValue");
+                entity.Property(e => e.MotherTongue).HasMaxLength(50);
 
-                entity.HasOne(d => d.PreferenceMaster)
-                    .WithMany(p => p.UserPreferenceSetting)
-                    .HasForeignKey(d => d.PreferenceMasterId)
-                    .HasConstraintName("FK_UserPreferenceSetting_PreferenceMaster");
+                entity.Property(e => e.Occupation).HasMaxLength(50);
 
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.UserPreferenceSetting)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_UserPreferenceSetting_User");
+                entity.Property(e => e.Specialization).HasMaxLength(50);
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -170,6 +170,14 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
+        [Authorize]
+        [Route("register/user-preference")]
+        public ActionResult UpdateUserPreference(UserPreferenceModel userPreference)
+        {
+            var response = _userService.Register(userPreference, typeof(UserPreferenceModel).Name) as UserModelResponse;
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpPost]
         //Needs to be changed to Authorize
         [Authorize]
         [Route("register/user-about")]
