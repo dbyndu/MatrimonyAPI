@@ -153,7 +153,7 @@ namespace Matrimony.Service.User
             if (alreadyInsertedUser > 0)
             {
                 errors.Add(new Error("Err105", "User Already Added.."));
-                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);                
+                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);
             }
             Matrimony.Data.Entities.User dbUser = new Data.Entities.User()
             {
@@ -164,7 +164,7 @@ namespace Matrimony.Service.User
                 PhoneNumber = user.PhoneNumber,
                 ContactName = user.Email + "_" + user.PhoneNumber
             };
-            
+
 
             try
             {
@@ -233,7 +233,7 @@ namespace Matrimony.Service.User
                                    ComplexionId = ub.ComplexionId,
                                    IsDisability = ub.IsDisability,
                                    Dosh = ub.Dosh,
-                                   Manglik  =ub.Manglik,
+                                   Manglik = ub.Manglik,
                                    Horoscope = ub.Horoscope,
                                    BloodGroupId = ub.BloodGroupId,
                                    ReligionId = ub.ReligionId,
@@ -260,44 +260,44 @@ namespace Matrimony.Service.User
                            }).FirstOrDefault();
 
 
-           //var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
-           // {
-           //     ID = u.Id,
-           //     Email = u.Email,
-           //     FirstName = u.FirstName,
-           //     LastName = u.LastName,
-           //     MiddleNmae = u.MiddleNmae,
-           //     PhoneNumber = u.PhoneNumber,
-           //     ProfileCreatedForId = u.ProfileCreatedForId
-           // });
-           // returnValue = IQueryUsers.FirstOrDefault();
-           // returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
-           //     userinfo => new UserBasicInformation()
-           //     {
-           //         Id = userinfo.Id,
-           //         UserId = userinfo.UserId,
-           //         GenderId = userinfo.GenderId,
-           //         Dob = userinfo.Dob,
-           //         MaritalStatusId = userinfo.MaritalStatusId,
-           //         Height = userinfo.Height,
-           //         Weight = userinfo.Weight,
-           //         BodyTypeId = userinfo.BodyTypeId,
-           //         ComplexionId = userinfo.ComplexionId,
-           //         IsDisability = userinfo.IsDisability,
-           //         BloodGroupId = userinfo.BloodGroupId,
-           //         ReligionId = userinfo.ReligionId,
-           //         Caste = userinfo.Caste,
-           //         MotherTongueId = userinfo.MotherTongueId,
-           //         ComunityId = userinfo.ComunityId,
-           //         Gothra = userinfo.Gothra,
-           //         CountryId = userinfo.CountryId,
-           //         CitizenshipId = userinfo.CitizenshipId,
-           //         StateId = userinfo.StateId,
-           //         CityId = userinfo.CityId,
-           //         GrewUpIn = userinfo.GrewUpIn,
-           //         Origin = userinfo.Origin,
-           //         Pin = userinfo.Pin
-           //     }).FirstOrDefault();
+            //var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
+            // {
+            //     ID = u.Id,
+            //     Email = u.Email,
+            //     FirstName = u.FirstName,
+            //     LastName = u.LastName,
+            //     MiddleNmae = u.MiddleNmae,
+            //     PhoneNumber = u.PhoneNumber,
+            //     ProfileCreatedForId = u.ProfileCreatedForId
+            // });
+            // returnValue = IQueryUsers.FirstOrDefault();
+            // returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
+            //     userinfo => new UserBasicInformation()
+            //     {
+            //         Id = userinfo.Id,
+            //         UserId = userinfo.UserId,
+            //         GenderId = userinfo.GenderId,
+            //         Dob = userinfo.Dob,
+            //         MaritalStatusId = userinfo.MaritalStatusId,
+            //         Height = userinfo.Height,
+            //         Weight = userinfo.Weight,
+            //         BodyTypeId = userinfo.BodyTypeId,
+            //         ComplexionId = userinfo.ComplexionId,
+            //         IsDisability = userinfo.IsDisability,
+            //         BloodGroupId = userinfo.BloodGroupId,
+            //         ReligionId = userinfo.ReligionId,
+            //         Caste = userinfo.Caste,
+            //         MotherTongueId = userinfo.MotherTongueId,
+            //         ComunityId = userinfo.ComunityId,
+            //         Gothra = userinfo.Gothra,
+            //         CountryId = userinfo.CountryId,
+            //         CitizenshipId = userinfo.CitizenshipId,
+            //         StateId = userinfo.StateId,
+            //         CityId = userinfo.CityId,
+            //         GrewUpIn = userinfo.GrewUpIn,
+            //         Origin = userinfo.Origin,
+            //         Pin = userinfo.Pin
+            //     }).FirstOrDefault();
 
             return returnValue;
         }
@@ -359,16 +359,22 @@ namespace Matrimony.Service.User
                                from ub in user_basic.DefaultIfEmpty()
                                join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
                                from img in user_image.DefaultIfEmpty()
-                               //join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
-                               //from l in language.DefaultIfEmpty()
-                               //join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
-                               //from he in highstEducation.DefaultIfEmpty()
-                               //join mEduField in _context.MasterFieldValue on ub.HighestSpecializationId equals mEduField.Id into highstEducationField
-                               //from hef in highstEducationField.DefaultIfEmpty()
-                               //join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
-                               //from w in workDesignation.DefaultIfEmpty()
-                               //join ct in _context.Cities on ub.CityId equals ct.Id into city
-                               //from c in city.DefaultIfEmpty()
+                                   //join c in _context.Countries on ub.CountryId equals c.Id into user_country
+                                   //from country in user_country.DefaultIfEmpty()
+                               join s in _context.States on ub.StateId equals s.Id into user_state
+                               from state in user_state.DefaultIfEmpty()
+                               join ci in _context.Cities on ub.CityId equals ci.Id into user_city
+                               from city in user_city.DefaultIfEmpty()
+                                   //join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
+                                   //from l in language.DefaultIfEmpty()
+                                   //join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
+                                   //from he in highstEducation.DefaultIfEmpty()
+                                   //join mEduField in _context.MasterFieldValue on ub.HighestSpecializationId equals mEduField.Id into highstEducationField
+                                   //from hef in highstEducationField.DefaultIfEmpty()
+                                   //join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
+                                   //from w in workDesignation.DefaultIfEmpty()
+                                   //join ct in _context.Cities on ub.CityId equals ct.Id into city
+                                   //from c in city.DefaultIfEmpty()
                                select new
                                {
                                    Id = u.Id,
@@ -383,7 +389,8 @@ namespace Matrimony.Service.User
                                    ub.HighestQualificationId,
                                    ub.HighestSpecializationId,
                                    ub.WorkDesignationId,
-                                   ub.CityId,
+                                   State = state.Name,
+                                   City = city.Name,
                                    Url = "",
                                    ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 0, 0, (searchCritria.UserId.Equals(0)) ? "mask" : "") : "",
                                    GenderId = ub.GenderId ?? 0,
@@ -391,7 +398,7 @@ namespace Matrimony.Service.User
                                    MotherTongueId = ub.MotherTongueId ?? 0
                                });
             if (searchCritria.Gender > 0)
-                querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));            
+                querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));
             if (searchCritria.Religion > 0)
                 querySearch = querySearch.Where(u => u.ReligionId.Equals(searchCritria.Religion));
             if (searchCritria.MotherTongue > 0)
@@ -454,6 +461,11 @@ namespace Matrimony.Service.User
                         outPutResult = InsertUpdateUserAboutInfo(userAbout);
                         userId = userAbout.UserId;
                         break;
+                    case "UserPreferenceModel":
+                        UserPreferenceModel userPref = (UserPreferenceModel)obj;
+                        outPutResult = InsertUpdateUserPreference(userPref);
+                        userId = userPref.UserId;
+                        break;
                     default:
                         // code block
                         break;
@@ -511,7 +523,7 @@ namespace Matrimony.Service.User
             }
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Image Of User");
             if (!errors.Any())
-            {               
+            {
 
                 return new AnonymousResponse(metadata, stat);
             }
@@ -587,8 +599,8 @@ namespace Matrimony.Service.User
             userImgs.ForEach(img =>
             {
                 string base64String = img.ImageString.Split(',')[1];
-                byte[] imageBytes = Convert.FromBase64String(base64String);               
-                    
+                byte[] imageBytes = Convert.FromBase64String(base64String);
+
                 Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
                 {
                     Id = img.Id,
@@ -611,7 +623,7 @@ namespace Matrimony.Service.User
                     {
                         _context.UserImage.Add(dbUserImage);
                     }
-                   
+
                 }
                 catch (Exception ex)
                 {
@@ -629,7 +641,7 @@ namespace Matrimony.Service.User
             {
                 uInfo = new Data.Entities.UserInfo();
                 uInfo.Id = userBasic.Id;
-            }            
+            }
             uInfo.UserId = userBasic.UserId;
             uInfo.GenderId = userBasic.GenderId;
             uInfo.Dob = userBasic.Dob;
@@ -817,7 +829,7 @@ namespace Matrimony.Service.User
                     };
                     _context.User.Add(dbUser);
                 }
-                
+
                 outPutResult = _context.SaveChanges();
 
                 userId = dbUser.Id;
@@ -898,6 +910,55 @@ namespace Matrimony.Service.User
             return outPutResult;
         }
 
+        private int InsertUpdateUserPreference(UserPreferenceModel userPref)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.UserPreferences uPreference = _context.UserPreferences.Where(u => u.UserId.Equals(userPref.UserId)).FirstOrDefault();
+            if (uPreference == null)
+            {
+                uPreference = new Data.Entities.UserPreferences();
+                uPreference.Id = userPref.Id;
+            }
+            uPreference.UserId = userPref.UserId;
+            uPreference.AgeFrom = userPref.AgeFrom;
+            uPreference.AgeTo = userPref.AgeTo;
+            uPreference.MaritialStatus = userPref.MaritialStatus;
+            uPreference.Country = userPref.Country;
+            uPreference.Citizenship = userPref.Citizenship;
+            uPreference.State = userPref.State;
+            uPreference.City = userPref.City;
+            uPreference.Religion = userPref.Religion;
+            uPreference.MotherTongue = userPref.MotherTongue;
+            uPreference.Caste = userPref.Caste;
+            uPreference.Subcaste = userPref.Subcaste;
+            uPreference.Gothram = userPref.Gothram;
+            uPreference.Dosh = userPref.Dosh;
+            uPreference.Manglik = userPref.Manglik;
+            uPreference.Horoscope = userPref.Horoscope;
+            uPreference.HighestQualification = userPref.HighestQualification;
+            uPreference.Working = userPref.Working;
+            uPreference.Occupation = userPref.Occupation;
+            uPreference.Specialization = userPref.Specialization;
+            uPreference.AnnualIncome = userPref.AnnualIncome;
+            uPreference.IsAccepted = userPref.IsAccepted;
+            try
+            {
+                if (uPreference.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserPreferences>(uPreference);
+                }
+                else
+                {
+                    _context.UserPreferences.Add(uPreference);
+                }
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
+        }
         private IQueryable<Matrimony.Data.Entities.UserImage> GetRandomImage(int userId)
         {
             return _context.UserImage.Where(ui => ui.UserId.Equals(userId)).OrderBy(x => Guid.NewGuid()).Take(1);

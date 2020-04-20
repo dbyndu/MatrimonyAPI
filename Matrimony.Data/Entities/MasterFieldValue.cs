@@ -35,7 +35,6 @@ namespace Matrimony.Data.Entities
             UserLifeStyleHouseLivingIn = new HashSet<UserLifeStyle>();
             UserLifeStyleSmoking = new HashSet<UserLifeStyle>();
             UserLifeStyleWeadingStyle = new HashSet<UserLifeStyle>();
-            UserPreferenceSetting = new HashSet<UserPreferenceSetting>();
         }
 
         public int Id { get; set; }
@@ -71,6 +70,5 @@ namespace Matrimony.Data.Entities
         public virtual ICollection<UserLifeStyle> UserLifeStyleHouseLivingIn { get; set; }
         public virtual ICollection<UserLifeStyle> UserLifeStyleSmoking { get; set; }
         public virtual ICollection<UserLifeStyle> UserLifeStyleWeadingStyle { get; set; }
-        public virtual ICollection<UserPreferenceSetting> UserPreferenceSetting { get; set; }
     }
 }

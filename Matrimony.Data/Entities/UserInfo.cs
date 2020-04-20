@@ -18,10 +18,6 @@ namespace Matrimony.Data.Entities
         public int? BloodGroupId { get; set; }
         public int? ReligionId { get; set; }
         public string Caste { get; set; }
-
-        public bool? Dosh { get; set; }
-        public bool? Manglik { get; set; }
-        public bool? Horoscope { get; set; }
         public int? MotherTongueId { get; set; }
         public int? ComunityId { get; set; }
         public string Gothra { get; set; }
@@ -56,6 +52,9 @@ namespace Matrimony.Data.Entities
         public int? FamilyValuesId { get; set; }
         public int? FamilyIncomeId { get; set; }
         public string About { get; set; }
+        public bool? Dosh { get; set; }
+        public bool? Manglik { get; set; }
+        public bool? Horoscope { get; set; }
 
         public virtual MasterFieldValue AnualIncome { get; set; }
         public virtual MasterFieldValue BloodGroup { get; set; }
