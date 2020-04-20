@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Matrimony.Helper;
 using System.Threading.Tasks;
 using Matrimony.Model.Common;
+using Matrimony_Model.Common;
 
 namespace Matrimony.Service.User
 {
@@ -250,6 +251,21 @@ namespace Matrimony.Service.User
                                    Pin = ub.Pin,
                                    About = ub.About
                                },
+                               UserCareerInfo = new UserEducationCareerModel
+                               {
+                                    UserId = ub.UserId,
+                                    HighestQualificationId = ub.HighestQualificationId,
+                                    HighestSpecializationId = ub.HighestSpecializationId,
+                                    SecondaryQualificationId = ub.SecondaryQualificationId,
+                                    SecondarySpecializationId = ub.SecondarySpecializationId,
+                                    Institution = ub.Institution,
+                                    University = ub.University,
+                                    WorkingSectorId = ub.WorkingSectorId,
+                                    WorkDesignationId = ub.WorkDesignationId,
+                                    EmployerId = ub.EmployerId,
+                                    AnualIncomeId = ub.AnualIncomeId,
+                                    IsDisplayIncome = ub.IsDisplayIncome
+                               },
                                UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
                                {
                                    Id = u.Id,
@@ -423,6 +439,8 @@ namespace Matrimony.Service.User
             var errors = new List<Error>();
             int outPutResult = 0;
             int userId = 0;
+            bool isUserOtherCareer = false;
+            int otherCareerID = 0;
             try
             {
                 //string objType = obj.GetType().Name;
@@ -448,6 +466,11 @@ namespace Matrimony.Service.User
                         break;
                     case "UserEducationCareerModel":
                         UserEducationCareerModel userEducationsCareer = (UserEducationCareerModel)obj;
+                        if (!string.IsNullOrEmpty(userEducationsCareer.OtherEmployer))
+                        {
+                            isUserOtherCareer = true;
+                            otherCareerID = userEducationsCareer.EmployerId !=null? (int)userEducationsCareer.EmployerId : 0;
+                        }
                         outPutResult = InsertUpdateUserEducationCareer(userEducationsCareer);
                         userId = userEducationsCareer.UserId;
                         break;
@@ -496,7 +519,10 @@ namespace Matrimony.Service.User
                 //return new UserModelResponse(metadata, insertedUser);
                 var insertedUser = _context.User.Where(x => x.Id == userId).FirstOrDefault();
                 UserModel userModel = GetUserInformation(insertedUser.Id);
-
+                if (isUserOtherCareer)
+                {
+                    userModel.UserCareerInfo.EmployerId = otherCareerID == 0 ? userModel.UserCareerInfo.EmployerId : otherCareerID;
+                }
                 return new UserModelResponse(metadata, userModel);
             }
             else
@@ -733,7 +759,29 @@ namespace Matrimony.Service.User
                 if (uInfo == null)
                 {
                     uInfo = new Data.Entities.UserInfo();
-                    uInfo.Id = user_edu_car.Id;
+                    uInfo.UserId = user_edu_car.UserId;
+                }
+                if (!string.IsNullOrEmpty(user_edu_car.OtherEmployer))
+                {
+                    var queryData = from v in _context.MasterFieldValue
+                                    join m in _context.MasterTableMetadata on v.MasterTableId equals m.Id
+                                    where m.TableName == "Employer"
+                                    select new MasterDataModel
+                                    {
+                                        MasterTableId = m.Id,
+                                        Name = v.Value,
+                                    };
+                    if(queryData!=null && queryData.Count()>0 && queryData.FirstOrDefault(item=> item.Name == user_edu_car.OtherEmployer) == null)
+                    {
+                        var masterTableId = queryData.Select(x => x.MasterTableId).FirstOrDefault();
+                        _context.MasterFieldValue.Add(new Data.Entities.MasterFieldValue() { Value = user_edu_car.OtherEmployer, MasterTableId = masterTableId });
+                        outPutResult = _context.SaveChanges();
+                        if (outPutResult != 0)
+                        {
+                            user_edu_car.EmployerId = _context.MasterFieldValue.FirstOrDefault(item => item.MasterTableId == masterTableId &&
+                            item.Value == user_edu_car.OtherEmployer).Id;
+                        }
+                    }
                 }
                 uInfo.UserId = user_edu_car.UserId;
                 uInfo.HighestQualificationId = user_edu_car.HighestQualificationId;
