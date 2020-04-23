@@ -141,16 +141,6 @@ namespace Matrimony.Service.User
             var errors = new List<Error>();
             int outPutResult = 0;
             int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Count();
-            //    .Select(u => new UserModel
-            //{
-            //    ID = u.Id,
-            //    Email = u.Email,
-            //    FirstName = u.FirstName,
-            //    LastName = u.LastName,
-            //    PhoneNumber = u.PhoneNumber,
-            //    CreatedDate = u.CreatedDate,
-            //    ContactName = u.ContactName
-            //}).FirstOrDefault();
             if (alreadyInsertedUser > 0)
             {
                 errors.Add(new Error("Err105", "User Already Added.."));
@@ -251,6 +241,21 @@ namespace Matrimony.Service.User
                                    Pin = ub.Pin,
                                    About = ub.About
                                },
+                               UserFamilyInfo = new UserFamilyInformationModel
+                               {
+                                    UserId = ub.UserId,
+                                    FatherStatusId = ub.FatherStatusId,
+                                    MotherStatusId = ub.MotherStatusId,
+                                    NativePlace = ub.NativePlace,
+                                    FamilyLocation = ub.FamilyLocation,
+                                    MarriedSiblingMale = ub.MarriedSiblingMale,
+                                    NotMarriedSiblingMale = ub.NotMarriedSiblingMale,
+                                    MarriedSiblingFemale = ub.MarriedSiblingFemale,
+                                    NotMarriedSiblingFemale = ub.NotMarriedSiblingFemale,
+                                    FamilyTypeId = ub.FamilyTypeId,
+                                    FamilyValuesId = ub.FamilyValuesId,
+                                    FamilyIncomeId =ub.FamilyIncomeId
+                               },
                                UserCareerInfo = new UserEducationCareerModel
                                {
                                     UserId = ub.UserId,
@@ -274,47 +279,6 @@ namespace Matrimony.Service.User
                                }).ToList()
 
                            }).FirstOrDefault();
-
-
-            //var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
-            // {
-            //     ID = u.Id,
-            //     Email = u.Email,
-            //     FirstName = u.FirstName,
-            //     LastName = u.LastName,
-            //     MiddleNmae = u.MiddleNmae,
-            //     PhoneNumber = u.PhoneNumber,
-            //     ProfileCreatedForId = u.ProfileCreatedForId
-            // });
-            // returnValue = IQueryUsers.FirstOrDefault();
-            // returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
-            //     userinfo => new UserBasicInformation()
-            //     {
-            //         Id = userinfo.Id,
-            //         UserId = userinfo.UserId,
-            //         GenderId = userinfo.GenderId,
-            //         Dob = userinfo.Dob,
-            //         MaritalStatusId = userinfo.MaritalStatusId,
-            //         Height = userinfo.Height,
-            //         Weight = userinfo.Weight,
-            //         BodyTypeId = userinfo.BodyTypeId,
-            //         ComplexionId = userinfo.ComplexionId,
-            //         IsDisability = userinfo.IsDisability,
-            //         BloodGroupId = userinfo.BloodGroupId,
-            //         ReligionId = userinfo.ReligionId,
-            //         Caste = userinfo.Caste,
-            //         MotherTongueId = userinfo.MotherTongueId,
-            //         ComunityId = userinfo.ComunityId,
-            //         Gothra = userinfo.Gothra,
-            //         CountryId = userinfo.CountryId,
-            //         CitizenshipId = userinfo.CitizenshipId,
-            //         StateId = userinfo.StateId,
-            //         CityId = userinfo.CityId,
-            //         GrewUpIn = userinfo.GrewUpIn,
-            //         Origin = userinfo.Origin,
-            //         Pin = userinfo.Pin
-            //     }).FirstOrDefault();
-
             return returnValue;
         }
 
