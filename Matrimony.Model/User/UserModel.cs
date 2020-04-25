@@ -10,6 +10,8 @@ namespace Matrimony.Model.User
         public UserEducationCareerModel UserCareerInfo { get; set; }
         public List<UserImage> UserImages { get; set; }
 
+        public UserPreferenceModel UserPreference { get; set; }
+
 
         //public ICollection<UserCareerModel> UserCareer { get; set; }
         //public ICollection<UserEducationModel> UserEducation { get; set; }

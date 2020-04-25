@@ -121,8 +121,8 @@ namespace Matrimony.Service.User
                 var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
                 if (!errors.Any())
                 {
-                    var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
-                    return new UserModelResponse(metadata, insertedUser);
+                    //var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                    return new UserModelResponse(metadata, alreadyInsertedUser);
                 }
                 else
                 {
@@ -211,6 +211,8 @@ namespace Matrimony.Service.User
             returnValue = (from u in _context.User
                            join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                            from ub in user_basic.DefaultIfEmpty()
+                           join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
+                           from preference in user_pref.DefaultIfEmpty()
                            where u.Id.Equals(id)
                            select new UserModel
                            {
@@ -271,7 +273,8 @@ namespace Matrimony.Service.User
                                    Id = u.Id,
                                    UserId = u.UserId,
                                    ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0, "") // ImageResizer((byte[])u.Image, width, height)
-                               }).ToList()
+                               }).ToList(),
+                               UserPreference = _mapper.Map<UserPreferenceModel>(preference)
 
                            }).FirstOrDefault();
 
@@ -517,8 +520,8 @@ namespace Matrimony.Service.User
                 //    CreatedDate = u.CreatedDate
                 //}).FirstOrDefault();
                 //return new UserModelResponse(metadata, insertedUser);
-                var insertedUser = _context.User.Where(x => x.Id == userId).FirstOrDefault();
-                UserModel userModel = GetUserInformation(insertedUser.Id);
+                //var insertedUser = _context.User.Where(x => x.Id == userId).FirstOrDefault();
+                UserModel userModel = GetUserInformation(userId);
                 if (isUserOtherCareer)
                 {
                     userModel.UserCareerInfo.EmployerId = otherCareerID == 0 ? userModel.UserCareerInfo.EmployerId : otherCareerID;
@@ -961,34 +964,35 @@ namespace Matrimony.Service.User
         private int InsertUpdateUserPreference(UserPreferenceModel userPref)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.UserPreferences uPreference = _context.UserPreferences.Where(u => u.UserId.Equals(userPref.UserId)).FirstOrDefault();
-            if (uPreference == null)
-            {
-                uPreference = new Data.Entities.UserPreferences();
-                uPreference.Id = userPref.Id;
-            }
-            uPreference.UserId = userPref.UserId;
-            uPreference.AgeFrom = userPref.AgeFrom;
-            uPreference.AgeTo = userPref.AgeTo;
-            uPreference.MaritialStatus = userPref.MaritialStatus;
-            uPreference.Country = userPref.Country;
-            uPreference.Citizenship = userPref.Citizenship;
-            uPreference.State = userPref.State;
-            uPreference.City = userPref.City;
-            uPreference.Religion = userPref.Religion;
-            uPreference.MotherTongue = userPref.MotherTongue;
-            uPreference.Caste = userPref.Caste;
-            uPreference.Subcaste = userPref.Subcaste;
-            uPreference.Gothram = userPref.Gothram;
-            uPreference.Dosh = userPref.Dosh;
-            uPreference.Manglik = userPref.Manglik;
-            uPreference.Horoscope = userPref.Horoscope;
-            uPreference.HighestQualification = userPref.HighestQualification;
-            uPreference.Working = userPref.Working;
-            uPreference.Occupation = userPref.Occupation;
-            uPreference.Specialization = userPref.Specialization;
-            uPreference.AnnualIncome = userPref.AnnualIncome;
-            uPreference.IsAccepted = userPref.IsAccepted;
+            Matrimony.Data.Entities.UserPreferences uPreference = _mapper.Map<Matrimony.Data.Entities.UserPreferences>(userPref);
+            //Matrimony.Data.Entities.UserPreferences uPreference = _context.UserPreferences.Where(u => u.UserId.Equals(userPref.UserId)).FirstOrDefault();
+            //if (uPreference == null)
+            //{
+            //    uPreference = new Data.Entities.UserPreferences();
+            //    uPreference.Id = userPref.Id;
+            //}
+            //uPreference.UserId = userPref.UserId;
+            //uPreference.AgeFrom = userPref.AgeFrom;
+            //uPreference.AgeTo = userPref.AgeTo;
+            //uPreference.MaritialStatus = userPref.MaritialStatus;
+            //uPreference.Country = userPref.Country;
+            //uPreference.Citizenship = userPref.Citizenship;
+            //uPreference.State = userPref.State;
+            //uPreference.City = userPref.City;
+            //uPreference.Religion = userPref.Religion;
+            //uPreference.MotherTongue = userPref.MotherTongue;
+            //uPreference.Caste = userPref.Caste;
+            //uPreference.Subcaste = userPref.Subcaste;
+            //uPreference.Gothram = userPref.Gothram;
+            //uPreference.Dosh = userPref.Dosh;
+            //uPreference.Manglik = userPref.Manglik;
+            //uPreference.Horoscope = userPref.Horoscope;
+            //uPreference.HighestQualification = userPref.HighestQualification;
+            //uPreference.Working = userPref.Working;
+            //uPreference.Occupation = userPref.Occupation;
+            //uPreference.Specialization = userPref.Specialization;
+            //uPreference.AnnualIncome = userPref.AnnualIncome;
+            //uPreference.IsAccepted = userPref.IsAccepted;
             try
             {
                 if (uPreference.Id > 0)

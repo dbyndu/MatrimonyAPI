@@ -14,6 +14,8 @@ namespace MatrimonyAPI.Helper
             // Add as many of these lines as you need to map your objects
             CreateMap<Matrimony.Data.Entities.User, UserModel>().ForMember(x => x.Password, opt => opt.Ignore());
             CreateMap<Matrimony.Data.Entities.UserInfo, UserBasicInformation>();
+            CreateMap<Matrimony.Data.Entities.UserPreferences, UserPreferenceModel>();
+            CreateMap<UserPreferenceModel, Matrimony.Data.Entities.UserPreferences>();
             //CreateMap<UserDto, User>();
         }
     }
