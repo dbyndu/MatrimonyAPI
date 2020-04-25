@@ -141,16 +141,6 @@ namespace Matrimony.Service.User
             var errors = new List<Error>();
             int outPutResult = 0;
             int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Count();
-            //    .Select(u => new UserModel
-            //{
-            //    ID = u.Id,
-            //    Email = u.Email,
-            //    FirstName = u.FirstName,
-            //    LastName = u.LastName,
-            //    PhoneNumber = u.PhoneNumber,
-            //    CreatedDate = u.CreatedDate,
-            //    ContactName = u.ContactName
-            //}).FirstOrDefault();
             if (alreadyInsertedUser > 0)
             {
                 errors.Add(new Error("Err105", "User Already Added.."));
@@ -211,6 +201,8 @@ namespace Matrimony.Service.User
             returnValue = (from u in _context.User
                            join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                            from ub in user_basic.DefaultIfEmpty()
+                           join usLife in _context.UserLifeStyle on u.Id equals usLife.UserId into user_Life
+                           from userLife in user_Life.DefaultIfEmpty()
                            join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
                            from preference in user_pref.DefaultIfEmpty()
                            where u.Id.Equals(id)
@@ -253,21 +245,78 @@ namespace Matrimony.Service.User
                                    Pin = ub.Pin,
                                    About = ub.About
                                },
+                               UserFamilyInfo = new UserFamilyInformationModel
+                               {
+                                   Id= ub.Id,
+                                   UserId = ub.UserId,
+                                   FatherStatusId = ub.FatherStatusId,
+                                   MotherStatusId = ub.MotherStatusId,
+                                   NativePlace = ub.NativePlace,
+                                   FamilyLocation = ub.FamilyLocation,
+                                   MarriedSiblingMale = ub.MarriedSiblingMale,
+                                   NotMarriedSiblingMale = ub.NotMarriedSiblingMale,
+                                   MarriedSiblingFemale = ub.MarriedSiblingFemale,
+                                   NotMarriedSiblingFemale = ub.NotMarriedSiblingFemale,
+                                   FamilyTypeId = ub.FamilyTypeId,
+                                   FamilyValuesId = ub.FamilyValuesId,
+                                   FamilyIncomeId = ub.FamilyIncomeId
+                               },
                                UserCareerInfo = new UserEducationCareerModel
                                {
-                                    UserId = ub.UserId,
-                                    HighestQualificationId = ub.HighestQualificationId,
-                                    HighestSpecializationId = ub.HighestSpecializationId,
-                                    SecondaryQualificationId = ub.SecondaryQualificationId,
-                                    SecondarySpecializationId = ub.SecondarySpecializationId,
-                                    Institution = ub.Institution,
-                                    University = ub.University,
-                                    WorkingSectorId = ub.WorkingSectorId,
-                                    WorkDesignationId = ub.WorkDesignationId,
-                                    EmployerId = ub.EmployerId,
-                                    AnualIncomeId = ub.AnualIncomeId,
-                                    IsDisplayIncome = ub.IsDisplayIncome
+                                   Id = ub.Id,
+                                   UserId = ub.UserId,
+                                   HighestQualificationId = ub.HighestQualificationId,
+                                   HighestSpecializationId = ub.HighestSpecializationId,
+                                   SecondaryQualificationId = ub.SecondaryQualificationId,
+                                   SecondarySpecializationId = ub.SecondarySpecializationId,
+                                   Institution = ub.Institution,
+                                   University = ub.University,
+                                   WorkingSectorId = ub.WorkingSectorId,
+                                   WorkDesignationId = ub.WorkDesignationId,
+                                   EmployerId = ub.EmployerId,
+                                   AnualIncomeId = ub.AnualIncomeId,
+                                   IsDisplayIncome = ub.IsDisplayIncome
                                },
+                               UserLifeStyle = new UserLifeStyleModel
+                               {
+                                   Id = userLife.Id,
+                                   UserId = userLife.UserId,
+                                   DietId = userLife.DietId,
+                                   Hobies = userLife.Hobies,
+                                   SmokingId = userLife.SmokingId,
+                                   ChildrenChoiceId = userLife.ChildrenChoiceId,
+                                   WeadingStyleId = userLife.WeadingStyleId,
+                                   DrinkingId = userLife.DrinkingId,
+                                   HouseLivingInId = userLife.HouseLivingInId,
+                                   OwnCar = userLife.OwnCar,
+                                   OwnPet = userLife.OwnPet,
+                                   Interests = userLife.Interests,
+                                   Musics = userLife.Musics,
+                                   Books = userLife.Books,
+                                   Movies = userLife.Movies,
+                                   Fitness = userLife.Fitness,
+                                   Cuisines = userLife.Cuisines
+                               },
+                               //UserLifeStyle = _context.UserLifeStyle.Where(i=>i.UserId.Equals(id)).FirstOrDefault().Select(userLife=> new UserLifeStyleModel
+                               //{
+                               //    Id = userLife.Id,
+                               //    UserId = userLife.UserId,
+                               //    DietId = userLife.DietId,
+                               //    Hobies = userLife.Hobies,
+                               //    SmokingId = userLife.SmokingId,
+                               //    ChildrenChoiceId = userLife.ChildrenChoiceId,
+                               //    WeadingStyleId = userLife.WeadingStyleId,
+                               //    DrinkingId = userLife.DrinkingId,
+                               //    HouseLivingInId = userLife.HouseLivingInId,
+                               //    OwnCar = userLife.OwnCar,
+                               //    OwnPet = userLife.OwnPet,
+                               //    Interests = userLife.Interests,
+                               //    Musics = userLife.Musics,
+                               //    Books = userLife.Books,
+                               //    Movies = userLife.Movies,
+                               //    Fitness = userLife.Fitness,
+                               //    Cuisines = userLife.Cuisines
+                               //}),
                                UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
                                {
                                    Id = u.Id,
@@ -277,47 +326,6 @@ namespace Matrimony.Service.User
                                UserPreference = _mapper.Map<UserPreferenceModel>(preference)
 
                            }).FirstOrDefault();
-
-
-            //var IQueryUsers = _context.User.Where(u => u.Id.Equals(id)).Select(u => new UserModel
-            // {
-            //     ID = u.Id,
-            //     Email = u.Email,
-            //     FirstName = u.FirstName,
-            //     LastName = u.LastName,
-            //     MiddleNmae = u.MiddleNmae,
-            //     PhoneNumber = u.PhoneNumber,
-            //     ProfileCreatedForId = u.ProfileCreatedForId
-            // });
-            // returnValue = IQueryUsers.FirstOrDefault();
-            // returnValue.UserBasicInfo = _context.UserInfo.Where(x => x.UserId == returnValue.ID).Select(
-            //     userinfo => new UserBasicInformation()
-            //     {
-            //         Id = userinfo.Id,
-            //         UserId = userinfo.UserId,
-            //         GenderId = userinfo.GenderId,
-            //         Dob = userinfo.Dob,
-            //         MaritalStatusId = userinfo.MaritalStatusId,
-            //         Height = userinfo.Height,
-            //         Weight = userinfo.Weight,
-            //         BodyTypeId = userinfo.BodyTypeId,
-            //         ComplexionId = userinfo.ComplexionId,
-            //         IsDisability = userinfo.IsDisability,
-            //         BloodGroupId = userinfo.BloodGroupId,
-            //         ReligionId = userinfo.ReligionId,
-            //         Caste = userinfo.Caste,
-            //         MotherTongueId = userinfo.MotherTongueId,
-            //         ComunityId = userinfo.ComunityId,
-            //         Gothra = userinfo.Gothra,
-            //         CountryId = userinfo.CountryId,
-            //         CitizenshipId = userinfo.CitizenshipId,
-            //         StateId = userinfo.StateId,
-            //         CityId = userinfo.CityId,
-            //         GrewUpIn = userinfo.GrewUpIn,
-            //         Origin = userinfo.Origin,
-            //         Pin = userinfo.Pin
-            //     }).FirstOrDefault();
-
             return returnValue;
         }
 
@@ -467,12 +475,17 @@ namespace Matrimony.Service.User
                         outPutResult = InsertUpdateUserImage(userImage);
                         userId = userImage.UserId;
                         break;
+                    case "UserLifeStyleModel":
+                        UserLifeStyleModel userlifeStyle = (UserLifeStyleModel)obj;
+                        outPutResult = InsertUpdateUserLifeStyle(userlifeStyle);
+                        userId = userlifeStyle.UserId;
+                        break;
                     case "UserEducationCareerModel":
                         UserEducationCareerModel userEducationsCareer = (UserEducationCareerModel)obj;
                         if (!string.IsNullOrEmpty(userEducationsCareer.OtherEmployer))
                         {
                             isUserOtherCareer = true;
-                            otherCareerID = userEducationsCareer.EmployerId !=null? (int)userEducationsCareer.EmployerId : 0;
+                            otherCareerID = userEducationsCareer.EmployerId != null ? (int)userEducationsCareer.EmployerId : 0;
                         }
                         outPutResult = InsertUpdateUserEducationCareer(userEducationsCareer);
                         userId = userEducationsCareer.UserId;
@@ -592,6 +605,49 @@ namespace Matrimony.Service.User
             }
             return new UserImageListResponse(metadata, lstImages);
         }
+
+        private int InsertUpdateUserLifeStyle(UserLifeStyleModel userLife)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.UserLifeStyle dbUserLifeStyle = new Data.Entities.UserLifeStyle()
+            {
+                Id = userLife.Id,
+                UserId = userLife.UserId,
+                DietId = userLife.DietId,
+                Hobies = userLife.Hobies,
+                SmokingId = userLife.SmokingId,
+                ChildrenChoiceId = userLife.ChildrenChoiceId,
+                WeadingStyleId = userLife.WeadingStyleId,
+                DrinkingId = userLife.DrinkingId,
+                HouseLivingInId = userLife.HouseLivingInId,
+                OwnCar = userLife.OwnCar,
+                OwnPet = userLife.OwnPet,
+                Interests = userLife.Interests,
+                Musics = userLife.Musics,
+                Books = userLife.Books,
+                Movies = userLife.Movies,
+                Fitness = userLife.Fitness,
+                Cuisines = userLife.Cuisines
+            };
+            try
+            {
+                if (userLife.UserId > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserLifeStyle>(dbUserLifeStyle);
+                }
+                else
+                {
+                    _context.UserLifeStyle.Add(dbUserLifeStyle);
+                }
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
+        }
+
         private int InsertUpdateUserImage(UserImage userImg)
         {
             int outPutResult = 0;
@@ -774,7 +830,7 @@ namespace Matrimony.Service.User
                                         MasterTableId = m.Id,
                                         Name = v.Value,
                                     };
-                    if(queryData!=null && queryData.Count()>0 && queryData.FirstOrDefault(item=> item.Name == user_edu_car.OtherEmployer) == null)
+                    if (queryData != null && queryData.Count() > 0 && queryData.FirstOrDefault(item => item.Name == user_edu_car.OtherEmployer) == null)
                     {
                         var masterTableId = queryData.Select(x => x.MasterTableId).FirstOrDefault();
                         _context.MasterFieldValue.Add(new Data.Entities.MasterFieldValue() { Value = user_edu_car.OtherEmployer, MasterTableId = masterTableId });

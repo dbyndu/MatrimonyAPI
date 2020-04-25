@@ -151,8 +151,16 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.Register(userBasic, userBasic.GetType().Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+
         [HttpPost]
-        //Needs to be changed to Authorize
+        [Authorize]
+        [Route("register/user-lifestyle")]
+        public ActionResult UpdateUserLifeStyle(UserLifeStyleModel userlifeStyle)
+        {
+            var response = _userService.Register(userlifeStyle, userlifeStyle.GetType().Name) as UserModelResponse;
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpPost]
         [Authorize]
         [Route("register/user-education-carrer")]
         public ActionResult UpdateUserEducation(UserEducationCareerModel userEducationCareer)
@@ -161,7 +169,6 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
-        //Needs to be changed to Authorize
         [Authorize]
         [Route("register/user-religion")]
         public ActionResult UpdateUserReligion(UserReligionCasteModel userReligion)
@@ -188,7 +195,7 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/family-info")]
         public ActionResult UpdateUserFamilyInfo(UserFamilyInformationModel userFamily)
         {
