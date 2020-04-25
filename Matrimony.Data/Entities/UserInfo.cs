@@ -17,7 +17,7 @@ namespace Matrimony.Data.Entities
         public bool? IsDisability { get; set; }
         public int? BloodGroupId { get; set; }
         public int? ReligionId { get; set; }
-        public string Caste { get; set; }
+        public int? CasteId { get; set; }
         public int? MotherTongueId { get; set; }
         public int? ComunityId { get; set; }
         public string Gothra { get; set; }

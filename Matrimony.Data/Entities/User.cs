@@ -24,6 +24,7 @@ namespace Matrimony.Data.Entities
         public DateTime? UpdatedDate { get; set; }
         public int ProfileCreatedForId { get; set; }
         public string ContactName { get; set; }
+        public int? PercentageComplete { get; set; }
 
         public virtual ICollection<UserImage> UserImage { get; set; }
         public virtual ICollection<UserInfo> UserInfo { get; set; }
