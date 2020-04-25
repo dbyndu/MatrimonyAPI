@@ -377,13 +377,31 @@ namespace Matrimony.Data
 
             modelBuilder.Entity<UserPreferences>(entity =>
             {
+                entity.Property(e => e.Caste).HasMaxLength(50);
+
                 entity.Property(e => e.City).HasMaxLength(50);
+
+                entity.Property(e => e.Country).HasMaxLength(50);
+
+                entity.Property(e => e.HighestQualification).HasMaxLength(50);
+
+                entity.Property(e => e.MaritalStatus).HasMaxLength(50);
 
                 entity.Property(e => e.MotherTongue).HasMaxLength(50);
 
                 entity.Property(e => e.Occupation).HasMaxLength(50);
 
+                entity.Property(e => e.Religion).HasMaxLength(50);
+
                 entity.Property(e => e.Specialization).HasMaxLength(50);
+
+                entity.Property(e => e.State).HasMaxLength(50);
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserPreferences)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_UserPreferences_User");
             });
 
             OnModelCreatingPartial(modelBuilder);

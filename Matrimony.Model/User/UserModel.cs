@@ -12,6 +12,8 @@ namespace Matrimony.Model.User
         public List<UserImage> UserImages { get; set; }
         public UserLifeStyleModel UserLifeStyle { get; set; }
 
+        public UserPreferenceModel UserPreference { get; set; }
+
 
         //public ICollection<UserCareerModel> UserCareer { get; set; }
         //public ICollection<UserEducationModel> UserEducation { get; set; }
