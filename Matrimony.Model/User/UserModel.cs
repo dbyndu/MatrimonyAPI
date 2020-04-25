@@ -8,9 +8,9 @@ namespace Matrimony.Model.User
     {        
         public UserBasicInformation UserBasicInfo { get; set; }
         public UserEducationCareerModel UserCareerInfo { get; set; }
-
         public UserFamilyInformationModel UserFamilyInfo { get; set; }
         public List<UserImage> UserImages { get; set; }
+        public UserLifeStyleModel UserLifeStyle { get; set; }
 
 
         //public ICollection<UserCareerModel> UserCareer { get; set; }
