@@ -27,6 +27,8 @@ GO
 --INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('BodyType')
 --INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('Compexion')
 --INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('BloodGroup')
+----------------------------------------------------------------------------------
+INSERT INTO [dbo].[MasterTableMetadata]([TableName]) VALUES ('BloodGroup')
 
 
 select * from [dbo].[MasterTableMetadata]

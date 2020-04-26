@@ -17,7 +17,7 @@ namespace Matrimony.Service.Contracts
         Response Register(Object obj, string type);
         Response GetImages(int userId, int width, int height, string mode);
         Response GestUserList(SearchCritriaModel searchCritria);
-        Task<Response> SaveImage(List<UserImage> userImages);
+        Task<Response> SaveImage(UserImagesUploadModel userImages, int userId);
         Response GetUserDetails(int id);
 
         Response LoginUser(UserShortRegister user);
