@@ -232,7 +232,7 @@ namespace Matrimony.Service.User
                                    Horoscope = ub.Horoscope,
                                    BloodGroupId = ub.BloodGroupId,
                                    ReligionId = ub.ReligionId,
-                                   Caste = ub.Caste,
+                                   CasteId = ub.CasteId,
                                    MotherTongueId = ub.MotherTongueId,
                                    ComunityId = ub.ComunityId,
                                    Gothra = ub.Gothra,
@@ -362,7 +362,7 @@ namespace Matrimony.Service.User
                     Horoscope = userinfo.Horoscope,
                     BloodGroupId = userinfo.BloodGroupId,
                     ReligionId = userinfo.ReligionId,
-                    Caste = userinfo.Caste,
+                    CasteId = userinfo.CasteId,
                     MotherTongueId = userinfo.MotherTongueId,
                     ComunityId = userinfo.ComunityId,
                     Gothra = userinfo.Gothra,
@@ -409,7 +409,7 @@ namespace Matrimony.Service.User
                                    Name = string.Concat(u.FirstName ?? "", " ", u.MiddleNmae ?? "", " ", u.LastName ?? ""),
                                    Age = GenericHelper.CalculateAge(Convert.ToDateTime(ub.Dob)),
                                    Height = ub.Height ?? 0,
-                                   Caste = ub.Caste,
+                                   CasteId = ub.CasteId,
                                    //Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
                                    //City = c.Name ?? string.Empty,
                                    //Profession = w.Value ?? string.Empty,
@@ -1012,7 +1012,7 @@ namespace Matrimony.Service.User
                 uInfo.Gothra = user_rel.Gothra;
                 uInfo.IsIgnorCast = user_rel.IsIgnorCast;
                 uInfo.Dosh = user_rel.Dosh;
-                uInfo.Caste = user_rel.Caste;
+                uInfo.CasteId = user_rel.CasteId;
                 uInfo.Manglik = user_rel.Manglik;
                 uInfo.Horoscope = user_rel.Horoscope;
 

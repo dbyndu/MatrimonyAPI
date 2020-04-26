@@ -9,7 +9,7 @@ namespace Matrimony.Model.User
         public int Id { get; set; }
         public int UserId { get; set; }
         public int? ReligionId { get; set; }
-        public string Caste { get; set; }
+        public int? CasteId { get; set; }
         public string Gothra { get; set; }
         public bool? IsIgnorCast { get; set; }
         public bool? Dosh { get; set; }

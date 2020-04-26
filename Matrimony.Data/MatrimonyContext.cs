@@ -27,15 +27,6 @@ namespace Matrimony.Data
         public virtual DbSet<UserLifeStyle> UserLifeStyle { get; set; }
         public virtual DbSet<UserPreferences> UserPreferences { get; set; }
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-        //                optionsBuilder.UseSqlServer("Server=LAPTOP-DVGRKESI\\SQL2017;Database=Matrimony;Integrated Security=True");
-        //            }
-        //        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Cities>(entity =>
@@ -168,8 +159,6 @@ namespace Matrimony.Data
 
             modelBuilder.Entity<UserInfo>(entity =>
             {
-                entity.Property(e => e.Caste).HasMaxLength(100);
-
                 entity.Property(e => e.Dob)
                     .HasColumnName("DOB")
                     .HasColumnType("date");
