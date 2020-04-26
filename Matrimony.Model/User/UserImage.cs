@@ -18,5 +18,13 @@ namespace Matrimony.Model.User
         [JsonIgnore]
         public string ImageTitle { get; set; }
         public string ContentType { get; set; }
+        public bool? IsProfilePicture { get; set; }
+    }
+
+    public class UserImagesUploadModel
+    {
+        public List<UserImage> images { get; set; }
+        public List<int> imageIDsToDelete { get; set; }
+        public int profilePictureId { get; set; }
     }
 }
