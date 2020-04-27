@@ -205,8 +205,8 @@ namespace MatrimonyAPI.Controllers
 
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
-        [Route("register/images")]
-        public async Task<IActionResult> UploadImage(List<UserImage> images)
+        [Route("register/images/{userId}")]
+        public async Task<IActionResult> UploadImage(UserImagesUploadModel images, int userId)
         {
             //List<UserImage> userImages = new List<UserImage>();
             //images.ForEach(async img => {
@@ -216,7 +216,7 @@ namespace MatrimonyAPI.Controllers
             //});
             //UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
             //userImg.UserId = userId;
-            var response = await _userService.SaveImage(images);
+            var response = await _userService.SaveImage(images, userId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }

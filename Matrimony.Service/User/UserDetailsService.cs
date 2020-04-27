@@ -323,7 +323,8 @@ namespace Matrimony.Service.User
                                {
                                    Id = u.Id,
                                    UserId = u.UserId,
-                                   ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0, "") // ImageResizer((byte[])u.Image, width, height)
+                                   ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0, ""), // ImageResizer((byte[])u.Image, width, height)
+                                   IsProfilePicture = u.IsProfilePicture
                                }).ToList(),
                                UserPreference = _mapper.Map<UserPreferenceModel>(preference)
 
@@ -549,13 +550,13 @@ namespace Matrimony.Service.User
             }
         }
 
-        public async Task<Response> SaveImage(List<UserImage> userImages)
+        public async Task<Response> SaveImage(UserImagesUploadModel userImages, int userId)
         {
             int stat = 0;
             var errors = new List<Error>();
             try
             {
-                stat = await SaveUserImage(userImages);
+                stat = await SaveUserImage(userImages, userId);
             }
             catch (Exception ex)
             {
@@ -678,45 +679,92 @@ namespace Matrimony.Service.User
             }
             return outPutResult;
         }
-        private async Task<int> SaveUserImage(List<UserImage> userImgs)
+        private async Task<int> SaveUserImage(UserImagesUploadModel userImgModel, int userId)
         {
 
             int outPutResult = 0;
-            int count = _context.UserImage.Where(u => u.UserId.Equals(userImgs[0].UserId) && u.IsProfilePicture.Equals(true)).Count();
-            userImgs.ForEach(img =>
+            if (userImgModel.imageIDsToDelete != null && userImgModel.imageIDsToDelete.Count > 0)
             {
-                string base64String = img.ImageString.Split(',')[1];
-                byte[] imageBytes = Convert.FromBase64String(base64String);
-
-                Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
-                {
-                    Id = img.Id,
-                    UserId = img.UserId,
-                    Image = imageBytes,
-                    ContentType = img.ContentType
-                };
-                if (count == 0)
-                {
-                    dbUserImage.IsProfilePicture = true;
-                    count = 1;
-                }
                 try
                 {
-                    if (img.Id > 0)
+                    var imageToDelete = _context.UserImage.Where(u => u.UserId.Equals(userId) && userImgModel.imageIDsToDelete.Contains(u.Id)).ToList();
+                    imageToDelete.ForEach(i =>
                     {
-                        _context.Update<Matrimony.Data.Entities.UserImage>(dbUserImage);
-                    }
-                    else
-                    {
-                        _context.UserImage.Add(dbUserImage);
-                    }
-
+                        _context.UserImage.Remove(i);
+                    });
                 }
                 catch (Exception ex)
                 {
                     throw ex;
                 }
-            });
+            }
+            if (userImgModel.profilePictureId > 0)
+            {
+                try
+                {
+                    var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.IsProfilePicture.Equals(true)).FirstOrDefault();
+                    imageSetAsProfPic.IsProfilePicture = false;
+                    _context.Update<Matrimony.Data.Entities.UserImage>(imageSetAsProfPic);
+                    var imageToSetProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.Id.Equals(userImgModel.profilePictureId)).FirstOrDefault();
+                    imageToSetProfPic.IsProfilePicture = false;
+                    _context.Update<Matrimony.Data.Entities.UserImage>(imageToSetProfPic);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+            if (userImgModel.images != null && userImgModel.images.Count > 0)
+            {
+                var userImgs = userImgModel.images;
+                var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userImgs[0].UserId) && u.IsProfilePicture.Equals(true));
+                int count = imageSetAsProfPic.Count();
+                if (userImgs.Where(i => i.IsProfilePicture.Equals(true)).Count() > 0)
+                {
+                    if (count > 0)
+                    {
+                        var imagetoUpdate = imageSetAsProfPic.FirstOrDefault();
+                        imagetoUpdate.IsProfilePicture = false;
+                        _context.Update<Matrimony.Data.Entities.UserImage>(imagetoUpdate);
+                    }
+                }
+                userImgs.ForEach(img =>
+                {
+                    string base64String = img.ImageString.Split(',')[1];
+                    byte[] imageBytes = Convert.FromBase64String(base64String);
+
+                    
+                    Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
+                    {
+                        Id = img.Id,
+                        UserId = img.UserId,
+                        Image = imageBytes,
+                        ContentType = img.ContentType,
+                        IsProfilePicture = img.IsProfilePicture
+                    };
+                    if (count == 0)
+                    {
+                        dbUserImage.IsProfilePicture = true;
+                        count = 1;
+                    }
+                    try
+                    {
+                        if (img.Id > 0)
+                        {
+                            _context.Update<Matrimony.Data.Entities.UserImage>(dbUserImage);
+                        }
+                        else
+                        {
+                            _context.UserImage.Add(dbUserImage);
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                });
+            }
             outPutResult = await _context.SaveChangesAsync();
             if(outPutResult > 0)
             {
