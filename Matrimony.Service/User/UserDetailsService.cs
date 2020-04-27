@@ -154,8 +154,7 @@ namespace Matrimony.Service.User
                 Email = user.Email,
                 ProfileCreatedForId = user.ProfileCreatedForId,
                 PhoneNumber = user.PhoneNumber,
-                ContactName = user.Email + "_" + user.PhoneNumber,
-                PercentageComplete = 10
+                ContactName = user.Email + "_" + user.PhoneNumber
             };
 
 
@@ -164,9 +163,9 @@ namespace Matrimony.Service.User
                 _context.User.Add(dbUser);
                 //_context.UserInfo.Add(dbUserInfo);
                 outPutResult = _context.SaveChanges();
+                var newinsertedUserID = dbUser.Id;
                 if (outPutResult != 0)
                 {
-                    var newinsertedUserID = dbUser.Id;
                     if (newinsertedUserID > 0)
                     {
                         Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
@@ -177,6 +176,19 @@ namespace Matrimony.Service.User
                         outPutResult = _context.SaveChanges();
                     }
                 }
+                if (outPutResult != 0)
+                {
+                    if (newinsertedUserID > 0)
+                    {
+                        Data.Entities.UserProfileCompletion ProfCompletion = new Data.Entities.UserProfileCompletion()
+                        {
+                            UserId = newinsertedUserID
+                        };
+                        _context.UserProfileCompletion.Add(ProfCompletion);
+                        outPutResult = _context.SaveChanges();
+                    }
+                }
+                //UpdateProfileCompletion(AvailableProfiles.ShortRegistration, ProfileCriteria.Mandatory, newinsertedUserID, true, false);
             }
             catch (Exception ex)
             {
@@ -455,16 +467,33 @@ namespace Matrimony.Service.User
             int userId = 0;
             bool isUserOtherCareer = false;
             int otherCareerID = 0;
+            bool mandatory = false, optional = false;
             try
             {
                 //string objType = obj.GetType().Name;
                 switch (type)
                 {
                     case "UserRegister":
-                        outPutResult = InsertUpdateUserInfo((UserRegister)obj, out userId);
+                        var userObject = (UserRegister)obj;
+                        outPutResult = InsertUpdateUserInfo(userObject, out userId);
                         break;
                     case "UserBasicInformation":
                         UserBasicInformation userBasic = (UserBasicInformation)obj;
+                        //if (userBasic.GenderId.HasValue && userBasic.Dob.HasValue && userBasic.CountryId.HasValue && userBasic.StateId.HasValue && userBasic.CityId.HasValue)
+                        //    mandatory = true;
+                        //if (userBasic.BloodGroupId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Weight.HasValue)
+                        //    optional = true;
+                        //else
+                        //    optional = false;
+
+                        //if (mandatory)
+                        //{
+                        //    UpdateProfileCompletion(AvailableProfiles.BasicDetails, ProfileCriteria.All, userBasic.UserId, mandatory, optional);
+                        //}
+                        //else
+                        //{
+                        //    UpdateProfileCompletion(AvailableProfiles.BasicDetails, ProfileCriteria.Optional, userBasic.UserId, false, optional);
+                        //}
                         outPutResult = InsertUpdateUserBasicInfo(userBasic);
                         userId = userBasic.UserId;
                         break;
@@ -706,7 +735,7 @@ namespace Matrimony.Service.User
                     imageSetAsProfPic.IsProfilePicture = false;
                     _context.Update<Matrimony.Data.Entities.UserImage>(imageSetAsProfPic);
                     var imageToSetProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.Id.Equals(userImgModel.profilePictureId)).FirstOrDefault();
-                    imageToSetProfPic.IsProfilePicture = false;
+                    imageToSetProfPic.IsProfilePicture = true;
                     _context.Update<Matrimony.Data.Entities.UserImage>(imageToSetProfPic);
                 }
                 catch (Exception ex)
@@ -733,7 +762,7 @@ namespace Matrimony.Service.User
                     string base64String = img.ImageString.Split(',')[1];
                     byte[] imageBytes = Convert.FromBase64String(base64String);
 
-                    
+
                     Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
                     {
                         Id = img.Id,
@@ -766,18 +795,6 @@ namespace Matrimony.Service.User
                 });
             }
             outPutResult = await _context.SaveChangesAsync();
-            if(outPutResult > 0)
-            {
-                int percentage = 0;
-                var userInfo = _context.User.FirstOrDefault(x => x.Id == userImgs[0].UserId);
-                if (userInfo.PercentageComplete.HasValue && int.TryParse(userInfo.PercentageComplete.ToString(), out percentage))
-                        percentage = percentage + 15;
-
-                userInfo.PercentageComplete = percentage;
-
-                _context.Update<Matrimony.Data.Entities.User>(userInfo);
-                _context.SaveChanges();
-            }
             return outPutResult;
         }
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)
@@ -976,17 +993,10 @@ namespace Matrimony.Service.User
                         UpdateUserCompletion(progressPercent, profileProgress, userId);
                         break;
                     case AvailableProfiles.Registration:
-                        if(currentProileCompletion.RegisterMandatory.HasValue && currentProileCompletion.RegisterMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
+                        if(!currentProileCompletion.RegisterMandatory.HasValue || !currentProileCompletion.RegisterMandatory.Value)
                         {
                             currentProileCompletion.RegisterMandatory = mandatory;
-                            progressPercent = progressPercent + 10;
-                            profileProgress = ProfileProgress.Increase;
                         }
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
                         break;
                     case AvailableProfiles.Image:
                         currentProileCompletion.PhotoUpload = mandatory;
@@ -1052,6 +1062,51 @@ namespace Matrimony.Service.User
                         }
                         break;
                     case AvailableProfiles.ReligionCaste:
+
+                        if (currentProileCompletion.ReligionMandatory.HasValue && currentProileCompletion.ReligionMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 10;
+                        }
+
+                        //optional Check
+                        if (currentProileCompletion.ReligionOptional.HasValue && currentProileCompletion.ReligionOptional.Value == optional)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            if (optional)
+                            {
+                                progressPercent = progressPercent + 5;
+                                //profileProgress = ProfileProgress.Increase;
+                            }
+                            else
+                            {
+                                progressPercent = progressPercent - 5;
+                                //profileProgress = ProfileProgress.Decrease;
+                            }
+                        }
+
+                        if (progressPercent < 0)
+                        {
+                            progressPercent = 5;
+                            profileProgress = ProfileProgress.Decrease;
+                        }
+                        else if (progressPercent == 0)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            profileProgress = ProfileProgress.Increase;
+                        }
+
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+
                         if (profileCriteria == ProfileCriteria.Mandatory)
                             currentProileCompletion.RegisterMandatory = mandatory;
                         else if (profileCriteria == ProfileCriteria.Optional)
@@ -1063,6 +1118,49 @@ namespace Matrimony.Service.User
                         }
                         break;
                     case AvailableProfiles.CareerEducation:
+
+                        if (currentProileCompletion.CareerMandatory.HasValue && currentProileCompletion.CareerMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 10;
+                        }
+
+                        //optional Check
+                        if (currentProileCompletion.CareerOptional.HasValue && currentProileCompletion.CareerOptional.Value == optional)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            if (optional)
+                            {
+                                progressPercent = progressPercent + 5;
+                            }
+                            else
+                            {
+                                progressPercent = progressPercent - 5;
+                            }
+                        }
+
+                        if (progressPercent < 0)
+                        {
+                            progressPercent = 5;
+                            profileProgress = ProfileProgress.Decrease;
+                        }
+                        else if (progressPercent == 0)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            profileProgress = ProfileProgress.Increase;
+                        }
+
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        
                         if (profileCriteria == ProfileCriteria.Mandatory)
                             currentProileCompletion.CareerMandatory = mandatory;
                         else if (profileCriteria == ProfileCriteria.Optional)
@@ -1074,6 +1172,49 @@ namespace Matrimony.Service.User
                         }
                         break;
                     case AvailableProfiles.FamilyDetails:
+
+                        if (currentProileCompletion.FamilyMandatory.HasValue && currentProileCompletion.FamilyMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 10;
+                        }
+
+                        //optional Check
+                        if (currentProileCompletion.FamilyOptional.HasValue && currentProileCompletion.FamilyOptional.Value == optional)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            if (optional)
+                            {
+                                progressPercent = progressPercent + 5;
+                            }
+                            else
+                            {
+                                progressPercent = progressPercent - 5;
+                            }
+                        }
+
+                        if (progressPercent < 0)
+                        {
+                            progressPercent = 5;
+                            profileProgress = ProfileProgress.Decrease;
+                        }
+                        else if (progressPercent == 0)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            profileProgress = ProfileProgress.Increase;
+                        }
+
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+
                         if (profileCriteria == ProfileCriteria.Mandatory)
                             currentProileCompletion.FamilyMandatory = mandatory;
                         else if (profileCriteria == ProfileCriteria.Optional)
@@ -1085,9 +1226,61 @@ namespace Matrimony.Service.User
                         }
                         break;
                     case AvailableProfiles.About:
-                            currentProileCompletion.About = mandatory;
+                        if (currentProileCompletion.About.HasValue && currentProileCompletion.About.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 5;
+                        }
+                        currentProileCompletion.About = mandatory;
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
                         break;
                     case AvailableProfiles.LifeStyle:
+
+                        if (currentProileCompletion.LifeStyleMandatory.HasValue && currentProileCompletion.LifeStyleMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 10;
+                        }
+
+                        //optional Check
+                        if (currentProileCompletion.LifeStyleOptional.HasValue && currentProileCompletion.LifeStyleOptional.Value == optional)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            if (optional)
+                            {
+                                progressPercent = progressPercent + 5;
+                            }
+                            else
+                            {
+                                progressPercent = progressPercent - 5;
+                            }
+                        }
+
+                        if (progressPercent < 0)
+                        {
+                            progressPercent = 5;
+                            profileProgress = ProfileProgress.Decrease;
+                        }
+                        else if (progressPercent == 0)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            profileProgress = ProfileProgress.Increase;
+                        }
+
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+
                         if (profileCriteria == ProfileCriteria.Mandatory)
                             currentProileCompletion.LifeStyleMandatory = mandatory;
                         else if (profileCriteria == ProfileCriteria.Optional)
@@ -1099,6 +1292,49 @@ namespace Matrimony.Service.User
                         }
                         break;
                     case AvailableProfiles.Preference:
+
+                        if (currentProileCompletion.PreferenceMandatory.HasValue && currentProileCompletion.PreferenceMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 10;
+                        }
+
+                        //optional Check
+                        if (currentProileCompletion.PreferenceOptional.HasValue && currentProileCompletion.PreferenceOptional.Value == optional)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            if (optional)
+                            {
+                                progressPercent = progressPercent + 5;
+                            }
+                            else
+                            {
+                                progressPercent = progressPercent - 5;
+                            }
+                        }
+
+                        if (progressPercent < 0)
+                        {
+                            progressPercent = 5;
+                            profileProgress = ProfileProgress.Decrease;
+                        }
+                        else if (progressPercent == 0)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            profileProgress = ProfileProgress.Increase;
+                        }
+
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+
                         if (profileCriteria == ProfileCriteria.Mandatory)
                             currentProileCompletion.PreferenceMandatory = mandatory;
                         else if (profileCriteria == ProfileCriteria.Optional)
@@ -1112,6 +1348,8 @@ namespace Matrimony.Service.User
                     default:
                         break;
                 }
+                _context.Update<Data.Entities.UserProfileCompletion>(currentProileCompletion);
+                returnValue = _context.SaveChanges();
             }
             return returnValue;
         }
@@ -1144,32 +1382,43 @@ namespace Matrimony.Service.User
                     else
                     {
                         updatepercent = false;
-                    }
-                    if (updatepercent)
-                    {
-                        _context.Update<Data.Entities.User>(currentProfile);
-                        returnValue = _context.SaveChanges();
-                    }
-                    
-                }   
+                    }   
+                }
+                else
+                {
+                    currentProfile.PercentageComplete = completionPercentage;
+                    updatepercent = true;
+                }
+
+                if (updatepercent)
+                {
+                    _context.Update<Data.Entities.User>(currentProfile);
+                    returnValue = _context.SaveChanges();
+                }
             }
             return returnValue;
         }
         private int InsertUpdateUserInfo(UserRegister user, out int userId)
         {
             int outPutResult = 0;
+            int percentage = 0;
             Matrimony.Data.Entities.User dbUser = null;
             try
             {
                 if (user.ID > 0)
                 {
-                    int percentage = 0;
-                    var completePercentAsOf = _context.User.FirstOrDefault(x => x.Id == user.ID).PercentageComplete;
-                    if (user.FirstName != null && user.LastName != null)
-                    {
-                        if(completePercentAsOf.HasValue && int.TryParse(completePercentAsOf.ToString(), out percentage))
-                        percentage = percentage + 5;
-                    }
+                    //if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
+                    //{
+                    //    var currentpercentage = _context.User.FirstOrDefault(u => u.Id == user.ID).PercentageComplete;
+                    //    if (currentpercentage.HasValue)
+                    //    {
+                    //        percentage = (int)currentpercentage;
+                    //        if (!_context.UserProfileCompletion.FirstOrDefault(x => x.UserId == user.ID).RegisterMandatory.HasValue)
+                    //            percentage = percentage + 10;
+                    //    }
+                    //    UpdateProfileCompletion(AvailableProfiles.Registration, ProfileCriteria.Mandatory, user.ID, true, false);
+                    //}
+                    
                     dbUser = new Data.Entities.User
                     {
                         Id = user.ID,
@@ -1183,10 +1432,13 @@ namespace Matrimony.Service.User
                         UpdatedDate = DateTime.Now,
                         PercentageComplete = percentage
                     };
-                    _context.Entry(dbUser).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                    _context.Entry(dbUser).Property(x => x.CreatedDate).IsModified = false;
-                    _context.Entry(dbUser).Property(x => x.Password).IsModified = false;
-                    //_context.Update<Matrimony.Data.Entities.User>(dbUser);
+                    _context.Entry<Data.Entities.User>(dbUser).State = EntityState.Detached;
+                    _context.User.Update(dbUser);
+                    outPutResult = _context.SaveChanges();
+                    //_context.Entry(dbUser).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    //_context.Entry(dbUser).Property(x => x.CreatedDate).IsModified = false;
+                    //_context.Entry(dbUser).Property(x => x.Password).IsModified = false;
+                    ////_context.Update<Matrimony.Data.Entities.User>(dbUser);
                 }
                 else
                 {
@@ -1203,9 +1455,10 @@ namespace Matrimony.Service.User
                         PercentageComplete = 10
                     };
                     _context.User.Add(dbUser);
+                    outPutResult = _context.SaveChanges();
                 }
 
-                outPutResult = _context.SaveChanges();
+                
 
                 userId = dbUser.Id;
             }
