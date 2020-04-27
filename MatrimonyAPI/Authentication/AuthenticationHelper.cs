@@ -18,7 +18,7 @@ namespace MatrimonyAPI.Authentication
     {
         public string GenerateToken(JwtAuthentication jwtAuthentication, string userId, string email, string role)
         {
-            var expiryTime = DateTime.UtcNow.AddMinutes(10);
+            var expiryTime = DateTime.UtcNow.AddMinutes(100);
             if (userId == "default" && email == "default@default.com")
             {
                 expiryTime = DateTime.UtcNow.AddDays(1000);

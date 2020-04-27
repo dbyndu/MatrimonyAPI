@@ -26,6 +26,8 @@ namespace Matrimony.Data
         public virtual DbSet<UserInfo> UserInfo { get; set; }
         public virtual DbSet<UserLifeStyle> UserLifeStyle { get; set; }
         public virtual DbSet<UserPreferences> UserPreferences { get; set; }
+        public virtual DbSet<UserProfileCompletion> UserProfileCompletion { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -391,6 +393,14 @@ namespace Matrimony.Data
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_UserPreferences_User");
+            });
+
+            modelBuilder.Entity<UserProfileCompletion>(entity =>
+            {
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.UserProfileCompletion)
+                    .HasForeignKey(d => d.UserId)
+                    .HasConstraintName("FK_UserProfileCompletion_User");
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -11,6 +11,7 @@ namespace Matrimony.Data.Entities
             UserInfo = new HashSet<UserInfo>();
             UserLifeStyle = new HashSet<UserLifeStyle>();
             UserPreferences = new HashSet<UserPreferences>();
+            UserProfileCompletion = new HashSet<UserProfileCompletion>();
         }
 
         public int Id { get; set; }
@@ -30,5 +31,6 @@ namespace Matrimony.Data.Entities
         public virtual ICollection<UserInfo> UserInfo { get; set; }
         public virtual ICollection<UserLifeStyle> UserLifeStyle { get; set; }
         public virtual ICollection<UserPreferences> UserPreferences { get; set; }
+        public virtual ICollection<UserProfileCompletion> UserProfileCompletion { get; set; }
     }
 }

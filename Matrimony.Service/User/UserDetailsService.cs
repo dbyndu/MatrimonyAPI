@@ -13,6 +13,7 @@ using Matrimony.Helper;
 using System.Threading.Tasks;
 using Matrimony.Model.Common;
 using Matrimony_Model.Common;
+using static Matrimony.Helper.EnumManager;
 
 namespace Matrimony.Service.User
 {
@@ -153,7 +154,8 @@ namespace Matrimony.Service.User
                 Email = user.Email,
                 ProfileCreatedForId = user.ProfileCreatedForId,
                 PhoneNumber = user.PhoneNumber,
-                ContactName = user.Email + "_" + user.PhoneNumber
+                ContactName = user.Email + "_" + user.PhoneNumber,
+                PercentageComplete = 10
             };
 
 
@@ -716,6 +718,18 @@ namespace Matrimony.Service.User
                 }
             });
             outPutResult = await _context.SaveChangesAsync();
+            if(outPutResult > 0)
+            {
+                int percentage = 0;
+                var userInfo = _context.User.FirstOrDefault(x => x.Id == userImgs[0].UserId);
+                if (userInfo.PercentageComplete.HasValue && int.TryParse(userInfo.PercentageComplete.ToString(), out percentage))
+                        percentage = percentage + 15;
+
+                userInfo.PercentageComplete = percentage;
+
+                _context.Update<Matrimony.Data.Entities.User>(userInfo);
+                _context.SaveChanges();
+            }
             return outPutResult;
         }
         private int InsertUpdateUserBasicInfo(UserBasicInformation userBasic)
@@ -896,6 +910,203 @@ namespace Matrimony.Service.User
         //    }
         //    return outPutResult;
         //}
+        private int UpdateProfileCompletion(AvailableProfiles allprofiles, ProfileCriteria profileCriteria, int userId, bool mandatory = false, bool optional = false)
+        {
+            int returnValue = 0;
+
+            var currentProileCompletion = _context.UserProfileCompletion.FirstOrDefault(item => item.UserId == userId);
+            int progressPercent = 0;
+            ProfileProgress profileProgress = ProfileProgress.Increase;
+            if(currentProileCompletion!=null && currentProileCompletion.UserId > 0)
+            {
+                switch (allprofiles)
+                {
+                    case AvailableProfiles.ShortRegistration:
+                        currentProileCompletion.ShortRegisterMandatory = mandatory;
+                        progressPercent = 10;
+                        profileProgress = ProfileProgress.Increase;
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        break;
+                    case AvailableProfiles.Registration:
+                        if(currentProileCompletion.RegisterMandatory.HasValue && currentProileCompletion.RegisterMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            currentProileCompletion.RegisterMandatory = mandatory;
+                            progressPercent = progressPercent + 10;
+                            profileProgress = ProfileProgress.Increase;
+                        }
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        break;
+                    case AvailableProfiles.Image:
+                        currentProileCompletion.PhotoUpload = mandatory;
+                        progressPercent = 10;
+                        profileProgress = ProfileProgress.Increase;
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        break;
+                    case AvailableProfiles.BasicDetails:
+                        //MandatoryCheck
+                        if (currentProileCompletion.BasicDetailsMandatory.HasValue && currentProileCompletion.BasicDetailsMandatory.Value)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            progressPercent = progressPercent + 10;
+                            //profileProgress = ProfileProgress.Increase;
+                        }
+
+                        //optional Check
+                        if (currentProileCompletion.BasicDetailsOptional.HasValue && currentProileCompletion.BasicDetailsOptional.Value == optional)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                                if (optional)
+                                {
+                                    progressPercent = progressPercent + 5;
+                                    //profileProgress = ProfileProgress.Increase;
+                                }
+                                else
+                                {
+                                    progressPercent = progressPercent - 5;
+                                    //profileProgress = ProfileProgress.Decrease;
+                                }
+                        }
+
+                        if(progressPercent < 0)
+                        {
+                            progressPercent = 5;
+                            profileProgress = ProfileProgress.Decrease;
+                        }
+                        else if(progressPercent == 0)
+                        {
+                            profileProgress = ProfileProgress.NoChange;
+                        }
+                        else
+                        {
+                            profileProgress = ProfileProgress.Increase;
+                        }
+
+                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+
+                        if (profileCriteria == ProfileCriteria.Mandatory)
+                            currentProileCompletion.BasicDetailsMandatory = mandatory;
+                        else if(profileCriteria == ProfileCriteria.Optional)
+                            currentProileCompletion.BasicDetailsOptional = optional;
+                        else
+                        {
+                            currentProileCompletion.BasicDetailsMandatory = mandatory;
+                            currentProileCompletion.BasicDetailsOptional = optional;
+                        }
+                        break;
+                    case AvailableProfiles.ReligionCaste:
+                        if (profileCriteria == ProfileCriteria.Mandatory)
+                            currentProileCompletion.RegisterMandatory = mandatory;
+                        else if (profileCriteria == ProfileCriteria.Optional)
+                            currentProileCompletion.ReligionOptional = optional;
+                        else
+                        {
+                            currentProileCompletion.ReligionMandatory = mandatory;
+                            currentProileCompletion.ReligionOptional = optional;
+                        }
+                        break;
+                    case AvailableProfiles.CareerEducation:
+                        if (profileCriteria == ProfileCriteria.Mandatory)
+                            currentProileCompletion.CareerMandatory = mandatory;
+                        else if (profileCriteria == ProfileCriteria.Optional)
+                            currentProileCompletion.CareerOptional = optional;
+                        else
+                        {
+                            currentProileCompletion.CareerMandatory = mandatory;
+                            currentProileCompletion.CareerOptional = optional;
+                        }
+                        break;
+                    case AvailableProfiles.FamilyDetails:
+                        if (profileCriteria == ProfileCriteria.Mandatory)
+                            currentProileCompletion.FamilyMandatory = mandatory;
+                        else if (profileCriteria == ProfileCriteria.Optional)
+                            currentProileCompletion.FamilyOptional = optional;
+                        else
+                        {
+                            currentProileCompletion.FamilyMandatory = mandatory;
+                            currentProileCompletion.FamilyOptional = optional;
+                        }
+                        break;
+                    case AvailableProfiles.About:
+                            currentProileCompletion.About = mandatory;
+                        break;
+                    case AvailableProfiles.LifeStyle:
+                        if (profileCriteria == ProfileCriteria.Mandatory)
+                            currentProileCompletion.LifeStyleMandatory = mandatory;
+                        else if (profileCriteria == ProfileCriteria.Optional)
+                            currentProileCompletion.LifeStyleOptional = optional;
+                        else
+                        {
+                            currentProileCompletion.LifeStyleMandatory = mandatory;
+                            currentProileCompletion.LifeStyleOptional = optional;
+                        }
+                        break;
+                    case AvailableProfiles.Preference:
+                        if (profileCriteria == ProfileCriteria.Mandatory)
+                            currentProileCompletion.PreferenceMandatory = mandatory;
+                        else if (profileCriteria == ProfileCriteria.Optional)
+                            currentProileCompletion.PreferenceOptional = optional;
+                        else
+                        {
+                            currentProileCompletion.PreferenceMandatory = mandatory;
+                            currentProileCompletion.PreferenceOptional = optional;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return returnValue;
+        }
+        private int UpdateUserCompletion(int completionPercentage, ProfileProgress profileProgress, int userID)
+        {
+            bool updatepercent = false;
+            int returnValue = 0;
+            int percentage = 0;
+            var currentProfile = _context.User.Where(item => item.Id == userID).FirstOrDefault();
+            
+            if (currentProfile != null)
+            {
+                var currentProgress = currentProfile.PercentageComplete;
+                if (currentProgress.HasValue && int.TryParse(currentProgress.ToString(), out percentage))
+                {
+                    if (profileProgress == ProfileProgress.Increase)
+                    {
+                        currentProfile.PercentageComplete = percentage + completionPercentage;
+                        updatepercent = true;
+                    }
+                    else if(profileProgress == ProfileProgress.Decrease)
+                    {
+                        currentProfile.PercentageComplete = percentage - completionPercentage;
+                        if(percentage - completionPercentage < 10)
+                        {
+                            currentProfile.PercentageComplete = 10;
+                        }
+                        updatepercent = true;
+                    }
+                    else
+                    {
+                        updatepercent = false;
+                    }
+                    if (updatepercent)
+                    {
+                        _context.Update<Data.Entities.User>(currentProfile);
+                        returnValue = _context.SaveChanges();
+                    }
+                    
+                }   
+            }
+            return returnValue;
+        }
         private int InsertUpdateUserInfo(UserRegister user, out int userId)
         {
             int outPutResult = 0;
@@ -904,6 +1115,13 @@ namespace Matrimony.Service.User
             {
                 if (user.ID > 0)
                 {
+                    int percentage = 0;
+                    var completePercentAsOf = _context.User.FirstOrDefault(x => x.Id == user.ID).PercentageComplete;
+                    if (user.FirstName != null && user.LastName != null)
+                    {
+                        if(completePercentAsOf.HasValue && int.TryParse(completePercentAsOf.ToString(), out percentage))
+                        percentage = percentage + 5;
+                    }
                     dbUser = new Data.Entities.User
                     {
                         Id = user.ID,
@@ -914,7 +1132,8 @@ namespace Matrimony.Service.User
                         PhoneNumber = user.PhoneNumber,
                         ProfileCreatedForId = user.ProfileCreatedForId,
                         ContactName = user.FirstName + " " + user.MiddleNmae + " " + user.LastName,
-                        UpdatedDate = DateTime.Now
+                        UpdatedDate = DateTime.Now,
+                        PercentageComplete = percentage
                     };
                     _context.Entry(dbUser).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                     _context.Entry(dbUser).Property(x => x.CreatedDate).IsModified = false;
@@ -932,7 +1151,8 @@ namespace Matrimony.Service.User
                         Email = user.Email,
                         ProfileCreatedForId = user.ProfileCreatedForId,
                         PhoneNumber = user.PhoneNumber,
-                        ContactName = user.ContactName
+                        ContactName = user.ContactName,
+                        PercentageComplete = 10
                     };
                     _context.User.Add(dbUser);
                 }
