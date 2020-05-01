@@ -224,6 +224,7 @@ namespace Matrimony.Service.User
                                MiddleNmae = u.MiddleNmae,
                                PhoneNumber = u.PhoneNumber,
                                ProfileCreatedForId = u.ProfileCreatedForId,
+                               PercentageComplete = u.PercentageComplete,
                                UserBasicInfo = new UserBasicInformation
                                {
                                    Id = ub.Id,
@@ -1198,15 +1199,8 @@ namespace Matrimony.Service.User
                             UserCompletionPercentage.BasicDetailsOptional, currentProileCompletion.BasicDetailsMandatory,
                             currentProileCompletion.BasicDetailsOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.BasicDetailsMandatory = mandatory;
-                        else if(profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.BasicDetailsOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.BasicDetailsMandatory = mandatory;
-                            currentProileCompletion.BasicDetailsOptional = optional;
-                        }
+                        currentProileCompletion.BasicDetailsMandatory = mandatory;
+                        currentProileCompletion.BasicDetailsOptional = optional;
                         changeValue = true;
 
                         break;
@@ -1226,15 +1220,8 @@ namespace Matrimony.Service.User
                             UserCompletionPercentage.ReligionCasteOptional, currentProileCompletion.ReligionMandatory,
                             currentProileCompletion.ReligionOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.RegisterMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.ReligionOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.ReligionMandatory = mandatory;
-                            currentProileCompletion.ReligionOptional = optional;
-                        }
+                        currentProileCompletion.ReligionMandatory = mandatory;
+                        currentProileCompletion.ReligionOptional = optional;
                         changeValue = true;
                         break;
                     case AvailableProfiles.CareerEducation:
@@ -1254,15 +1241,8 @@ namespace Matrimony.Service.User
                             currentProileCompletion.CareerOptional, mandatory, optional, userId);
 
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.CareerMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.CareerOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.CareerMandatory = mandatory;
-                            currentProileCompletion.CareerOptional = optional;
-                        }
+                        currentProileCompletion.CareerMandatory = mandatory;
+                        currentProileCompletion.CareerOptional = optional;
                         changeValue = true;
                         break;
                     case AvailableProfiles.FamilyDetails:
@@ -1281,15 +1261,8 @@ namespace Matrimony.Service.User
                             UserCompletionPercentage.FamilyDetailsOptional, currentProileCompletion.FamilyMandatory,
                             currentProileCompletion.FamilyOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.FamilyMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.FamilyOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.FamilyMandatory = mandatory;
-                            currentProileCompletion.FamilyOptional = optional;
-                        }
+                        currentProileCompletion.FamilyMandatory = mandatory;
+                        currentProileCompletion.FamilyOptional = optional;
                         changeValue = true;
                         break;
                     case AvailableProfiles.About:
@@ -1321,15 +1294,8 @@ namespace Matrimony.Service.User
                             UserCompletionPercentage.LifeStyleOptional, currentProileCompletion.LifeStyleMandatory,
                             currentProileCompletion.LifeStyleOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.LifeStyleMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.LifeStyleOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.LifeStyleMandatory = mandatory;
-                            currentProileCompletion.LifeStyleOptional = optional;
-                        }
+                        currentProileCompletion.LifeStyleMandatory = mandatory;
+                        currentProileCompletion.LifeStyleOptional = optional;
                         changeValue = true;
                         break;
                     case AvailableProfiles.Preference:
@@ -1348,15 +1314,8 @@ namespace Matrimony.Service.User
                             UserCompletionPercentage.PreferenceOptional, currentProileCompletion.PreferenceMandatory,
                             currentProileCompletion.PreferenceOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.PreferenceMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.PreferenceOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.PreferenceMandatory = mandatory;
-                            currentProileCompletion.PreferenceOptional = optional;
-                        }
+                        currentProileCompletion.PreferenceMandatory = mandatory;
+                        currentProileCompletion.PreferenceOptional = optional;
                         changeValue = true;
                         break;
                     default:
