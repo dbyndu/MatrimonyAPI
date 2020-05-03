@@ -160,7 +160,8 @@ namespace Matrimony.Service.User
                 Email = user.Email,
                 ProfileCreatedForId = user.ProfileCreatedForId,
                 PhoneNumber = user.PhoneNumber,
-                ContactName = user.Email + "_" + user.PhoneNumber
+                ContactName = user.Email + "_" + user.PhoneNumber,
+                PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration)
             };
 
 
@@ -179,22 +180,16 @@ namespace Matrimony.Service.User
                             UserId = newinsertedUserID
                         };
                         _context.UserInfo.Add(dbUserInfo);
-                        outPutResult = _context.SaveChanges();
-                    }
-                }
-                if (outPutResult != 0)
-                {
-                    if (newinsertedUserID > 0)
-                    {
                         Data.Entities.UserProfileCompletion ProfCompletion = new Data.Entities.UserProfileCompletion()
                         {
                             UserId = newinsertedUserID
                         };
-                        _context.UserProfileCompletion.Add(ProfCompletion);
+                         _context.UserProfileCompletion.Add(ProfCompletion);
+                        outPutResult = _context.SaveChanges();
+                        UpdateProfileCompletion(AvailableProfiles.ShortRegistration, ProfileCriteria.Mandatory, newinsertedUserID, true, false);
                         outPutResult = _context.SaveChanges();
                     }
                 }
-                //UpdateProfileCompletion(AvailableProfiles.ShortRegistration, ProfileCriteria.Mandatory, newinsertedUserID, true, false);
             }
             catch (Exception ex)
             {
@@ -235,6 +230,7 @@ namespace Matrimony.Service.User
                                MiddleNmae = u.MiddleNmae,
                                PhoneNumber = u.PhoneNumber,
                                ProfileCreatedForId = u.ProfileCreatedForId,
+                               PercentageComplete = u.PercentageComplete,
                                UserBasicInfo = new UserBasicInformation
                                {
                                    Id = ub.Id,
@@ -481,12 +477,12 @@ namespace Matrimony.Service.User
                         break;
                     case "UserBasicInformation":
                         UserBasicInformation userBasic = (UserBasicInformation)obj;
-                        //if (userBasic.GenderId.HasValue && userBasic.Dob.HasValue && userBasic.CountryId.HasValue && userBasic.StateId.HasValue && userBasic.CityId.HasValue)
-                        //    mandatory = true;
-                        //if (userBasic.BloodGroupId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Weight.HasValue)
-                        //    optional = true;
-                        //else
-                        //    optional = false;
+                        if (userBasic.GenderId.HasValue && userBasic.Dob.HasValue && userBasic.CountryId.HasValue && userBasic.StateId.HasValue && userBasic.CityId.HasValue && userBasic.MotherTongueId.HasValue)
+                            mandatory = true;
+                        if (userBasic.BloodGroupId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Height!=0 && userBasic.Weight.HasValue)
+                            optional = true;
+                        else
+                            optional = false;
 
                         //if (mandatory)
                         //{
@@ -496,21 +492,61 @@ namespace Matrimony.Service.User
                         //{
                         //    UpdateProfileCompletion(AvailableProfiles.BasicDetails, ProfileCriteria.Optional, userBasic.UserId, false, optional);
                         //}
+                        UpdateProfileCompletion(AvailableProfiles.BasicDetails, ProfileCriteria.All, userBasic.UserId, mandatory, optional);
                         outPutResult = InsertUpdateUserBasicInfo(userBasic);
                         userId = userBasic.UserId;
                         break;
                     case "UserFamilyInformationModel":
                         UserFamilyInformationModel userFamily = (UserFamilyInformationModel)obj;
+
+                        if (userFamily.FatherStatusId.HasValue && userFamily.MotherStatusId.HasValue)
+                            mandatory = true;
+                        if (userFamily.MarriedSiblingFemale.HasValue && userFamily.NotMarriedSiblingFemale.HasValue &&
+                            userFamily.MarriedSiblingMale.HasValue && userFamily.NotMarriedSiblingMale.HasValue 
+                            && userFamily.FamilyTypeId.HasValue && userFamily.FamilyValuesId.HasValue && userFamily.FamilyLocation!=string.Empty
+                            && userFamily.NativePlace !=string.Empty && userFamily.FamilyIncomeId.HasValue)
+                            optional = true;
+                        else
+                            optional = false;
+
+                        UpdateProfileCompletion(AvailableProfiles.FamilyDetails, ProfileCriteria.All, userFamily.UserId, mandatory, optional);
+
                         outPutResult = InsertUpdateUserFamilyInfo(userFamily);
                         userId = userFamily.UserId;
                         break;
                     case "UserImage":
                         UserImage userImage = (UserImage)obj;
+                        if (userImage.ImageTitle != string.Empty)
+                            mandatory = true;
+                        else
+                            mandatory = false;
+                        UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userImage.UserId, mandatory, optional);
+
                         outPutResult = InsertUpdateUserImage(userImage);
                         userId = userImage.UserId;
                         break;
                     case "UserLifeStyleModel":
                         UserLifeStyleModel userlifeStyle = (UserLifeStyleModel)obj;
+
+                        if (userlifeStyle.DietId.HasValue
+                            && userlifeStyle.HouseLivingInId.HasValue
+                            && userlifeStyle.SmokingId.HasValue && userlifeStyle.WeadingStyleId.HasValue &&
+                            userlifeStyle.Musics !=string.Empty && userlifeStyle.Movies!=string.Empty &&
+                            userlifeStyle.Interests !=string.Empty && userlifeStyle.Hobies!=string.Empty 
+                            && userlifeStyle.Cuisines!=string.Empty)
+                            mandatory = true;
+                        else
+                            mandatory = false;
+
+                        if (userlifeStyle.ChildrenChoiceId.HasValue && userlifeStyle.DrinkingId.HasValue &&
+                            userlifeStyle.OwnCar.HasValue && userlifeStyle.OwnPet.HasValue && userlifeStyle.Fitness != string.Empty
+                            && userlifeStyle.Books != string.Empty)
+                            optional = true;
+                        else
+                            optional = false;
+
+                        UpdateProfileCompletion(AvailableProfiles.LifeStyle, ProfileCriteria.All, userlifeStyle.UserId, mandatory, optional);
+                        
                         outPutResult = InsertUpdateUserLifeStyle(userlifeStyle);
                         userId = userlifeStyle.UserId;
                         break;
@@ -521,21 +557,69 @@ namespace Matrimony.Service.User
                             isUserOtherCareer = true;
                             otherCareerID = userEducationsCareer.EmployerId != null ? (int)userEducationsCareer.EmployerId : 0;
                         }
+                        if (userEducationsCareer.HighestQualificationId.HasValue && userEducationsCareer.HighestSpecializationId.HasValue
+                            && userEducationsCareer.WorkingSectorId.HasValue && userEducationsCareer.WorkDesignationId.HasValue
+                            && userEducationsCareer.AnualIncomeId.HasValue)
+                            mandatory = true;
+                        if (userEducationsCareer.EmployerId.HasValue || userEducationsCareer.OtherEmployer != string.Empty)
+                            optional = true;
+                        else
+                            optional = false;
+
+                        UpdateProfileCompletion(AvailableProfiles.CareerEducation, ProfileCriteria.All, userEducationsCareer.UserId, mandatory, optional);
+
                         outPutResult = InsertUpdateUserEducationCareer(userEducationsCareer);
                         userId = userEducationsCareer.UserId;
                         break;
                     case "UserReligionCasteModel":
                         UserReligionCasteModel userReligion = (UserReligionCasteModel)obj;
+
+                        if (userReligion.ReligionId.HasValue && userReligion.CasteId.HasValue)
+                            mandatory = true;
+                        if (userReligion.Dosh.HasValue && userReligion.Manglik.HasValue &&
+                            userReligion.Horoscope.HasValue && userReligion.Gothra != string.Empty)
+                            optional = true;
+                        else
+                            optional = false;
+
+                        UpdateProfileCompletion(AvailableProfiles.ReligionCaste, ProfileCriteria.All, userReligion.UserId, mandatory, optional);
+
                         outPutResult = InsertUpdateUserReligion(userReligion);
                         userId = userReligion.UserId;
                         break;
                     case "UserAboutModel":
                         UserAboutModel userAbout = (UserAboutModel)obj;
+
+                        if (userAbout.About != string.Empty )
+                            optional = true;
+                        else
+                            optional = false;
+                           UpdateProfileCompletion(AvailableProfiles.About, ProfileCriteria.Optional, userAbout.UserId, false, optional);
+
                         outPutResult = InsertUpdateUserAboutInfo(userAbout);
                         userId = userAbout.UserId;
                         break;
                     case "UserPreferenceModel":
                         UserPreferenceModel userPref = (UserPreferenceModel)obj;
+
+
+                        if (userPref.AgeFrom.HasValue && userPref.AgeTo.HasValue
+                            && userPref.AnnualIncome.HasValue && userPref.Caste != string.Empty &&
+                            userPref.MotherTongue != string.Empty && 
+                            userPref.Occupation != string.Empty && userPref.Religion != string.Empty )
+                            mandatory = true;
+                        else
+                            mandatory = false;
+                        if (userPref.City != string.Empty && userPref.Country != string.Empty
+                            && userPref.Dosh.HasValue && userPref.HeightFrom.HasValue && userPref.HeightTo.HasValue
+                            && userPref.HighestQualification != string.Empty && userPref.Manglik.HasValue &&
+                            userPref.Specialization != string.Empty && userPref.State != string.Empty)
+                            optional = true;
+                        else
+                            optional = false;
+                            
+                        UpdateProfileCompletion(AvailableProfiles.Preference, ProfileCriteria.All, userPref.UserId, mandatory, optional);
+
                         outPutResult = InsertUpdateUserPreference(userPref);
                         userId = userPref.UserId;
                         break;
@@ -1007,381 +1091,274 @@ namespace Matrimony.Service.User
         //    }
         //    return outPutResult;
         //}
+
+        //private bool IsValueChangeProfileProgress(bool? FieldValue, bool changeValue)
+        //{
+
+        //}
+
+        private ProfileProgress GetProfileProgress(bool? FieldValue, bool changeValue, ProfileCriteria profileCriteria)
+        {
+            ProfileProgress returnValue = ProfileProgress.NoChange;
+
+            if(profileCriteria == ProfileCriteria.Mandatory)
+            {
+                if ((FieldValue.HasValue && FieldValue.Value == changeValue) || (!FieldValue.HasValue && !changeValue))
+                    returnValue = ProfileProgress.NoChange;
+                else
+                {
+                    returnValue = changeValue ? ProfileProgress.Increase : ProfileProgress.Decrease;
+                }
+                    
+            }
+            else if(profileCriteria == ProfileCriteria.Optional)
+            {
+                if ((FieldValue.HasValue && FieldValue.Value == changeValue) || (!FieldValue.HasValue && !changeValue))
+                    returnValue = ProfileProgress.NoChange;
+                else
+                {
+                    returnValue = changeValue ? ProfileProgress.Increase : ProfileProgress.Decrease;
+                }
+            }
+            return returnValue;
+        }
+
+        private void SetProfileProgress(int currentProgressPercent, string progressKey, int userId)
+        {
+            ProfileProgress returnValue = ProfileProgress.NoChange;
+            int progressPercent = 0;
+            int valueToReduce = UserCompletionPercentage.GetUserCompletionPercentage(progressKey);
+            if (currentProgressPercent < 0)
+            {
+                progressPercent = valueToReduce;
+                returnValue = ProfileProgress.Decrease;
+            }
+            else if (currentProgressPercent == 0)
+            {
+                returnValue = ProfileProgress.NoChange;
+            }
+            else
+            {
+                progressPercent = currentProgressPercent;
+                returnValue = ProfileProgress.Increase;
+            }
+            UpdateUserCompletion(progressPercent, returnValue, userId);
+        }
+
+        private int GetProfilePercentageForEachGroup(string progressKey, int currentProgress, ProfileProgress profileProgress)
+        {
+            int returnValue = 0;
+
+            if (profileProgress == ProfileProgress.Increase)
+            {
+                returnValue = currentProgress + UserCompletionPercentage.GetUserCompletionPercentage(progressKey);
+            }else if(profileProgress == ProfileProgress.Decrease)
+            {
+                returnValue = currentProgress - UserCompletionPercentage.GetUserCompletionPercentage(progressKey);
+            }
+            else
+            {
+                returnValue = currentProgress;
+            }
+
+            return returnValue;
+        }
+
+        private void SetCurrentProfileProgress(ProfileCriteria currentCriteria,string mandatoryPercent,string optionalPercent,
+            bool?mandatoryFieldCurrentValue, 
+            bool?optionalFieldCurrentValue,bool mandatory, bool optional, int userId)
+        {
+            string percentToDecrease = optionalPercent;
+            int progressPercent = 0;
+            if(currentCriteria == ProfileCriteria.All || currentCriteria == ProfileCriteria.Mandatory)
+            {
+                //mandatory Check
+                progressPercent = GetProfilePercentageForEachGroup(mandatoryPercent, progressPercent,
+                            GetProfileProgress(mandatoryFieldCurrentValue, mandatory, ProfileCriteria.Mandatory));
+                percentToDecrease = mandatoryPercent;
+            }
+            if(currentCriteria == ProfileCriteria.All || currentCriteria == ProfileCriteria.Optional)
+            {
+                //optional Check
+                progressPercent = GetProfilePercentageForEachGroup(optionalPercent, progressPercent,
+                    GetProfileProgress(optionalFieldCurrentValue, optional, ProfileCriteria.Optional));
+                percentToDecrease = optionalPercent;
+            }
+            SetProfileProgress(progressPercent, percentToDecrease, userId);
+        }
         private int UpdateProfileCompletion(AvailableProfiles allprofiles, ProfileCriteria profileCriteria, int userId, bool mandatory = false, bool optional = false)
         {
             int returnValue = 0;
 
             var currentProileCompletion = _context.UserProfileCompletion.FirstOrDefault(item => item.UserId == userId);
             int progressPercent = 0;
-            ProfileProgress profileProgress = ProfileProgress.Increase;
+            bool changeValue = false;
             if(currentProileCompletion!=null && currentProileCompletion.UserId > 0)
             {
                 switch (allprofiles)
                 {
                     case AvailableProfiles.ShortRegistration:
                         currentProileCompletion.ShortRegisterMandatory = mandatory;
-                        progressPercent = 10;
-                        profileProgress = ProfileProgress.Increase;
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.ShortRegistration, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.ShortRegisterMandatory, mandatory, ProfileCriteria.Mandatory));
+
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.ShortRegistration, userId);
+
+                        changeValue = true;
                         break;
                     case AvailableProfiles.Registration:
-                        if(!currentProileCompletion.RegisterMandatory.HasValue || !currentProileCompletion.RegisterMandatory.Value)
+                        if(!currentProileCompletion.RegisterMandatory.HasValue || currentProileCompletion.RegisterMandatory.Value !=mandatory)
                         {
+                            changeValue = true;
                             currentProileCompletion.RegisterMandatory = mandatory;
                         }
                         break;
                     case AvailableProfiles.Image:
+
+                        //MandatoryCheck
+                        progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.Image, progressPercent,
+                            GetProfileProgress(currentProileCompletion.PhotoUpload, mandatory, ProfileCriteria.Mandatory));
+
+                        SetProfileProgress(progressPercent, UserCompletionPercentage.Image, userId);
+
                         currentProileCompletion.PhotoUpload = mandatory;
-                        progressPercent = 10;
-                        profileProgress = ProfileProgress.Increase;
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        changeValue = true;
                         break;
                     case AvailableProfiles.BasicDetails:
-                        //MandatoryCheck
-                        if (currentProileCompletion.BasicDetailsMandatory.HasValue && currentProileCompletion.BasicDetailsMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 10;
-                            //profileProgress = ProfileProgress.Increase;
-                        }
 
-                        //optional Check
-                        if (currentProileCompletion.BasicDetailsOptional.HasValue && currentProileCompletion.BasicDetailsOptional.Value == optional)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                                if (optional)
-                                {
-                                    progressPercent = progressPercent + 5;
-                                    //profileProgress = ProfileProgress.Increase;
-                                }
-                                else
-                                {
-                                    progressPercent = progressPercent - 5;
-                                    //profileProgress = ProfileProgress.Decrease;
-                                }
-                        }
+                        SetCurrentProfileProgress(ProfileCriteria.All, UserCompletionPercentage.BasicDetailsMandatory,
+                            UserCompletionPercentage.BasicDetailsOptional, currentProileCompletion.BasicDetailsMandatory,
+                            currentProileCompletion.BasicDetailsOptional, mandatory, optional, userId);
 
-                        if(progressPercent < 0)
-                        {
-                            progressPercent = 5;
-                            profileProgress = ProfileProgress.Decrease;
-                        }
-                        else if(progressPercent == 0)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            profileProgress = ProfileProgress.Increase;
-                        }
+                        currentProileCompletion.BasicDetailsMandatory = mandatory;
+                        currentProileCompletion.BasicDetailsOptional = optional;
+                        changeValue = true;
 
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
-
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.BasicDetailsMandatory = mandatory;
-                        else if(profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.BasicDetailsOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.BasicDetailsMandatory = mandatory;
-                            currentProileCompletion.BasicDetailsOptional = optional;
-                        }
                         break;
                     case AvailableProfiles.ReligionCaste:
 
-                        if (currentProileCompletion.ReligionMandatory.HasValue && currentProileCompletion.ReligionMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 10;
-                        }
+                        ////MandatoryCheck
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.ReligionCasteMandatory, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.ReligionMandatory, mandatory, ProfileCriteria.Mandatory));
 
-                        //optional Check
-                        if (currentProileCompletion.ReligionOptional.HasValue && currentProileCompletion.ReligionOptional.Value == optional)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            if (optional)
-                            {
-                                progressPercent = progressPercent + 5;
-                                //profileProgress = ProfileProgress.Increase;
-                            }
-                            else
-                            {
-                                progressPercent = progressPercent - 5;
-                                //profileProgress = ProfileProgress.Decrease;
-                            }
-                        }
+                        ////optional Check
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.ReligionCasteOptional, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.ReligionOptional, optional, ProfileCriteria.Optional));
 
-                        if (progressPercent < 0)
-                        {
-                            progressPercent = 5;
-                            profileProgress = ProfileProgress.Decrease;
-                        }
-                        else if (progressPercent == 0)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            profileProgress = ProfileProgress.Increase;
-                        }
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.ReligionCasteOptional, userId);
 
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        SetCurrentProfileProgress(ProfileCriteria.All, UserCompletionPercentage.ReligionCasteMandatory,
+                            UserCompletionPercentage.ReligionCasteOptional, currentProileCompletion.ReligionMandatory,
+                            currentProileCompletion.ReligionOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.RegisterMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.ReligionOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.ReligionMandatory = mandatory;
-                            currentProileCompletion.ReligionOptional = optional;
-                        }
+                        currentProileCompletion.ReligionMandatory = mandatory;
+                        currentProileCompletion.ReligionOptional = optional;
+                        changeValue = true;
                         break;
                     case AvailableProfiles.CareerEducation:
 
-                        if (currentProileCompletion.CareerMandatory.HasValue && currentProileCompletion.CareerMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 10;
-                        }
+                        ////MandatoryCheck
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.CareerEducationMandatory, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.CareerMandatory, mandatory, ProfileCriteria.Mandatory));
 
-                        //optional Check
-                        if (currentProileCompletion.CareerOptional.HasValue && currentProileCompletion.CareerOptional.Value == optional)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            if (optional)
-                            {
-                                progressPercent = progressPercent + 5;
-                            }
-                            else
-                            {
-                                progressPercent = progressPercent - 5;
-                            }
-                        }
+                        ////optional Check
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.CareerEducationOptional, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.CareerOptional, optional, ProfileCriteria.Optional));
 
-                        if (progressPercent < 0)
-                        {
-                            progressPercent = 5;
-                            profileProgress = ProfileProgress.Decrease;
-                        }
-                        else if (progressPercent == 0)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            profileProgress = ProfileProgress.Increase;
-                        }
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.CareerEducationOptional, userId);
 
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
-                        
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.CareerMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.CareerOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.CareerMandatory = mandatory;
-                            currentProileCompletion.CareerOptional = optional;
-                        }
+                        SetCurrentProfileProgress(ProfileCriteria.All, UserCompletionPercentage.CareerEducationMandatory,
+                            UserCompletionPercentage.CareerEducationOptional, currentProileCompletion.CareerMandatory,
+                            currentProileCompletion.CareerOptional, mandatory, optional, userId);
+
+
+                        currentProileCompletion.CareerMandatory = mandatory;
+                        currentProileCompletion.CareerOptional = optional;
+                        changeValue = true;
                         break;
                     case AvailableProfiles.FamilyDetails:
 
-                        if (currentProileCompletion.FamilyMandatory.HasValue && currentProileCompletion.FamilyMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 10;
-                        }
+                        ////MandatoryCheck
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.FamilyDetailsMandatory, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.FamilyMandatory, mandatory, ProfileCriteria.Mandatory));
 
-                        //optional Check
-                        if (currentProileCompletion.FamilyOptional.HasValue && currentProileCompletion.FamilyOptional.Value == optional)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            if (optional)
-                            {
-                                progressPercent = progressPercent + 5;
-                            }
-                            else
-                            {
-                                progressPercent = progressPercent - 5;
-                            }
-                        }
+                        ////optional Check
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.FamilyDetailsOptional, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.FamilyOptional, optional, ProfileCriteria.Optional));
 
-                        if (progressPercent < 0)
-                        {
-                            progressPercent = 5;
-                            profileProgress = ProfileProgress.Decrease;
-                        }
-                        else if (progressPercent == 0)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            profileProgress = ProfileProgress.Increase;
-                        }
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.FamilyDetailsOptional, userId);
 
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        SetCurrentProfileProgress(ProfileCriteria.All, UserCompletionPercentage.FamilyDetailsMandatory,
+                            UserCompletionPercentage.FamilyDetailsOptional, currentProileCompletion.FamilyMandatory,
+                            currentProileCompletion.FamilyOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.FamilyMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.FamilyOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.FamilyMandatory = mandatory;
-                            currentProileCompletion.FamilyOptional = optional;
-                        }
+                        currentProileCompletion.FamilyMandatory = mandatory;
+                        currentProileCompletion.FamilyOptional = optional;
+                        changeValue = true;
                         break;
                     case AvailableProfiles.About:
-                        if (currentProileCompletion.About.HasValue && currentProileCompletion.About.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 5;
-                        }
-                        currentProileCompletion.About = mandatory;
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.About, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.About, optional, ProfileCriteria.Optional));
+
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.About, userId);
+
+                        SetCurrentProfileProgress(ProfileCriteria.Optional, UserCompletionPercentage.About,
+                            UserCompletionPercentage.About, currentProileCompletion.About,
+                            false, mandatory, optional, userId);
+
+                        currentProileCompletion.About = optional;
+                        changeValue = true;
                         break;
                     case AvailableProfiles.LifeStyle:
 
-                        if (currentProileCompletion.LifeStyleMandatory.HasValue && currentProileCompletion.LifeStyleMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 10;
-                        }
+                        ////MandatoryCheck
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.LifeStyleMandatory, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.LifeStyleMandatory, mandatory, ProfileCriteria.Mandatory));
 
-                        //optional Check
-                        if (currentProileCompletion.LifeStyleOptional.HasValue && currentProileCompletion.LifeStyleOptional.Value == optional)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            if (optional)
-                            {
-                                progressPercent = progressPercent + 5;
-                            }
-                            else
-                            {
-                                progressPercent = progressPercent - 5;
-                            }
-                        }
+                        ////optional Check
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.LifeStyleOptional, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.LifeStyleOptional, optional, ProfileCriteria.Optional));
 
-                        if (progressPercent < 0)
-                        {
-                            progressPercent = 5;
-                            profileProgress = ProfileProgress.Decrease;
-                        }
-                        else if (progressPercent == 0)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            profileProgress = ProfileProgress.Increase;
-                        }
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.LifeStyleOptional, userId);
 
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        SetCurrentProfileProgress(ProfileCriteria.All, UserCompletionPercentage.LifeStyleMandatory,
+                            UserCompletionPercentage.LifeStyleOptional, currentProileCompletion.LifeStyleMandatory,
+                            currentProileCompletion.LifeStyleOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.LifeStyleMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.LifeStyleOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.LifeStyleMandatory = mandatory;
-                            currentProileCompletion.LifeStyleOptional = optional;
-                        }
+                        currentProileCompletion.LifeStyleMandatory = mandatory;
+                        currentProileCompletion.LifeStyleOptional = optional;
+                        changeValue = true;
                         break;
                     case AvailableProfiles.Preference:
 
-                        if (currentProileCompletion.PreferenceMandatory.HasValue && currentProileCompletion.PreferenceMandatory.Value)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            progressPercent = progressPercent + 10;
-                        }
+                        ////MandatoryCheck
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.PreferenceMandatory, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.PreferenceMandatory, mandatory, ProfileCriteria.Mandatory));
 
-                        //optional Check
-                        if (currentProileCompletion.PreferenceOptional.HasValue && currentProileCompletion.PreferenceOptional.Value == optional)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            if (optional)
-                            {
-                                progressPercent = progressPercent + 5;
-                            }
-                            else
-                            {
-                                progressPercent = progressPercent - 5;
-                            }
-                        }
+                        ////optional Check
+                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.PreferenceOptional, progressPercent,
+                        //    GetProfileProgress(currentProileCompletion.PreferenceOptional, optional, ProfileCriteria.Optional));
 
-                        if (progressPercent < 0)
-                        {
-                            progressPercent = 5;
-                            profileProgress = ProfileProgress.Decrease;
-                        }
-                        else if (progressPercent == 0)
-                        {
-                            profileProgress = ProfileProgress.NoChange;
-                        }
-                        else
-                        {
-                            profileProgress = ProfileProgress.Increase;
-                        }
+                        //SetProfileProgress(progressPercent, UserCompletionPercentage.PreferenceOptional, userId);
 
-                        UpdateUserCompletion(progressPercent, profileProgress, userId);
+                        SetCurrentProfileProgress(ProfileCriteria.All, UserCompletionPercentage.PreferenceMandatory,
+                            UserCompletionPercentage.PreferenceOptional, currentProileCompletion.PreferenceMandatory,
+                            currentProileCompletion.PreferenceOptional, mandatory, optional, userId);
 
-                        if (profileCriteria == ProfileCriteria.Mandatory)
-                            currentProileCompletion.PreferenceMandatory = mandatory;
-                        else if (profileCriteria == ProfileCriteria.Optional)
-                            currentProileCompletion.PreferenceOptional = optional;
-                        else
-                        {
-                            currentProileCompletion.PreferenceMandatory = mandatory;
-                            currentProileCompletion.PreferenceOptional = optional;
-                        }
+                        currentProileCompletion.PreferenceMandatory = mandatory;
+                        currentProileCompletion.PreferenceOptional = optional;
+                        changeValue = true;
                         break;
                     default:
                         break;
                 }
-                _context.Update<Data.Entities.UserProfileCompletion>(currentProileCompletion);
-                returnValue = _context.SaveChanges();
+                if (changeValue)
+                {
+                    _context.Update<Data.Entities.UserProfileCompletion>(currentProileCompletion);
+                }
+                
+                //returnValue = _context.SaveChanges();
             }
             return returnValue;
         }
@@ -1435,42 +1412,58 @@ namespace Matrimony.Service.User
             int outPutResult = 0;
             int percentage = 0;
             Matrimony.Data.Entities.User dbUser = null;
+            bool isProfileUpdate = false;
             try
             {
                 if (user.ID > 0)
                 {
-                    //if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
-                    //{
-                    //    var currentpercentage = _context.User.FirstOrDefault(u => u.Id == user.ID).PercentageComplete;
-                    //    if (currentpercentage.HasValue)
-                    //    {
-                    //        percentage = (int)currentpercentage;
-                    //        if (!_context.UserProfileCompletion.FirstOrDefault(x => x.UserId == user.ID).RegisterMandatory.HasValue)
-                    //            percentage = percentage + 10;
-                    //    }
-                    //    UpdateProfileCompletion(AvailableProfiles.Registration, ProfileCriteria.Mandatory, user.ID, true, false);
-                    //}
-                    
-                    dbUser = new Data.Entities.User
+                    dbUser = _context.User.FirstOrDefault(u => u.Id == user.ID);
+                    if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
                     {
-                        Id = user.ID,
-                        FirstName = user.FirstName,
-                        MiddleNmae = user.MiddleNmae,
-                        LastName = user.LastName,
-                        Email = user.Email,
-                        PhoneNumber = user.PhoneNumber,
-                        ProfileCreatedForId = user.ProfileCreatedForId,
-                        ContactName = user.FirstName + " " + user.MiddleNmae + " " + user.LastName,
-                        UpdatedDate = DateTime.Now,
-                        PercentageComplete = percentage
-                    };
-                    _context.Entry<Data.Entities.User>(dbUser).State = EntityState.Detached;
-                    _context.User.Update(dbUser);
-                    outPutResult = _context.SaveChanges();
+                        if (dbUser.PercentageComplete.HasValue)
+                        {
+                            percentage = (int)dbUser.PercentageComplete;
+                            if (!_context.UserProfileCompletion.FirstOrDefault(x => x.UserId == user.ID).RegisterMandatory.HasValue)
+                            {
+                                percentage = percentage + 10;
+                                isProfileUpdate = true;
+                            }
+                                
+                        }
+                    }
+                    dbUser.Id = user.ID;
+                    dbUser.FirstName = user.FirstName;
+                    dbUser.MiddleNmae = user.MiddleNmae;
+                    dbUser.LastName = user.LastName;
+                    dbUser.Email = user.Email;
+                    dbUser.PhoneNumber = user.PhoneNumber;
+                    dbUser.ProfileCreatedForId = user.ProfileCreatedForId;
+                    dbUser.ContactName = user.FirstName + " " + user.MiddleNmae + " " + user.LastName;
+                    dbUser.UpdatedDate = DateTime.Now;
+                    dbUser.PercentageComplete = percentage;
+                    //dbUser = new Data.Entities.User
+                    //{
+                    //    Id = user.ID,
+                    //    FirstName = user.FirstName,
+                    //    MiddleNmae = user.MiddleNmae,
+                    //    LastName = user.LastName,
+                    //    Email = user.Email,
+                    //    PhoneNumber = user.PhoneNumber,
+                    //    ProfileCreatedForId = user.ProfileCreatedForId,
+                    //    ContactName = user.FirstName + " " + user.MiddleNmae + " " + user.LastName,
+                    //    UpdatedDate = DateTime.Now,
+                    //    PercentageComplete = percentage
+                    //};
+                    //_context.Entry<Data.Entities.User>(dbUser).State = EntityState.Detached;
+                    _context.Update<Matrimony.Data.Entities.User>(dbUser);
+
                     //_context.Entry(dbUser).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
                     //_context.Entry(dbUser).Property(x => x.CreatedDate).IsModified = false;
                     //_context.Entry(dbUser).Property(x => x.Password).IsModified = false;
-                    ////_context.Update<Matrimony.Data.Entities.User>(dbUser);
+                    if (isProfileUpdate)
+                        UpdateProfileCompletion(AvailableProfiles.Registration, ProfileCriteria.Mandatory, user.ID, true, false);
+                    outPutResult = _context.SaveChanges();
+                    //_context.Update<Matrimony.Data.Entities.User>(dbUser);
                 }
                 else
                 {

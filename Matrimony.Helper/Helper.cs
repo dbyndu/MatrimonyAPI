@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -272,6 +273,59 @@ namespace Matrimony.Helper
             var encrypted = Convert.FromBase64String(cipherText);
             var decriptedFromJavascript = DecryptStringFromBytes(encrypted, keybytes, iv);
             return decriptedFromJavascript;
+        }
+    }
+
+    public static class UserCompletionPercentage
+    {
+        public static Dictionary<string, int> PercentageValues;
+
+        public const string ShortRegistration = "ShortRegistration";
+        public const string Registration = "Registration";
+        public const string Image = "Image";
+        public const string BasicDetailsMandatory = "BasicDetailsMandatory";
+        public const string BasicDetailsOptional = "BasicDetailsOptional";
+        public const string ReligionCasteMandatory = "ReligionCasteMandatory";
+        public const string ReligionCasteOptional = "ReligionCasteOptional";
+        public const string CareerEducationMandatory = "CareerEducationMandatory";
+        public const string CareerEducationOptional = "CareerEducationOptional";
+        public const string FamilyDetailsMandatory = "FamilyDetailsMandatory";
+        public const string FamilyDetailsOptional = "FamilyDetailsOptional";
+        public const string About = "About";
+        public const string LifeStyleMandatory = "LifeStyleMandatory";
+        public const string LifeStyleOptional = "LifeStyleOptional";
+        public const string PreferenceMandatory = "PreferenceMandatory";
+        public const string PreferenceOptional = "PreferenceOptional";
+        public static int GetUserCompletionPercentage(string moduleName)
+        {
+            int returnValue = 0;
+            if(PercentageValues == null)
+            {
+                PercentageValues = new Dictionary<string, int>();
+                PercentageValues.Add(ShortRegistration, 10);
+                PercentageValues.Add(Registration, 10);
+                PercentageValues.Add(Image, 10);
+                PercentageValues.Add(BasicDetailsMandatory, 5);
+                PercentageValues.Add(BasicDetailsOptional, 5);
+                PercentageValues.Add(ReligionCasteMandatory, 5);
+                PercentageValues.Add(ReligionCasteOptional, 5);
+                PercentageValues.Add(CareerEducationMandatory, 5);
+                PercentageValues.Add(CareerEducationOptional, 5);
+                PercentageValues.Add(FamilyDetailsMandatory, 5);
+                PercentageValues.Add(FamilyDetailsOptional, 5);
+                PercentageValues.Add(About, 5);
+                PercentageValues.Add(LifeStyleMandatory, 5);
+                PercentageValues.Add(LifeStyleOptional, 5);
+                PercentageValues.Add(PreferenceMandatory, 10);
+                PercentageValues.Add(PreferenceOptional, 5);
+            }
+
+            if (PercentageValues.ContainsKey(moduleName))
+            {
+                returnValue = PercentageValues.GetValueOrDefault(moduleName, 0);
+            }
+            return returnValue;
+            
         }
     }
 }
