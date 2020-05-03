@@ -17,5 +17,7 @@ namespace Matrimony.Model.User
         public DateTime? UpdatedDate { get; set; }
         public string ContactName { get; set; }
         public int? PercentageComplete { get; set; }
+
+        public int? genderId { get; set; }
     }
 }

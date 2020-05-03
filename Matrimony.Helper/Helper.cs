@@ -16,7 +16,7 @@ namespace Matrimony.Helper
         {
             int age = 0;
             if (dateOfBirth != DateTime.MinValue)
-            {                
+            {
                 age = DateTime.Now.Year - dateOfBirth.Year;
                 if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
                     age = age - 1;
@@ -37,36 +37,46 @@ namespace Matrimony.Helper
             string resizedImageString = string.Empty;
             if (byteArray != null)
             {
+                Image img = ByteArrayToImage(byteArray);
                 if (width > 0 && height > 0)
                 {
-
-                    Image img = ByteArrayToImage(byteArray);
-                    //img.Mutate(x => x
-                    //.Resize(new ResizeOptions
-                    //{
-                    //    Size = new Size(width, height),
-                    //    Mode = ResizeMode.Max
-                    //})
-                    //.BoxBlur()); 
-                    if (string.IsNullOrEmpty(mode))
+                    switch (mode)
                     {
-                        img.Mutate(x => x
-                        .Resize(new ResizeOptions
-                        {
-                            Size = new Size(width, height),
-                            Mode = ResizeMode.Crop
-                        })
-                        );
-                    }
-                    else
-                        {
-                        img.Mutate(x => x
-                        .Resize(new ResizeOptions
-                        {
-                            Size = new Size(width, height),
-                            Mode = ResizeMode.Crop
-                        })
-                        );
+                        case "Resize":
+                            img.Mutate(x => x
+                            .Resize(new ResizeOptions
+                            {
+                                Size = new Size(width, height),
+                                Mode = ResizeMode.BoxPad
+                            })                         
+                            );
+                            break;
+                        case "Crop":
+                            img.Mutate(x => x
+                            .Resize(new ResizeOptions
+                            {
+                                Size = new Size(width + 100, height + 100),
+                                Mode = ResizeMode.Max
+                            })
+                            );
+                            if (img.Height > height && img.Width > width)
+                                img.Mutate(x => x.Crop(new Rectangle
+                                {
+                                    Height = height,
+                                    Width = width,
+                                    X = 30,
+                                    Y = 10
+                                })
+                          //.Resize(new ResizeOptions
+                          //{
+                          //    Size = new Size(width, height),
+                          //    Mode = ResizeMode.Crop
+                          //})
+                          );
+                            break;
+                        case "Blur":
+                            img.Mutate(x => x.BokehBlur());
+                            break;
                     }
                     using (MemoryStream ms = new MemoryStream())
                     {
@@ -76,18 +86,7 @@ namespace Matrimony.Helper
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(mode))
-                        resizedImageString = Convert.ToBase64String(byteArray);
-                    else
-                    {
-                        Image img = ByteArrayToImage(byteArray);
-                        img.Mutate(x => x.BokehBlur());
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            img.Save(ms, new JpegEncoder());
-                            resizedImageString = Convert.ToBase64String(ms.ToArray());
-                        }
-                    }
+                    resizedImageString = Convert.ToBase64String(byteArray);
                 }
             }
             return resizedImageString;
