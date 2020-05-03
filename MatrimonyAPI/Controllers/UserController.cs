@@ -266,5 +266,13 @@ namespace MatrimonyAPI.Controllers
 
         //    return new JwtSecurityTokenHandler().WriteToken(token);
         //}
+        [HttpGet]
+        [Authorize]
+        [Route("user-preference/{userId}")]
+        public ActionResult GetPreference(int userId)
+        {
+            var response = _userService.GetUserPreferences(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
     }
 }

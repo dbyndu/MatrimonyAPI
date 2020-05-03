@@ -21,5 +21,7 @@ namespace Matrimony.Service.Contracts
         Response GetUserDetails(int id);
 
         Response LoginUser(UserShortRegister user);
+
+        Response GetUserPreferences(int userId);
     }
 }

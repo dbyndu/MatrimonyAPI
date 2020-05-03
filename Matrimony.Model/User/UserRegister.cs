@@ -16,5 +16,7 @@ namespace Matrimony.Model.User
         [JsonIgnore]
         public DateTime? UpdatedDate { get; set; }
         public string ContactName { get; set; }
+
+        public int? genderId { get; set; }
     }
 }
