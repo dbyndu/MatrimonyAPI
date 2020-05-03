@@ -477,7 +477,7 @@ namespace Matrimony.Service.User
                         UserBasicInformation userBasic = (UserBasicInformation)obj;
                         if (userBasic.GenderId.HasValue && userBasic.Dob.HasValue && userBasic.CountryId.HasValue && userBasic.StateId.HasValue && userBasic.CityId.HasValue && userBasic.MotherTongueId.HasValue)
                             mandatory = true;
-                        if (userBasic.BloodGroupId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Weight.HasValue)
+                        if (userBasic.BloodGroupId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Height!=0 && userBasic.Weight.HasValue)
                             optional = true;
                         else
                             optional = false;
