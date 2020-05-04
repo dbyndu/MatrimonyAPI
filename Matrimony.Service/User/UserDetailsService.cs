@@ -107,16 +107,22 @@ namespace Matrimony.Service.User
         public Response LoginUser(UserShortRegister user)
         {
             var errors = new List<Error>();
-            var alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email && x.Password == user.Password).Select(u => new UserModel
-            {
-                ID = u.Id,
-                Email = u.Email,
-                FirstName = u.FirstName,
-                LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
-                CreatedDate = u.CreatedDate,
-                ContactName = u.ContactName
-            }).FirstOrDefault();
+            var alreadyInsertedUser = (from u in _context.User.Where(x => x.Email == user.Email && x.Password == user.Password)
+                                       join ui in _context.UserInfo on u.Id equals ui.UserId
+                                       join p in _context.UserPreferences on u.Id equals p.UserId into up
+                                       from pref in up.DefaultIfEmpty()
+                                       select new UserModel
+                                       {
+                                           ID = u.Id,
+                                           Email = u.Email,
+                                           FirstName = u.FirstName,
+                                           LastName = u.LastName,
+                                           PhoneNumber = u.PhoneNumber,
+                                           CreatedDate = u.CreatedDate,
+                                           ContactName = u.ContactName,
+                                           genderId = ui.GenderId,
+                                           UserPreference = _mapper.Map<UserPreferenceModel>(pref)
+                                       }).FirstOrDefault();
             if (alreadyInsertedUser != null && alreadyInsertedUser.Email != string.Empty)
             {
                 var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
@@ -397,22 +403,10 @@ namespace Matrimony.Service.User
                                from ub in user_basic.DefaultIfEmpty()
                                join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
                                from img in user_image.DefaultIfEmpty()
-                                   //join c in _context.Countries on ub.CountryId equals c.Id into user_country
-                                   //from country in user_country.DefaultIfEmpty()
                                join s in _context.States on ub.StateId equals s.Id into user_state
                                from state in user_state.DefaultIfEmpty()
                                join ci in _context.Cities on ub.CityId equals ci.Id into user_city
                                from city in user_city.DefaultIfEmpty()
-                                   //join mLang in _context.MasterFieldValue on ub.MotherTongueId equals mLang.Id into language
-                                   //from l in language.DefaultIfEmpty()
-                                   //join mEdu in _context.MasterFieldValue on ub.HighestQualificationId equals mEdu.Id into highstEducation
-                                   //from he in highstEducation.DefaultIfEmpty()
-                                   //join mEduField in _context.MasterFieldValue on ub.HighestSpecializationId equals mEduField.Id into highstEducationField
-                                   //from hef in highstEducationField.DefaultIfEmpty()
-                                   //join mWork in _context.MasterFieldValue on ub.WorkDesignationId equals mWork.Id into workDesignation
-                                   //from w in workDesignation.DefaultIfEmpty()
-                                   //join ct in _context.Cities on ub.CityId equals ct.Id into city
-                                   //from c in city.DefaultIfEmpty()
                                select new
                                {
                                    Id = u.Id,
@@ -420,31 +414,39 @@ namespace Matrimony.Service.User
                                    Age = GenericHelper.CalculateAge(Convert.ToDateTime(ub.Dob)),
                                    Height = ub.Height ?? 0,
                                    CasteId = ub.CasteId,
-                                   //Education = string.Concat(he.Value ?? string.Empty, ", ", hef.Value ?? string.Empty),
-                                   //City = c.Name ?? string.Empty,
-                                   //Profession = w.Value ?? string.Empty,
-                                   //Language = l.Value ?? string.Empty,
                                    ub.HighestQualificationId,
                                    ub.HighestSpecializationId,
                                    ub.WorkDesignationId,
                                    State = state.Name,
                                    City = city.Name,
                                    Url = "",
-                                   ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 0, 0, (searchCritria.UserId.Equals(0)) ? "mask" : "") : "",
+                                   ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + 
+                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 300, 200, (searchCritria.UserId.Equals(0)) ? "Blur" : "Crop") : "",
                                    GenderId = ub.GenderId ?? 0,
                                    ReligionId = ub.ReligionId ?? 0,
                                    MotherTongueId = ub.MotherTongueId ?? 0
                                });
+            if (!string.IsNullOrEmpty(searchCritria.Caste))
+            {
+                string[] castIds = searchCritria.Caste.Split(',');
+                querySearch = querySearch.Where(u => castIds.Contains(u.CasteId.ToString()));
+            }
             if (searchCritria.Gender > 0)
                 querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));
-            if (searchCritria.Religion > 0)
-                querySearch = querySearch.Where(u => u.ReligionId.Equals(searchCritria.Religion));
-            if (searchCritria.MotherTongue > 0)
-                querySearch = querySearch.Where(u => u.MotherTongueId.Equals(searchCritria.MotherTongue));
+            if (!string.IsNullOrEmpty(searchCritria.Religion))
+            {
+                string[] religionIds = searchCritria.Religion.Split(',');
+                querySearch = querySearch.Where(u => religionIds.Contains(u.ReligionId.ToString()));
+            }
+            if (!string.IsNullOrEmpty(searchCritria.MotherTongue))
+            {
+                string[] mtIds = searchCritria.MotherTongue.Split(',');
+                querySearch = querySearch.Where(u => mtIds.Contains(u.MotherTongueId.ToString()));
+            }
 
             var lstUsers = querySearch.ToList();
             if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
-                lstUsers = lstUsers.Where(u => u.Age > searchCritria.AgeFrom).ToList();
+                lstUsers = lstUsers.Where(u => u.Age >= searchCritria.AgeFrom && u.Age <= searchCritria.AgeTo ).ToList();
             if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
             {
                 errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
@@ -722,6 +724,30 @@ namespace Matrimony.Service.User
             return new UserImageListResponse(metadata, lstImages);
         }
 
+        public Response GetUserPreferences(int userId)
+        {
+            var errors = new List<Error>();
+            UserPreferenceModel preference = new UserPreferenceModel();
+            try 
+            {
+                var IQueryPref = _context.UserPreferences.Where(p => p.UserId.Equals(userId));
+                preference = _mapper.Map<UserPreferenceModel>(IQueryPref.FirstOrDefault());
+            }
+            catch(Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (preference == null)
+            {
+                errors.Add(new Error("Err102", "No data found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains preference Of User");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new UserPreferenceResponse(metadata, preference);
+        }
         private int InsertUpdateUserLifeStyle(UserLifeStyleModel userLife)
         {
             int outPutResult = 0;
@@ -821,11 +847,17 @@ namespace Matrimony.Service.User
                 try
                 {
                     var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.IsProfilePicture.Equals(true)).FirstOrDefault();
-                    imageSetAsProfPic.IsProfilePicture = false;
-                    _context.Update<Matrimony.Data.Entities.UserImage>(imageSetAsProfPic);
+                    if (imageSetAsProfPic != null)
+                    {
+                        imageSetAsProfPic.IsProfilePicture = false;
+                        _context.Update<Matrimony.Data.Entities.UserImage>(imageSetAsProfPic);
+                    }
                     var imageToSetProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.Id.Equals(userImgModel.profilePictureId)).FirstOrDefault();
-                    imageToSetProfPic.IsProfilePicture = true;
-                    _context.Update<Matrimony.Data.Entities.UserImage>(imageToSetProfPic);
+                    if (imageToSetProfPic != null)
+                    {
+                        imageToSetProfPic.IsProfilePicture = true;
+                        _context.Update<Matrimony.Data.Entities.UserImage>(imageToSetProfPic);
+                    }
                 }
                 catch (Exception ex)
                 {
