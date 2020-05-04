@@ -794,7 +794,6 @@ namespace Matrimony.Service.User
         }
         private async Task<int> SaveUserImage(UserImagesUploadModel userImgModel, int userId)
         {
-
             int outPutResult = 0;
             if (userImgModel.imageIDsToDelete != null && userImgModel.imageIDsToDelete.Count > 0)
             {
@@ -805,6 +804,12 @@ namespace Matrimony.Service.User
                     {
                         _context.UserImage.Remove(i);
                     });
+                    var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.IsProfilePicture.Equals(true));
+                    int count = imageSetAsProfPic.Count();
+                    if(count == 0)
+                    {
+                        UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userId, false, false);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -858,6 +863,7 @@ namespace Matrimony.Service.User
                     if (count == 0)
                     {
                         dbUserImage.IsProfilePicture = true;
+                        UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userId, true, false);
                         count = 1;
                     }
                     try
@@ -1167,12 +1173,6 @@ namespace Matrimony.Service.User
                 {
                     case AvailableProfiles.ShortRegistration:
                         currentProileCompletion.ShortRegisterMandatory = mandatory;
-
-                        //progressPercent = GetProfilePercentageForEachGroup(UserCompletionPercentage.ShortRegistration, progressPercent,
-                        //    GetProfileProgress(currentProileCompletion.ShortRegisterMandatory, mandatory, ProfileCriteria.Mandatory));
-
-                        //SetProfileProgress(progressPercent, UserCompletionPercentage.ShortRegistration, userId);
-
                         changeValue = true;
                         break;
                     case AvailableProfiles.Registration:
