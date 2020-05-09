@@ -14,6 +14,8 @@ namespace Matrimony.Model.User
 
         public UserPreferenceModel UserPreference { get; set; }
 
+        public UserPercentageComplete UserProfileCompletion { get; set; }
+
 
         //public ICollection<UserCareerModel> UserCareer { get; set; }
         //public ICollection<UserEducationModel> UserEducation { get; set; }

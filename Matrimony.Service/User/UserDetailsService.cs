@@ -175,9 +175,38 @@ namespace Matrimony.Service.User
                 {
                     if (newinsertedUserID > 0)
                     {
+                        int? genderID = null;
+                        var metaData = from meta in _context.MasterTableMetadata
+                                       join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
+                                       where meta.TableName.Equals("ProfileCreatedFor")
+                                       select new MasterDataModel()
+                                       {
+                                           Id = master.Id,
+                                           Name = master.Value,
+                                       };
+
+                        if(metaData != null && metaData.Any(item=>item.Id == user.ProfileCreatedForId))
+                        {
+                            var gender = Helper.GenericHelper.Gender(metaData.FirstOrDefault(item => item.Id == user.ProfileCreatedForId).Name);
+                            if (!string.IsNullOrEmpty(gender))
+                            {
+                                var allGenders= from meta in _context.MasterTableMetadata
+                                               join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
+                                               where meta.TableName.Equals("Gender")
+                                               select new MasterDataModel()
+                                               {
+                                                   Id = master.Id,
+                                                   Name = master.Value,
+                                               };
+                                genderID = allGenders.FirstOrDefault(item => item.Name.ToLower() == gender).Id;
+                            }
+
+                        }
+
                         Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
                         {
-                            UserId = newinsertedUserID
+                            UserId = newinsertedUserID,
+                            GenderId = genderID
                         };
                         _context.UserInfo.Add(dbUserInfo);
                         Data.Entities.UserProfileCompletion ProfCompletion = new Data.Entities.UserProfileCompletion()
@@ -220,6 +249,8 @@ namespace Matrimony.Service.User
                            from userLife in user_Life.DefaultIfEmpty()
                            join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
                            from preference in user_pref.DefaultIfEmpty()
+                           //join uperc in _context.UserProfileCompletion on u.Id equals uperc.UserId into user_perc
+                           //from userpercentage in user_perc.DefaultIfEmpty()
                            where u.Id.Equals(id)
                            select new UserModel
                            {
@@ -261,9 +292,24 @@ namespace Matrimony.Service.User
                                    Pin = ub.Pin,
                                    About = ub.About
                                },
+                               //UserProfileCompletion = new UserPercentageComplete
+                               //{
+                               //    Id = userpercentage.Id,
+                               //    UserId = userpercentage.UserId,
+                               //    About = userpercentage.About == null ? false : (bool)userpercentage.About,
+                               //    BasicDetails = userpercentage.BasicDetailsMandatory == null ? false : (bool)userpercentage.BasicDetailsMandatory,
+                               //    Career = userpercentage.CareerMandatory == null ? false : (bool)userpercentage.CareerMandatory,
+                               //    BasicRegister = userpercentage.ShortRegisterMandatory == null ? false : (bool)userpercentage.ShortRegisterMandatory,
+                               //    Family = userpercentage.FamilyMandatory == null ? false : (bool)userpercentage.FamilyMandatory,
+                               //    LifeStyle = userpercentage.LifeStyleMandatory == null ? false : (bool)userpercentage.LifeStyleMandatory,
+                               //    PhotoUpload = userpercentage.PhotoUpload == null ? false : (bool)userpercentage.PhotoUpload,
+                               //    Preference = userpercentage.PreferenceMandatory == null ? false : (bool)userpercentage.PreferenceMandatory,
+                               //    Register = userpercentage.RegisterMandatory == null? false : (bool)userpercentage.RegisterMandatory,
+                               //    Religion = userpercentage.ReligionMandatory == null? false : (bool)userpercentage.ReligionMandatory
+                               //},
                                UserFamilyInfo = new UserFamilyInformationModel
                                {
-                                   Id= ub.Id,
+                                   Id = ub.Id,
                                    UserId = ub.UserId,
                                    FatherStatusId = ub.FatherStatusId,
                                    MotherStatusId = ub.MotherStatusId,
@@ -343,6 +389,30 @@ namespace Matrimony.Service.User
                                UserPreference = _mapper.Map<UserPreferenceModel>(preference)
 
                            }).FirstOrDefault();
+
+            if(returnValue != null)
+            {
+                var userpercentage = _context.UserProfileCompletion.FirstOrDefault(x => x.UserId == returnValue.ID);
+                if(userpercentage != null)
+                {
+                    returnValue.UserProfileCompletion = new UserPercentageComplete()
+                    {
+                        Id = userpercentage.Id,
+                        UserId = userpercentage.UserId,
+                        About = userpercentage.About == null ? false : (bool)userpercentage.About,
+                        BasicDetails = userpercentage.BasicDetailsMandatory == null ? false : (bool)userpercentage.BasicDetailsMandatory,
+                        Career = userpercentage.CareerMandatory == null ? false : (bool)userpercentage.CareerMandatory,
+                        BasicRegister = userpercentage.ShortRegisterMandatory == null ? false : (bool)userpercentage.ShortRegisterMandatory,
+                        Family = userpercentage.FamilyMandatory == null ? false : (bool)userpercentage.FamilyMandatory,
+                        LifeStyle = userpercentage.LifeStyleMandatory == null ? false : (bool)userpercentage.LifeStyleMandatory,
+                        PhotoUpload = userpercentage.PhotoUpload == null ? false : (bool)userpercentage.PhotoUpload,
+                        Preference = userpercentage.PreferenceMandatory == null ? false : (bool)userpercentage.PreferenceMandatory,
+                        Register = userpercentage.RegisterMandatory == null ? false : (bool)userpercentage.RegisterMandatory,
+                        Religion = userpercentage.ReligionMandatory == null ? false : (bool)userpercentage.ReligionMandatory
+                    };
+                }
+                
+            }
             return returnValue;
         }
 
@@ -747,6 +817,16 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
             return new UserPreferenceResponse(metadata, preference);
+        }
+        
+        private static bool GetProfileCompletionPercentage(bool? incomingValue)
+        {
+            bool returnValue = false;
+            if(incomingValue!=null)
+            {
+                returnValue = (bool)incomingValue;
+            }
+            return returnValue;
         }
         private int InsertUpdateUserLifeStyle(UserLifeStyleModel userLife)
         {

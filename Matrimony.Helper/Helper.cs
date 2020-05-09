@@ -12,6 +12,46 @@ namespace Matrimony.Helper
 {
     public static class GenericHelper
     {
+        public const string PROFILE_Self = "self";
+        public const string PROFILE_Son = "son";
+        public const string PROFILE_Daughter = "daughter";
+        public const string PROFILE_Brother = "brother";
+        public const string PROFILE_Sister = "sister";
+        public const string PROFILE_Relative_Friend = "relative/friend";
+        public const string PROFILE_Client_Marriage_Bureau = "client-marriage bureau";
+
+        public static string Gender(string userProfileValue)
+        {
+            string returnValue = string.Empty;
+            switch (userProfileValue.ToLower())
+            {
+                case PROFILE_Brother:
+                    returnValue = "male";
+                    break;
+                case PROFILE_Client_Marriage_Bureau:
+                    returnValue = string.Empty;
+                    break;
+                case PROFILE_Daughter:
+                    returnValue = "female";
+                    break;
+                case PROFILE_Relative_Friend:
+                    returnValue = string.Empty;
+                    break;
+                case PROFILE_Self:
+                    returnValue = string.Empty;
+                    break;
+                case PROFILE_Sister:
+                    returnValue = "female";
+                    break;
+                case PROFILE_Son:
+                    returnValue = "male";
+                    break;
+                default:
+                    returnValue = string.Empty;
+                    break;
+            }
+            return returnValue;
+        }
         public static int CalculateAge(DateTime dateOfBirth)
         {
             int age = 0;
@@ -91,6 +131,7 @@ namespace Matrimony.Helper
             }
             return resizedImageString;
         }
+
     }
     public static class ConfigurationHelper
     {
