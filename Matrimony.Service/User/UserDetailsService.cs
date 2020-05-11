@@ -831,29 +831,31 @@ namespace Matrimony.Service.User
         private int InsertUpdateUserLifeStyle(UserLifeStyleModel userLife)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.UserLifeStyle dbUserLifeStyle = new Data.Entities.UserLifeStyle()
+            Matrimony.Data.Entities.UserLifeStyle dbUserLifeStyle = _context.UserLifeStyle.Where(x => x.UserId == userLife.UserId).FirstOrDefault();
+            if (dbUserLifeStyle == null)
             {
-                Id = userLife.Id,
-                UserId = userLife.UserId,
-                DietId = userLife.DietId,
-                Hobies = userLife.Hobies,
-                SmokingId = userLife.SmokingId,
-                ChildrenChoiceId = userLife.ChildrenChoiceId,
-                WeadingStyleId = userLife.WeadingStyleId,
-                DrinkingId = userLife.DrinkingId,
-                HouseLivingInId = userLife.HouseLivingInId,
-                OwnCar = userLife.OwnCar,
-                OwnPet = userLife.OwnPet,
-                Interests = userLife.Interests,
-                Musics = userLife.Musics,
-                Books = userLife.Books,
-                Movies = userLife.Movies,
-                Fitness = userLife.Fitness,
-                Cuisines = userLife.Cuisines
-            };
+                dbUserLifeStyle = new Data.Entities.UserLifeStyle();
+                dbUserLifeStyle.Id = userLife.Id;
+            }
+            dbUserLifeStyle.UserId = userLife.UserId;
+            dbUserLifeStyle.DietId = userLife.DietId;
+            dbUserLifeStyle.Hobies = userLife.Hobies;
+            dbUserLifeStyle.SmokingId = userLife.SmokingId;
+            dbUserLifeStyle.ChildrenChoiceId = userLife.ChildrenChoiceId;
+            dbUserLifeStyle.WeadingStyleId = userLife.WeadingStyleId;
+            dbUserLifeStyle.DrinkingId = userLife.DrinkingId;
+            dbUserLifeStyle.HouseLivingInId = userLife.HouseLivingInId;
+            dbUserLifeStyle.OwnCar = userLife.OwnCar;
+            dbUserLifeStyle.OwnPet = userLife.OwnPet;
+            dbUserLifeStyle.Interests = userLife.Interests;
+            dbUserLifeStyle.Musics = userLife.Musics;
+            dbUserLifeStyle.Books = userLife.Books;
+            dbUserLifeStyle.Movies = userLife.Movies;
+            dbUserLifeStyle.Fitness = userLife.Fitness;
+            dbUserLifeStyle.Cuisines = userLife.Cuisines;
             try
             {
-                if (userLife.UserId > 0)
+                if (dbUserLifeStyle.Id > 0)
                 {
                     _context.Update<Matrimony.Data.Entities.UserLifeStyle>(dbUserLifeStyle);
                 }
