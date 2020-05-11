@@ -547,9 +547,9 @@ namespace Matrimony.Service.User
                         break;
                     case "UserBasicInformation":
                         UserBasicInformation userBasic = (UserBasicInformation)obj;
-                        if (userBasic.GenderId.HasValue && userBasic.Dob.HasValue && userBasic.CountryId.HasValue && userBasic.StateId.HasValue && userBasic.CityId.HasValue && userBasic.MotherTongueId.HasValue)
+                        if (userBasic.GenderId.HasValue && userBasic.CitizenshipId.HasValue && userBasic.Dob.HasValue && userBasic.CountryId.HasValue && userBasic.StateId.HasValue && userBasic.CityId.HasValue && userBasic.MotherTongueId.HasValue)
                             mandatory = true;
-                        if (userBasic.BloodGroupId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Height!=0 && userBasic.Weight.HasValue)
+                        if (userBasic.BloodGroupId.HasValue && userBasic.MaritalStatusId.HasValue && userBasic.IsDisability.HasValue && userBasic.ComplexionId.HasValue && userBasic.BodyTypeId.HasValue && userBasic.Height.HasValue && userBasic.Height!=0 && userBasic.Weight.HasValue)
                             optional = true;
                         else
                             optional = false;
