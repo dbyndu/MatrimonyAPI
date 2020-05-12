@@ -951,13 +951,17 @@ namespace Matrimony.Service.User
                 var userImgs = userImgModel.images;
                 var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userImgs[0].UserId) && u.IsProfilePicture.Equals(true));
                 int count = imageSetAsProfPic.Count();
+                UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userId, true, false);
                 if (userImgs.Where(i => i.IsProfilePicture.Equals(true)).Count() > 0)
                 {
                     if (count > 0)
                     {
                         var imagetoUpdate = imageSetAsProfPic.FirstOrDefault();
-                        imagetoUpdate.IsProfilePicture = false;
-                        _context.Update<Matrimony.Data.Entities.UserImage>(imagetoUpdate);
+                        if (imagetoUpdate != null)
+                        {
+                            imagetoUpdate.IsProfilePicture = false;
+                            _context.Update<Matrimony.Data.Entities.UserImage>(imagetoUpdate);
+                        }
                     }
                 }
                 userImgs.ForEach(img =>
@@ -977,7 +981,6 @@ namespace Matrimony.Service.User
                     if (count == 0)
                     {
                         dbUserImage.IsProfilePicture = true;
-                        UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userId, true, false);
                         count = 1;
                     }
                     try
