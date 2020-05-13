@@ -107,7 +107,8 @@ namespace Matrimony.Service.User
         public Response LoginUser(UserShortRegister user)
         {
             var errors = new List<Error>();
-            var alreadyInsertedUser = (from u in _context.User.Where(x => x.Email == user.Email && x.Password == user.Password)
+            var alreadyInsertedUser = (from u in _context.User.Where(x => (x.Email == user.Email)
+                                       && x.Password == user.Password)
                                        join ui in _context.UserInfo on u.Id equals ui.UserId
                                        join p in _context.UserPreferences on u.Id equals p.UserId into up
                                        from pref in up.DefaultIfEmpty()
@@ -138,8 +139,41 @@ namespace Matrimony.Service.User
             }
             else
             {
-                errors.Add(new Error("Err105", "Login Failed invalid Credentials.."));
-                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);
+                alreadyInsertedUser = (from u in _context.User.Where(x => (x.PhoneNumber == user.Email)
+                                       && x.Password == user.Password)
+                                       join ui in _context.UserInfo on u.Id equals ui.UserId
+                                       join p in _context.UserPreferences on u.Id equals p.UserId into up
+                                       from pref in up.DefaultIfEmpty()
+                                       select new UserModel
+                                       {
+                                           ID = u.Id,
+                                           Email = u.Email,
+                                           FirstName = u.FirstName,
+                                           LastName = u.LastName,
+                                           PhoneNumber = u.PhoneNumber,
+                                           CreatedDate = u.CreatedDate,
+                                           ContactName = u.ContactName,
+                                           genderId = ui.GenderId,
+                                           UserPreference = _mapper.Map<UserPreferenceModel>(pref)
+                                       }).FirstOrDefault();
+                if (alreadyInsertedUser != null && alreadyInsertedUser.Email != string.Empty)
+                {
+                    var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
+                    if (!errors.Any())
+                    {
+                        //var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                        return new UserModelResponse(metadata, alreadyInsertedUser);
+                    }
+                    else
+                    {
+                        return new ErrorResponse(metadata, errors);
+                    }
+                }
+                else
+                {
+                    errors.Add(new Error("Err106", "Login Failed invalid Credentials.."));
+                    return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);
+                }
             }
         }
 
@@ -147,7 +181,7 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             int outPutResult = 0;
-            int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Count();
+            int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email || x.PhoneNumber == user.PhoneNumber).Count();
             if (alreadyInsertedUser > 0)
             {
                 errors.Add(new Error("Err105", "User Already Added.."));
@@ -262,6 +296,7 @@ namespace Matrimony.Service.User
                                PhoneNumber = u.PhoneNumber,
                                ProfileCreatedForId = u.ProfileCreatedForId,
                                PercentageComplete = u.PercentageComplete,
+                               ContactName = u.ContactName,
                                UserBasicInfo = new UserBasicInformation
                                {
                                    Id = ub.Id,
@@ -951,17 +986,13 @@ namespace Matrimony.Service.User
                 var userImgs = userImgModel.images;
                 var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userImgs[0].UserId) && u.IsProfilePicture.Equals(true));
                 int count = imageSetAsProfPic.Count();
-                UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userId, true, false);
                 if (userImgs.Where(i => i.IsProfilePicture.Equals(true)).Count() > 0)
                 {
                     if (count > 0)
                     {
                         var imagetoUpdate = imageSetAsProfPic.FirstOrDefault();
-                        if (imagetoUpdate != null)
-                        {
-                            imagetoUpdate.IsProfilePicture = false;
-                            _context.Update<Matrimony.Data.Entities.UserImage>(imagetoUpdate);
-                        }
+                        imagetoUpdate.IsProfilePicture = false;
+                        _context.Update<Matrimony.Data.Entities.UserImage>(imagetoUpdate);
                     }
                 }
                 userImgs.ForEach(img =>
@@ -981,6 +1012,7 @@ namespace Matrimony.Service.User
                     if (count == 0)
                     {
                         dbUserImage.IsProfilePicture = true;
+                        UpdateProfileCompletion(AvailableProfiles.Image, ProfileCriteria.Mandatory, userId, true, false);
                         count = 1;
                     }
                     try
@@ -1389,8 +1421,8 @@ namespace Matrimony.Service.User
                         //SetProfileProgress(progressPercent, UserCompletionPercentage.About, userId);
 
                         SetCurrentProfileProgress(ProfileCriteria.Optional, UserCompletionPercentage.About,
-                            UserCompletionPercentage.About, currentProileCompletion.About,
-                            false, mandatory, optional, userId);
+                            UserCompletionPercentage.About, false,
+                            currentProileCompletion.About, mandatory, optional, userId);
 
                         currentProileCompletion.About = optional;
                         changeValue = true;
