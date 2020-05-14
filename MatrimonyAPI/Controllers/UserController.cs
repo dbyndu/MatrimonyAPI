@@ -274,5 +274,13 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.GetUserPreferences(userId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+        [HttpGet]
+        [Authorize]
+        [Route("user-profile-data/{userId}")]
+        public ActionResult GetProfileDisplayData(int userId)
+        {
+            var response = _userService.GetProfileDisplayData(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
     }
 }
