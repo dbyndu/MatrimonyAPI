@@ -499,6 +499,27 @@ namespace Matrimony.Service.User
 
             return returnValue;
         }
+
+        public Response GetProfileDisplayData(int userId)
+        {
+            var errors = new List<Error>();
+            var queryImg = _context.UserImage.Where(img => img.IsProfilePicture.Equals(true) && img.UserId.Equals(userId)).Select(
+                img => new { 
+                    profileImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType +
+                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 40, 40, "Crop") : "",
+                });
+            var img = queryImg.FirstOrDefault();
+            if (img == null)
+            {
+                errors.Add(new Error("Err102", "No image found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains user profile pic");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, img);
+        }
         public Response GestUserList(SearchCritriaModel searchCritria)
         {
             var errors = new List<Error>();

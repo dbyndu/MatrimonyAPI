@@ -92,6 +92,21 @@ namespace Matrimony.Helper
                             );
                             break;
                         case "Crop":
+                            int xa=0; int ya=0;
+                            if (img.Width > img.Height)
+                            {
+                                if (width < 150)
+                                { xa = 10; ya = 0; }
+                                else
+                                { xa = 30; ya = 10; }
+                            }
+                            else
+                            {
+                                if (height < 150)
+                                { xa = 0; ya = 10; }
+                                else
+                                { xa = 10; ya = 30; }
+                            }
                             img.Mutate(x => x
                             .Resize(new ResizeOptions
                             {
@@ -99,13 +114,17 @@ namespace Matrimony.Helper
                                 Mode = ResizeMode.Max
                             })
                             );
+                            if (img.Height > img.Width)
+                                height = img.Width;
+                            else
+                                width = img.Height;
                             if (img.Height > height && img.Width > width)
                                 img.Mutate(x => x.Crop(new Rectangle
                                 {
                                     Height = height,
                                     Width = width,
-                                    X = 30,
-                                    Y = 10
+                                    X = xa,
+                                    Y = ya
                                 })
                           //.Resize(new ResizeOptions
                           //{
