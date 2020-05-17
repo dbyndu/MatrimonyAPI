@@ -41,7 +41,8 @@ namespace Matrimony.Service.Common
                                       Id = v.Id,
                                       Name = v.Value,
                                       MasterTableId = m.Id,
-                                      TableName= m.TableName
+                                      TableName= m.TableName,
+                                      DependentFieldId = v.DependentFieldId
                                   }
                                   ) ;
                     lstMasterData = IQueryData.ToList();
@@ -112,12 +113,13 @@ namespace Matrimony.Service.Common
                 return new ErrorResponse(metadata, errors);
             }
         }
-        public Response GetCity(int stateId)
+        public Response GetCity(string stateIds)
         {
             var errors = new List<Error>();
             try
             {
-                var listState = _context.Cities.Where(s => s.StateId.Equals(stateId)).Select(c => new
+                string[] stateArray = stateIds.Split(',');
+                var listState = _context.Cities.Where(s => stateArray.Contains(s.StateId.ToString())).Select(c => new
                 {
                     Name = c.Name,
                     Id = c.Id

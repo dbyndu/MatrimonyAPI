@@ -83,11 +83,12 @@ namespace Matrimony.Helper
                     switch (mode)
                     {
                         case "Resize":
-                            img.Mutate(x => x
+                            if (img.Height > height && img.Width > width)
+                                img.Mutate(x => x
                             .Resize(new ResizeOptions
                             {
                                 Size = new Size(width, height),
-                                Mode = ResizeMode.BoxPad
+                                Mode = ResizeMode.Crop
                             })                         
                             );
                             break;

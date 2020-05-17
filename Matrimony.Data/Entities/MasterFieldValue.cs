@@ -40,6 +40,8 @@ namespace Matrimony.Data.Entities
         public int Id { get; set; }
         public string Value { get; set; }
         public int MasterTableId { get; set; }
+        public int? DependentTableId { get; set; }
+        public int? DependentFieldId { get; set; }
 
         public virtual MasterTableMetadata MasterTable { get; set; }
         public virtual ICollection<UserInfo> UserInfoAnualIncome { get; set; }

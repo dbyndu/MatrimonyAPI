@@ -506,7 +506,7 @@ namespace Matrimony.Service.User
             var queryImg = _context.UserImage.Where(img => img.IsProfilePicture.Equals(true) && img.UserId.Equals(userId)).Select(
                 img => new { 
                     profileImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType +
-                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 40, 40, "Crop") : "",
+                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 40, 40, "Resize") : "",
                 });
             var img = queryImg.FirstOrDefault();
             if (img == null)
@@ -547,7 +547,7 @@ namespace Matrimony.Service.User
                                    City = city.Name,
                                    Url = "",
                                    ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + 
-                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 300, 200, (searchCritria.UserId.Equals(0)) ? "Blur" : "Crop") : "",
+                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 300, 200, (searchCritria.UserId.Equals(0)) ? "Blur" : "Resize") : "",
                                    GenderId = ub.GenderId ?? 0,
                                    ReligionId = ub.ReligionId ?? 0,
                                    MotherTongueId = ub.MotherTongueId ?? 0

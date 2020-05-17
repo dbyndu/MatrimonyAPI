@@ -10,5 +10,6 @@ namespace Matrimony_Model.Common
         public string Name { get; set; }
         public int MasterTableId { get; set; }
         public string TableName { get; set; }
+        public int? DependentFieldId { get; set; }
     }
 }
