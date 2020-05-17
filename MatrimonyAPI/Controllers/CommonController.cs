@@ -80,10 +80,10 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpGet]
         [Authorize]
-        [Route("city/{stateId}")]
-        public ActionResult GetCity(int stateId)
+        [Route("city/{stateIds}")]
+        public ActionResult GetCity(string stateIds)
         {
-            var response = _masterDataService.GetCity(stateId);
+            var response = _masterDataService.GetCity(stateIds);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
     }
