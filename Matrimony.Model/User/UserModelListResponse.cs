@@ -18,4 +18,11 @@ namespace Matrimony.Model.User
             : base(metadata, userImage)
         { }
     }
+
+    public class GenericOkResponse<T> : SuccessResponse<T>
+    {
+        public GenericOkResponse(Metadata metadata, T data)
+            : base(metadata, data)
+        { }
+    }
 }

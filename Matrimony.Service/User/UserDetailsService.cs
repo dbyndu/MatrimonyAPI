@@ -39,6 +39,42 @@ namespace Matrimony.Service.User
             };
             return new UserModelResponse(metadata, model);
         }
+
+        public Response SaveChatInvite(int senderID , int receiverID)
+        {
+            var errors = new List<Error>();
+            int returnValue = 0;
+            Matrimony.Data.Entities.MessageRoom insertedRecord = new Data.Entities.MessageRoom();
+            if (!_context.MessageRoom.Any(item=>(item.SenderId == senderID.ToString() && item.ReceiverId == receiverID.ToString())
+            || (item.ReceiverId == senderID.ToString() && item.SenderId == receiverID.ToString())))
+            {
+                Matrimony.Data.Entities.MessageRoom messageRoom = new Data.Entities.MessageRoom()
+                {
+                    SenderId = senderID.ToString(),
+                    ReceiverId = receiverID.ToString(),
+                    DateTimeLogged = DateTime.Now
+                };
+                try
+                {
+                    _context.MessageRoom.Add(messageRoom);
+                    returnValue = _context.SaveChanges();
+                    insertedRecord = _context.MessageRoom.FirstOrDefault(item => item.SenderId == senderID.ToString()
+                    && item.ReceiverId == receiverID.ToString());
+                }
+                catch (Exception ex)
+                {
+                    returnValue = -1;
+                    errors.Add(new Error("Err201", "Chat Can not initate"));
+                }
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Chat Initate Response");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new GenericOkResponse<Matrimony.Data.Entities.MessageRoom>(metadata, insertedRecord);
+
+        }
         public Response GetUserDetails()
         {
             var errors = new List<Error>();

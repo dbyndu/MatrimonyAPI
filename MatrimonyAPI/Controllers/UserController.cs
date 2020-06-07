@@ -236,6 +236,15 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
+        [HttpPost]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("chat/send-chat-invite")]
+        public ActionResult SaveInvite(SendChatModel model)
+        {
+            var response = _userService.SaveChatInvite(model.SenderId, model.RevceiverId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
         [HttpGet]
         [AllowAnonymous]
         [Route("register/images/userID/{userId}/width/{width}/height/{height}/mode/{mode}")]
