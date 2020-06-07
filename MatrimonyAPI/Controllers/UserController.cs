@@ -86,7 +86,6 @@ namespace MatrimonyAPI.Controllers
             var token = _helper.GenerateToken(_jwtAuthentication.Value,"Srijit", "srijit.das@gmail.com","Admin");
             return Ok(APIResponse.CreateResponse(token,_userService.GetUserDetails()));
         }
-
         [HttpPost]
         [Authorize]
         [Route("register/login")]
@@ -109,7 +108,6 @@ namespace MatrimonyAPI.Controllers
                 return Ok(APIResponse.CreateResponse(token, response));
             }
         }
-
         [HttpPost]
         [Authorize]
         [Route("register/short-register")]

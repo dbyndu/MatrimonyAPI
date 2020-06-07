@@ -209,38 +209,38 @@ namespace Matrimony.Service.User
                 {
                     if (newinsertedUserID > 0)
                     {
-                        int? genderID = null;
-                        var metaData = from meta in _context.MasterTableMetadata
-                                       join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
-                                       where meta.TableName.Equals("ProfileCreatedFor")
-                                       select new MasterDataModel()
-                                       {
-                                           Id = master.Id,
-                                           Name = master.Value,
-                                       };
+                        //int? genderID = null;
+                        //var metaData = from meta in _context.MasterTableMetadata
+                        //               join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
+                        //               where meta.TableName.Equals("ProfileCreatedFor")
+                        //               select new MasterDataModel()
+                        //               {
+                        //                   Id = master.Id,
+                        //                   Name = master.Value,
+                        //               };
 
-                        if(metaData != null && metaData.Any(item=>item.Id == user.ProfileCreatedForId))
-                        {
-                            var gender = Helper.GenericHelper.Gender(metaData.FirstOrDefault(item => item.Id == user.ProfileCreatedForId).Name);
-                            if (!string.IsNullOrEmpty(gender))
-                            {
-                                var allGenders= from meta in _context.MasterTableMetadata
-                                               join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
-                                               where meta.TableName.Equals("Gender")
-                                               select new MasterDataModel()
-                                               {
-                                                   Id = master.Id,
-                                                   Name = master.Value,
-                                               };
-                                genderID = allGenders.FirstOrDefault(item => item.Name.ToLower() == gender).Id;
-                            }
+                        //if(metaData != null && metaData.Any(item=>item.Id == user.ProfileCreatedForId))
+                        //{
+                        //    var gender = Helper.GenericHelper.Gender(metaData.FirstOrDefault(item => item.Id == user.ProfileCreatedForId).Name);
+                        //    if (!string.IsNullOrEmpty(gender))
+                        //    {
+                        //        var allGenders= from meta in _context.MasterTableMetadata
+                        //                       join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
+                        //                       where meta.TableName.Equals("Gender")
+                        //                       select new MasterDataModel()
+                        //                       {
+                        //                           Id = master.Id,
+                        //                           Name = master.Value,
+                        //                       };
+                        //        genderID = allGenders.FirstOrDefault(item => item.Name.ToLower() == gender).Id;
+                        //    }
 
-                        }
+                        //}
 
                         Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
                         {
                             UserId = newinsertedUserID,
-                            GenderId = genderID
+                            GenderId = user.Gender
                         };
                         _context.UserInfo.Add(dbUserInfo);
                         Data.Entities.UserProfileCompletion ProfCompletion = new Data.Entities.UserProfileCompletion()
