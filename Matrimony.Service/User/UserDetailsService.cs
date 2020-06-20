@@ -28,6 +28,7 @@ namespace Matrimony.Service.User
         }
         public Response GetOneUserDetails(string user)
         {
+            //populateAllSizeImages();
             var errors = new List<Error>();
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "User Information");
             UserModel model = new UserModel()
@@ -242,7 +243,12 @@ namespace Matrimony.Service.User
                             UserId = newinsertedUserID,
                             GenderId = genderID
                         };
+                        Data.Entities.UserPreferences dbUserPref = new Data.Entities.UserPreferences()
+                        {
+                            UserId = newinsertedUserID
+                        };
                         _context.UserInfo.Add(dbUserInfo);
+                        _context.UserPreferences.Add(dbUserPref);
                         Data.Entities.UserProfileCompletion ProfCompletion = new Data.Entities.UserProfileCompletion()
                         {
                             UserId = newinsertedUserID
@@ -418,7 +424,7 @@ namespace Matrimony.Service.User
                                {
                                    Id = u.Id,
                                    UserId = u.UserId,
-                                   ImageString = "data:" + u.ContentType + ";base64," + GenericHelper.ResizeImage((byte[])u.Image, 0, 0, ""), // ImageResizer((byte[])u.Image, width, height)
+                                   ImageString = "data:" + u.ContentType + ";base64," + Convert.ToBase64String(u.Image), // ImageResizer((byte[])u.Image, width, height)
                                    IsProfilePicture = u.IsProfilePicture
                                }).ToList(),
                                UserPreference = _mapper.Map<UserPreferenceModel>(preference)
@@ -503,13 +509,24 @@ namespace Matrimony.Service.User
         public Response GetProfileDisplayData(int userId)
         {
             var errors = new List<Error>();
-            var queryImg = _context.UserImage.Where(img => img.IsProfilePicture.Equals(true) && img.UserId.Equals(userId)).Select(
-                img => new { 
-                    profileImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType +
-                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 40, 40, "Resize") : "",
-                });
-            var img = queryImg.FirstOrDefault();
-            if (img == null)
+            var data = _context.GetProfileDisplayDataAsync(userId);
+            //var queryImg = _context.UserImage.Where(img => img.IsProfilePicture.Equals(true) && img.UserId.Equals(userId)).Select(
+            //    img => new
+            //    {
+            //        profileImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType +
+            //                       ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 40, 40, "Resize") : "",
+            //    });
+            //var img = queryImg.FirstOrDefault();
+            ProfileDisplayData displayData = new ProfileDisplayData
+            {
+                ProfileImageString = !string.IsNullOrEmpty(data.ContentType) ? "data:" + data.ContentType +
+                                   ";base64," + Convert.ToBase64String(data.ProfileDisplayPicture) : "",
+                NewMatchCount = data.NewMatchCount,
+                Interest = data.Interest,
+                RecentlyViewed = data.RecentlyViewed,
+                ShortListed = data.ShortListed
+            };
+            if (displayData == null)
             {
                 errors.Add(new Error("Err102", "No image found. Verify user entitlements."));
             }
@@ -518,10 +535,11 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
-            return new AnonymousResponse(metadata, img);
+            return new AnonymousResponse(metadata, displayData);
         }
-        public Response GestUserList(SearchCritriaModel searchCritria)
+        public Response GestUserList(SearchCritriaModel searchCritria, string mode)
         {
+             
             var errors = new List<Error>();
             Random rnd = new Random();
             var querySearch = (from u in _context.User.Where(u => !u.Id.Equals(searchCritria.UserId))
@@ -547,14 +565,15 @@ namespace Matrimony.Service.User
                                    City = city.Name,
                                    Url = "",
                                    ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + 
-                                   ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 300, 200, (searchCritria.UserId.Equals(0)) ? "Blur" : "Resize") : "",
+                                   ";base64," + (searchCritria.UserId.Equals(0) ? Convert.ToBase64String(img.ImageBlur) : Convert.ToBase64String(img.Image250X250)) : "",
                                    GenderId = ub.GenderId ?? 0,
                                    ReligionId = ub.ReligionId ?? 0,
-                                   MotherTongueId = ub.MotherTongueId ?? 0
+                                   MotherTongueId = ub.MotherTongueId ?? 0,
+                                   CreatedDate = u.CreatedDate
                                });
             if (!string.IsNullOrEmpty(searchCritria.Caste))
             {
-                string[] castIds = searchCritria.Caste.Split(',');
+                string[] castIds = searchCritria.Caste.Split(','); 
                 querySearch = querySearch.Where(u => castIds.Contains(u.CasteId.ToString()));
             }
             if (searchCritria.Gender > 0)
@@ -568,6 +587,18 @@ namespace Matrimony.Service.User
             {
                 string[] mtIds = searchCritria.MotherTongue.Split(',');
                 querySearch = querySearch.Where(u => mtIds.Contains(u.MotherTongueId.ToString()));
+            }
+
+            if (!string.IsNullOrEmpty(mode))
+            {
+                switch (mode.ToLower())
+                {
+                    case "newmatch":
+                        querySearch = querySearch.Where(u => u.CreatedDate > DateTime.Now.AddDays(-100));
+                        break;
+                    default:
+                        break;
+                }
             }
 
             var lstUsers = querySearch.ToList();
@@ -584,6 +615,34 @@ namespace Matrimony.Service.User
             }
             return new AnonymousResponse(metadata, lstUsers);
         }
+
+        private int NewMatchCount(int userId, SearchCritriaModel searchCritria)
+        {
+            string[] castIds = !string.IsNullOrEmpty(searchCritria.Caste) ?  searchCritria.Caste.Split(',') : null;
+            string[] religionIds = !string.IsNullOrEmpty(searchCritria.Caste) ? searchCritria.Religion.Split(',') : null;
+            string[] stateIds = !string.IsNullOrEmpty(searchCritria.Caste) ? searchCritria.State.Split(',') : null;
+            var querySearch = (from u in _context.User.Where(u => !u.Id.Equals(searchCritria.UserId) && u.CreatedDate > DateTime.Now.AddDays(-7))
+                               join ui in _context.UserInfo.Where(ub => 
+                               ub.GenderId.Equals(searchCritria.Gender) 
+                               && castIds != null && castIds.Contains(ub.CasteId.ToString()) 
+                               && religionIds != null && religionIds.Contains(ub.Religion.ToString()))
+                               on u.Id equals ui.UserId into user_basic
+                               from ub in user_basic.DefaultIfEmpty()
+                               //join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
+                               //from uImage in user_image.DefaultIfEmpty()
+                               join s in _context.States.Where(s=>
+                               stateIds != null && stateIds.Contains(stateIds.ToString())) on ub.StateId equals s.Id into user_state
+                               from state in user_state.DefaultIfEmpty()
+                               join ci in _context.Cities on ub.CityId equals ci.Id into user_city
+                               from city in user_city.DefaultIfEmpty()
+                               select new
+                               {
+                                   Id = u.Id
+                                   
+                               });
+            return querySearch.Count();
+        }
+
         public Response Register(Object obj, string type)
         {
             var errors = new List<Error>();
@@ -1016,17 +1075,23 @@ namespace Matrimony.Service.User
                         _context.Update<Matrimony.Data.Entities.UserImage>(imagetoUpdate);
                     }
                 }
+
                 userImgs.ForEach(img =>
                 {
                     string base64String = img.ImageString.Split(',')[1];
                     byte[] imageBytes = Convert.FromBase64String(base64String);
-
+                    byte[] imageBytesBlur = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 0, 0, "Blur"));
+                    byte[] imageBytes250X250 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 300, 300, "Resize"));
+                    byte[] imageBytes40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 40, 40, "Resize"));
 
                     Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
                     {
                         Id = img.Id,
                         UserId = img.UserId,
                         Image = imageBytes,
+                        ImageBlur = imageBytesBlur,
+                        Image250X250 = imageBytes250X250,
+                        Image40X40 = imageBytes40X40,
                         ContentType = img.ContentType,
                         IsProfilePicture = img.IsProfilePicture
                     };
@@ -1061,10 +1126,16 @@ namespace Matrimony.Service.User
         {
             int outPutResult = 0;
             Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(userBasic.UserId)).FirstOrDefault();
+            Data.Entities.UserPreferences dbUserPref = _context.UserPreferences.Where(u => u.UserId.Equals(userBasic.UserId)).FirstOrDefault();
             if (uInfo == null)
             {
                 uInfo = new Data.Entities.UserInfo();
                 uInfo.Id = userBasic.Id;
+            }
+            if (dbUserPref == null)
+            {
+                dbUserPref = new Data.Entities.UserPreferences();
+                dbUserPref.UserId = userBasic.UserId;
             }
             uInfo.UserId = userBasic.UserId;
             uInfo.GenderId = userBasic.GenderId;
@@ -1090,6 +1161,10 @@ namespace Matrimony.Service.User
             uInfo.GrewUpIn = userBasic.GrewUpIn;
             uInfo.Origin = userBasic.Origin;
             uInfo.Pin = userBasic.Pin;
+            //
+            dbUserPref.Country = userBasic.CountryId.ToString();
+            dbUserPref.State = userBasic.StateId.ToString();
+            dbUserPref.MotherTongue = userBasic.MotherTongueId.ToString();
             try
             {
                 if (uInfo.Id > 0)
@@ -1099,6 +1174,14 @@ namespace Matrimony.Service.User
                 else
                 {
                     _context.UserInfo.Add(uInfo);
+                }
+                if (dbUserPref.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserPreferences>(dbUserPref);
+                }
+                else
+                {
+                    _context.UserPreferences.Add(dbUserPref);
                 }
                 outPutResult = _context.SaveChanges();
             }
@@ -1636,10 +1719,17 @@ namespace Matrimony.Service.User
         {
             int outPutResult = 0;
             Matrimony.Data.Entities.UserInfo uInfo = _context.UserInfo.Where(u => u.UserId.Equals(user_rel.UserId)).FirstOrDefault();
+            Data.Entities.UserPreferences dbUserPref = _context.UserPreferences.Where(u => u.UserId.Equals(user_rel.UserId)).FirstOrDefault();
+
             if (uInfo == null)
             {
                 uInfo = new Data.Entities.UserInfo();
                 uInfo.UserId = user_rel.Id;
+            }
+            if (dbUserPref == null)
+            {
+                dbUserPref = new Data.Entities.UserPreferences();
+                dbUserPref.UserId = user_rel.Id;
             }
             try
             {
@@ -1659,6 +1749,25 @@ namespace Matrimony.Service.User
                 else
                 {
                     _context.UserInfo.Add(uInfo);
+                }
+                dbUserPref.Religion = user_rel.ReligionId.ToString();
+                dbUserPref.Caste = user_rel.CasteId.ToString();
+
+                if (uInfo.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserInfo>(uInfo);
+                }
+                else
+                {
+                    _context.UserInfo.Add(uInfo);
+                }
+                if (dbUserPref.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.UserPreferences>(dbUserPref);
+                }
+                else
+                {
+                    _context.UserPreferences.Add(dbUserPref);
                 }
 
                 outPutResult = _context.SaveChanges();
@@ -1755,6 +1864,20 @@ namespace Matrimony.Service.User
         {
             return _context.UserImage.Where(ui => ui.UserId.Equals(userId)).OrderBy(x => Guid.NewGuid()).Take(1);
         }
+        public void populateAllSizeImages()
+        {
 
+            var allImages = _context.UserImage.Where(u => u.Image != null).ToList();
+            allImages.ForEach(img =>
+            {
+                byte[] imageBytes = img.Image;
+                img.ImageBlur = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 10, 10, "Blur"));
+                img.Image250X250 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 300, 300, "Resize"));
+                img.Image40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 40, 40, "Resize"));
+                _context.Update<Matrimony.Data.Entities.UserImage>(img);
+
+            });
+            _context.SaveChanges();
+        }
     }
 }
