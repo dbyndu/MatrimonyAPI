@@ -86,7 +86,6 @@ namespace MatrimonyAPI.Controllers
             var token = _helper.GenerateToken(_jwtAuthentication.Value,"Srijit", "srijit.das@gmail.com","Admin");
             return Ok(APIResponse.CreateResponse(token,_userService.GetUserDetails()));
         }
-
         [HttpPost]
         [Authorize]
         [Route("register/login")]
@@ -109,7 +108,6 @@ namespace MatrimonyAPI.Controllers
                 return Ok(APIResponse.CreateResponse(token, response));
             }
         }
-
         [HttpPost]
         [Authorize]
         [Route("register/short-register")]
@@ -235,6 +233,15 @@ namespace MatrimonyAPI.Controllers
         public ActionResult GestUser(int id)
         {
             var response = _userService.GetUserDetails(id);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpPost]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("chat/send-chat-invite")]
+        public ActionResult SaveInvite(SendChatModel model)
+        {
+            var response = _userService.SaveChatInvite(model.SenderId, model.RevceiverId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 

@@ -24,5 +24,7 @@ namespace Matrimony.Service.Contracts
 
         Response GetUserPreferences(int userId);
         Response GetProfileDisplayData(int userId);
+
+        Response SaveChatInvite(int senderID, int receiverID);
     }
 }

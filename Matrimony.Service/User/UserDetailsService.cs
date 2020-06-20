@@ -40,6 +40,42 @@ namespace Matrimony.Service.User
             };
             return new UserModelResponse(metadata, model);
         }
+
+        public Response SaveChatInvite(int senderID , int receiverID)
+        {
+            var errors = new List<Error>();
+            int returnValue = 0;
+            Matrimony.Data.Entities.MessageRoom insertedRecord = new Data.Entities.MessageRoom();
+            if (!_context.MessageRoom.Any(item=>(item.SenderId == senderID.ToString() && item.ReceiverId == receiverID.ToString())
+            || (item.ReceiverId == senderID.ToString() && item.SenderId == receiverID.ToString())))
+            {
+                Matrimony.Data.Entities.MessageRoom messageRoom = new Data.Entities.MessageRoom()
+                {
+                    SenderId = senderID.ToString(),
+                    ReceiverId = receiverID.ToString(),
+                    DateTimeLogged = DateTime.Now
+                };
+                try
+                {
+                    _context.MessageRoom.Add(messageRoom);
+                    returnValue = _context.SaveChanges();
+                    insertedRecord = _context.MessageRoom.FirstOrDefault(item => item.SenderId == senderID.ToString()
+                    && item.ReceiverId == receiverID.ToString());
+                }
+                catch (Exception ex)
+                {
+                    returnValue = -1;
+                    errors.Add(new Error("Err201", "Chat Can not initate"));
+                }
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Chat Initate Response");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new GenericOkResponse<Matrimony.Data.Entities.MessageRoom>(metadata, insertedRecord);
+
+        }
         public Response GetUserDetails()
         {
             var errors = new List<Error>();
@@ -210,38 +246,38 @@ namespace Matrimony.Service.User
                 {
                     if (newinsertedUserID > 0)
                     {
-                        int? genderID = null;
-                        var metaData = from meta in _context.MasterTableMetadata
-                                       join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
-                                       where meta.TableName.Equals("ProfileCreatedFor")
-                                       select new MasterDataModel()
-                                       {
-                                           Id = master.Id,
-                                           Name = master.Value,
-                                       };
+                        //int? genderID = null;
+                        //var metaData = from meta in _context.MasterTableMetadata
+                        //               join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
+                        //               where meta.TableName.Equals("ProfileCreatedFor")
+                        //               select new MasterDataModel()
+                        //               {
+                        //                   Id = master.Id,
+                        //                   Name = master.Value,
+                        //               };
 
-                        if(metaData != null && metaData.Any(item=>item.Id == user.ProfileCreatedForId))
-                        {
-                            var gender = Helper.GenericHelper.Gender(metaData.FirstOrDefault(item => item.Id == user.ProfileCreatedForId).Name);
-                            if (!string.IsNullOrEmpty(gender))
-                            {
-                                var allGenders= from meta in _context.MasterTableMetadata
-                                               join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
-                                               where meta.TableName.Equals("Gender")
-                                               select new MasterDataModel()
-                                               {
-                                                   Id = master.Id,
-                                                   Name = master.Value,
-                                               };
-                                genderID = allGenders.FirstOrDefault(item => item.Name.ToLower() == gender).Id;
-                            }
+                        //if(metaData != null && metaData.Any(item=>item.Id == user.ProfileCreatedForId))
+                        //{
+                        //    var gender = Helper.GenericHelper.Gender(metaData.FirstOrDefault(item => item.Id == user.ProfileCreatedForId).Name);
+                        //    if (!string.IsNullOrEmpty(gender))
+                        //    {
+                        //        var allGenders= from meta in _context.MasterTableMetadata
+                        //                       join master in _context.MasterFieldValue on meta.Id equals master.MasterTableId
+                        //                       where meta.TableName.Equals("Gender")
+                        //                       select new MasterDataModel()
+                        //                       {
+                        //                           Id = master.Id,
+                        //                           Name = master.Value,
+                        //                       };
+                        //        genderID = allGenders.FirstOrDefault(item => item.Name.ToLower() == gender).Id;
+                        //    }
 
-                        }
+                        //}
 
                         Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
                         {
                             UserId = newinsertedUserID,
-                            GenderId = genderID
+                            GenderId = user.Gender
                         };
                         Data.Entities.UserPreferences dbUserPref = new Data.Entities.UserPreferences()
                         {
