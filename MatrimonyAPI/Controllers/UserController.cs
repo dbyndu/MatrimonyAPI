@@ -220,10 +220,10 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
-        [Route("user-list")]
-        public ActionResult GestUserList(SearchCritriaModel searchCritria)
+        [Route("user-list/{mode}")]
+        public ActionResult GestUserList(SearchCritriaModel searchCritria, string mode)
         {
-            var response = _userService.GestUserList(searchCritria);
+            var response = _userService.GestUserList(searchCritria, mode);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
