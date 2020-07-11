@@ -218,6 +218,14 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }
+        [HttpGet]
+        [Authorize]
+        [Route("interest-shortlisted/{userId}/{interestUserId}/{mode}/{isRemoved:int?}/{isRejected:int?}")]
+        public async Task<IActionResult> InterestOrShortListed(int userId, int interestUserId, string mode, int isRemoved = 0, int isRejected = 0)
+        {           
+            var response = await _userService.InterestOrShortListed(userId, interestUserId, mode, isRemoved, isRejected);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
         [Route("user-list/{mode}")]
@@ -233,6 +241,14 @@ namespace MatrimonyAPI.Controllers
         public ActionResult GestUser(int id)
         {
             var response = _userService.GetUserDetails(id);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("user-details/{userId}/{viewedId}")]
+        public ActionResult GestUser(int userId, int viewedId)
+        {
+            var response = _userService.GetUserDetails(userId, viewedId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
