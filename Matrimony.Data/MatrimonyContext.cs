@@ -18,10 +18,11 @@ namespace Matrimony.Data
 
         public virtual DbSet<Cities> Cities { get; set; }
         public virtual DbSet<Countries> Countries { get; set; }
+        public virtual DbSet<InterestShortListed> InterestShortListed { get; set; }
         public virtual DbSet<MasterFieldValue> MasterFieldValue { get; set; }
         public virtual DbSet<MasterTableMetadata> MasterTableMetadata { get; set; }
-        public virtual DbSet<Message> Message { get; set; }
         public virtual DbSet<MessageRoom> MessageRoom { get; set; }
+        public virtual DbSet<RecentlyViewed> RecentlyViewed { get; set; }
         public virtual DbSet<States> States { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserImage> UserImage { get; set; }
@@ -30,14 +31,14 @@ namespace Matrimony.Data
         public virtual DbSet<UserPreferences> UserPreferences { get; set; }
         public virtual DbSet<UserProfileCompletion> UserProfileCompletion { get; set; }
 
-//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//        {
-//            if (!optionsBuilder.IsConfigured)
-//            {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-//                optionsBuilder.UseSqlServer("Server=LAPTOP-SPAAL3BP;Database=Matrimony;Integrated Security=True");
-//            }
-//        }
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
+        //                optionsBuilder.UseSqlServer("Server=LAPTOP-DVGRKESI\\SQL2017;Database=Matrimony;Integrated Security=True");
+        //            }
+        //        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,7 +77,12 @@ namespace Matrimony.Data
                     .IsRequired()
                     .HasMaxLength(10);
             });
+            modelBuilder.Entity<InterestShortListed>(entity =>
+            {
+                entity.Property(e => e.InterestDateTime).HasColumnType("datetime");
 
+                entity.Property(e => e.ShortListedDateTime).HasColumnType("datetime");
+            });
             modelBuilder.Entity<MasterFieldValue>(entity =>
             {
                 entity.Property(e => e.Value)
@@ -99,45 +105,9 @@ namespace Matrimony.Data
                     .IsUnicode(false);
             });
 
-            modelBuilder.Entity<Message>(entity =>
+            modelBuilder.Entity<RecentlyViewed>(entity =>
             {
-                entity.Property(e => e.CreatedDate).HasColumnType("datetime");
-
-                entity.Property(e => e.Message1)
-                    .HasColumnName("Message")
-                    .IsUnicode(false);
-
-                entity.Property(e => e.OfflineUserId).IsUnicode(false);
-
-                entity.Property(e => e.ReceiverId)
-                    .HasColumnName("ReceiverID")
-                    .IsUnicode(false);
-
-                entity.Property(e => e.SenderId)
-                    .HasColumnName("SenderID")
-                    .IsUnicode(false);
-
-                entity.HasOne(d => d.Room)
-                    .WithMany(p => p.Message)
-                    .HasForeignKey(d => d.RoomId)
-                    .HasConstraintName("FK__Message__RoomId__08B54D69");
-            });
-
-            modelBuilder.Entity<MessageRoom>(entity =>
-            {
-                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-
-                entity.Property(e => e.DateTimeLogged).HasColumnType("datetime");
-
-                entity.Property(e => e.ReceiverId)
-                    .HasColumnName("ReceiverID")
-                    .IsUnicode(false);
-
-                entity.Property(e => e.SenderId)
-                    .HasColumnName("SenderID")
-                    .IsUnicode(false);
-
-                entity.Property(e => e.UpdateDateTime).HasColumnType("datetime");
+                entity.Property(e => e.ViewDateTime).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<States>(entity =>

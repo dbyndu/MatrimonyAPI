@@ -104,6 +104,11 @@ namespace Matrimony.Service.User
             }
             return new UserModelListResponse(metadata, lstUsers);
         }
+        public Response GetUserDetails(int userId, int viewedId)
+        {
+            InsertUpdateRecentlyViewed(userId, viewedId);
+            return GetUserDetails(viewedId);
+        }
         public Response GetUserDetails(int id)
         {
             var errors = new List<Error>();
@@ -587,6 +592,10 @@ namespace Matrimony.Service.User
                                from state in user_state.DefaultIfEmpty()
                                join ci in _context.Cities on ub.CityId equals ci.Id into user_city
                                from city in user_city.DefaultIfEmpty()
+                               from interest in _context.InterestShortListed.Where(i=> (i.UserId.Equals(searchCritria.UserId) && i.InterestedUserId.Equals(ub.UserId)) 
+                               || (i.UserId.Equals(ub.UserId) && i.InterestedUserId.Equals(searchCritria.UserId))).DefaultIfEmpty() 
+                               //on ub.UserId equals inter.InterestedUserId into user_interest
+                               //from interest in user_interest.DefaultIfEmpty()
                                select new
                                {
                                    Id = u.Id,
@@ -605,8 +614,14 @@ namespace Matrimony.Service.User
                                    GenderId = ub.GenderId ?? 0,
                                    ReligionId = ub.ReligionId ?? 0,
                                    MotherTongueId = ub.MotherTongueId ?? 0,
-                                   CreatedDate = u.CreatedDate
+                                   CreatedDate = u.CreatedDate,
+                                   interest.IsInterestAccepted,
+                                   interest.IsInterestRejected,
+                                   interest.IsShortListed,
+                                   IsInterestSent = (interest.Id > 0 && !interest.IsInterestRejected) ? true : false,
+                                   IsInterestReceived = (interest.InterestedUserId > 0 && interest.InterestedUserId.Equals(searchCritria.UserId)) ? true : false
                                });
+            var queryTemp = querySearch;
             if (!string.IsNullOrEmpty(searchCritria.Caste))
             {
                 string[] castIds = searchCritria.Caste.Split(','); 
@@ -631,6 +646,65 @@ namespace Matrimony.Service.User
                 {
                     case "newmatch":
                         querySearch = querySearch.Where(u => u.CreatedDate > DateTime.Now.AddDays(-100));
+                        break;
+                    case "viewed":
+                        querySearch = (from v in queryTemp
+                                       join rv in _context.RecentlyViewed.Where(r=> r.UserId.Equals(searchCritria.UserId) && r.ViewDateTime > DateTime.Now.AddDays(-30)) on v.Id equals rv.ViewedId
+                                 orderby rv.ViewDateTime descending
+                                 select new
+                                 {
+                                     Id = v.Id,
+                                     v.Name,
+                                     v.Age,
+                                     v.Height,
+                                     v.CasteId,
+                                     v.HighestQualificationId,
+                                     v.HighestSpecializationId,
+                                     v.WorkDesignationId,
+                                     v.State,
+                                     v.City,
+                                     Url = "",
+                                     v.ImageString,
+                                     v.GenderId,
+                                     v.ReligionId,
+                                     v.MotherTongueId,
+                                     v.CreatedDate,
+                                     v.IsInterestAccepted,
+                                     v.IsInterestRejected,
+                                     v.IsShortListed,
+                                     v.IsInterestSent,
+                                     v.IsInterestReceived
+                                 });
+                        //querySearch = queryRecentlyViewed.Where(u => u.CreatedDate > DateTime.Now.AddDays(-100));
+                        break;
+                    case "interested":
+                        querySearch = (from v in queryTemp
+                                       join interest in _context.InterestShortListed.Where(i=> i.UserId.Equals(searchCritria.UserId) && i.IsInterestRejected.Equals(false)) on v.Id equals interest.InterestedUserId
+                                       orderby interest.IsInterestAccepted, interest.InterestDateTime descending
+                                       select new
+                                       {
+                                           Id = v.Id,
+                                           v.Name,
+                                           v.Age,
+                                           v.Height,
+                                           v.CasteId,
+                                           v.HighestQualificationId,
+                                           v.HighestSpecializationId,
+                                           v.WorkDesignationId,
+                                           v.State,
+                                           v.City,
+                                           Url = "",
+                                           v.ImageString,
+                                           v.GenderId,
+                                           v.ReligionId,
+                                           v.MotherTongueId,
+                                           v.CreatedDate,
+                                           v.IsInterestAccepted,
+                                           v.IsInterestRejected,
+                                           v.IsShortListed,
+                                           v.IsInterestSent,
+                                           v.IsInterestReceived
+                                       });
                         break;
                     default:
                         break;
@@ -903,6 +977,33 @@ namespace Matrimony.Service.User
                 errors.Add(new Error("Err102", "Can not Add User.."));
             }
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Image Of User");
+            if (!errors.Any())
+            {
+
+                return new AnonymousResponse(metadata, stat);
+            }
+            else
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+        }
+        public async Task<Response> InterestOrShortListed(int userId, int interestUserId, string mode, int isRemoved, int isRejected)
+        {
+            int stat = 0;
+            var errors = new List<Error>();
+            try
+            {
+                stat = await InsertUpdateInterestShortList(userId, interestUserId, mode, isRemoved, isRejected);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (stat == 0)
+            {
+                errors.Add(new Error("Err102", "Can not Add InterestOrShortListed.."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains InterestOrShortListed Of User");
             if (!errors.Any())
             {
 
@@ -1850,34 +1951,7 @@ namespace Matrimony.Service.User
         {
             int outPutResult = 0;
             Matrimony.Data.Entities.UserPreferences uPreference = _mapper.Map<Matrimony.Data.Entities.UserPreferences>(userPref);
-            //Matrimony.Data.Entities.UserPreferences uPreference = _context.UserPreferences.Where(u => u.UserId.Equals(userPref.UserId)).FirstOrDefault();
-            //if (uPreference == null)
-            //{
-            //    uPreference = new Data.Entities.UserPreferences();
-            //    uPreference.Id = userPref.Id;
-            //}
-            //uPreference.UserId = userPref.UserId;
-            //uPreference.AgeFrom = userPref.AgeFrom;
-            //uPreference.AgeTo = userPref.AgeTo;
-            //uPreference.MaritialStatus = userPref.MaritialStatus;
-            //uPreference.Country = userPref.Country;
-            //uPreference.Citizenship = userPref.Citizenship;
-            //uPreference.State = userPref.State;
-            //uPreference.City = userPref.City;
-            //uPreference.Religion = userPref.Religion;
-            //uPreference.MotherTongue = userPref.MotherTongue;
-            //uPreference.Caste = userPref.Caste;
-            //uPreference.Subcaste = userPref.Subcaste;
-            //uPreference.Gothram = userPref.Gothram;
-            //uPreference.Dosh = userPref.Dosh;
-            //uPreference.Manglik = userPref.Manglik;
-            //uPreference.Horoscope = userPref.Horoscope;
-            //uPreference.HighestQualification = userPref.HighestQualification;
-            //uPreference.Working = userPref.Working;
-            //uPreference.Occupation = userPref.Occupation;
-            //uPreference.Specialization = userPref.Specialization;
-            //uPreference.AnnualIncome = userPref.AnnualIncome;
-            //uPreference.IsAccepted = userPref.IsAccepted;
+            
             try
             {
                 if (uPreference.Id > 0)
@@ -1899,6 +1973,88 @@ namespace Matrimony.Service.User
         private IQueryable<Matrimony.Data.Entities.UserImage> GetRandomImage(int userId)
         {
             return _context.UserImage.Where(ui => ui.UserId.Equals(userId)).OrderBy(x => Guid.NewGuid()).Take(1);
+        }
+        private int InsertUpdateRecentlyViewed(int userId, int viewedId)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.RecentlyViewed rView = _context.RecentlyViewed.Where(r=> r.UserId.Equals(userId) && r.ViewedId.Equals(viewedId)).FirstOrDefault();
+            if (rView == null)
+            {
+                rView = new Data.Entities.RecentlyViewed();
+                rView.UserId = userId;
+                rView.ViewedId = viewedId;
+            }
+            try
+            {
+                //uInfo.UserId = user_about.UserId;
+                rView.ViewDateTime = DateTime.Now;
+
+                if (rView.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.RecentlyViewed>(rView);
+                }
+                else
+                {
+                    _context.RecentlyViewed.Add(rView);
+                }
+
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
+        }
+        private async Task<int> InsertUpdateInterestShortList(int userId, int interestUserId, string mode, int isRemoved, int isRejected)// mode =I(Interest) Or S(ShortListed)
+        {
+            int outPutResult = 0;
+            Matrimony.Data.Entities.InterestShortListed interest = _context.InterestShortListed.Where(i => i.UserId.Equals(userId) && i.InterestedUserId.Equals(interestUserId)).FirstOrDefault();
+            if (interest == null)
+            {
+                interest = new Data.Entities.InterestShortListed();
+                interest.UserId = userId;
+                interest.InterestedUserId = interestUserId;
+                interest.InterestDateTime = DateTime.Now;
+            }
+            else
+            {
+                if (mode.Equals("I"))
+                {
+                    if (isRemoved.Equals(1))
+                        _context.Remove<Matrimony.Data.Entities.InterestShortListed>(interest);
+                    else if(isRejected.Equals(1))
+                        interest.IsInterestRejected = true;
+                    else
+                        interest.IsInterestAccepted = true;
+                }
+                else if (mode.Equals("S"))
+                {
+                    if (isRemoved.Equals(1))
+                        interest.IsShortListed = false;
+                    else
+                        interest.IsShortListed = true;
+                    interest.ShortListedDateTime = DateTime.Now;
+                }
+            }
+            try
+            {
+                if (interest.Id > 0)
+                {
+                    _context.Update<Matrimony.Data.Entities.InterestShortListed>(interest);
+                }
+                else
+                {
+                    _context.InterestShortListed.Add(interest);
+                }
+
+                outPutResult = await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return outPutResult;
         }
         public void populateAllSizeImages()
         {

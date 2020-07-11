@@ -19,6 +19,7 @@ namespace Matrimony.Service.Contracts
         Response GestUserList(SearchCritriaModel searchCritria, string mode);
         Task<Response> SaveImage(UserImagesUploadModel userImages, int userId);
         Response GetUserDetails(int id);
+        Response GetUserDetails(int userId, int viewedId);
 
         Response LoginUser(UserShortRegister user);
 
@@ -26,5 +27,6 @@ namespace Matrimony.Service.Contracts
         Response GetProfileDisplayData(int userId);
 
         Response SaveChatInvite(int senderID, int receiverID);
+        Task<Response> InterestOrShortListed(int userId, int interestUserId, string mode, int isRemoved, int isRejected);
     }
 }
