@@ -13,7 +13,5 @@ namespace Matrimony.Data.Entities
         public string Message1 { get; set; }
         public bool? IsSeen { get; set; }
         public string OfflineUserId { get; set; }
-
-        public virtual MessageRoom Room { get; set; }
     }
 }

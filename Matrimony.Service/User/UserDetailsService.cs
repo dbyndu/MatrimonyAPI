@@ -146,6 +146,46 @@ namespace Matrimony.Service.User
             return new UserModelResponse(metadata, lstUsers);
         }
 
+        public Response LoginSocialUser(UserModel user)
+        {
+            var errors = new List<Error>();
+            var alreadyInsertedUser = (from u in _context.User.Where(x => (x.Email == user.Email)
+                                       && x.SocialId == user.SocialId)
+                                       join ui in _context.UserInfo on u.Id equals ui.UserId
+                                       join p in _context.UserPreferences on u.Id equals p.UserId into up
+                                       from pref in up.DefaultIfEmpty()
+                                       select new UserModel
+                                       {
+                                           ID = u.Id,
+                                           Email = u.Email,
+                                           FirstName = u.FirstName,
+                                           LastName = u.LastName,
+                                           PhoneNumber = u.PhoneNumber,
+                                           CreatedDate = u.CreatedDate,
+                                           ContactName = u.ContactName,
+                                           genderId = ui.GenderId,
+                                           UserPreference = _mapper.Map<UserPreferenceModel>(pref)
+                                       }).FirstOrDefault();
+            if (alreadyInsertedUser != null && alreadyInsertedUser.Email != string.Empty)
+            {
+                var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
+                if (!errors.Any())
+                {
+                    //var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                    return new UserModelResponse(metadata, alreadyInsertedUser);
+                }
+                else
+                {
+                    return new ErrorResponse(metadata, errors);
+                }
+            }
+            else
+            {
+                errors.Add(new Error("Err106", "Login Failed invalid Credentials.."));
+                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);
+            }
+        }
+
         public Response LoginUser(UserShortRegister user)
         {
             var errors = new List<Error>();
@@ -219,6 +259,85 @@ namespace Matrimony.Service.User
             }
         }
 
+        public Response CreateSocialUser(UserRegister user)
+        {
+            var errors = new List<Error>();
+            int outPutResult = 0;
+            int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email).Count();
+            if (alreadyInsertedUser > 0)
+            {
+                errors.Add(new Error("Err105", "User Already Added.."));
+                return new ErrorResponse(new Metadata(errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User"), errors);
+            }
+            Matrimony.Data.Entities.User dbUser = new Data.Entities.User()
+            {
+                ProviderId = user.ProviderId,
+                CreatedDate = DateTime.Now,
+                Email = user.Email,
+                Password = string.Empty,
+                PhoneNumber = string.Empty,
+                ProfileCreatedForId = user.ProfileCreatedForId,
+                SocialId = user.SocialId,
+                ContactName = user.FirstName + " " + user.LastName,
+                PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration),
+                IsSocialLogin = true,
+                FirstName = user.FirstName,
+                LastName = user.LastName
+            };
+
+
+            try
+            {
+                _context.User.Add(dbUser);
+                outPutResult = _context.SaveChanges();
+                var newinsertedUserID = dbUser.Id;
+                if (outPutResult != 0)
+                {
+                    if (newinsertedUserID > 0)
+                    {
+
+                        Data.Entities.UserInfo dbUserInfo = new Data.Entities.UserInfo()
+                        {
+                            UserId = newinsertedUserID,
+                            GenderId = user.Gender
+                        };
+                        Data.Entities.UserPreferences dbUserPref = new Data.Entities.UserPreferences()
+                        {
+                            UserId = newinsertedUserID
+                        };
+                        _context.UserInfo.Add(dbUserInfo);
+                        _context.UserPreferences.Add(dbUserPref);
+                        Data.Entities.UserProfileCompletion ProfCompletion = new Data.Entities.UserProfileCompletion()
+                        {
+                            UserId = newinsertedUserID
+                        };
+                        _context.UserProfileCompletion.Add(ProfCompletion);
+                        outPutResult = _context.SaveChanges();
+                        UpdateProfileCompletion(AvailableProfiles.ShortRegistration, ProfileCriteria.Mandatory, newinsertedUserID, true, false);
+                        outPutResult = _context.SaveChanges();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Can not Add User.."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
+            if (!errors.Any())
+            {
+                var insertedUser = GetUserInformation(user.Email);
+                return new UserModelResponse(metadata, insertedUser);
+            }
+            else
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+        }
+
         public Response CreateNewUser(UserShortRegister user)
         {
             var errors = new List<Error>();
@@ -237,7 +356,8 @@ namespace Matrimony.Service.User
                 ProfileCreatedForId = user.ProfileCreatedForId,
                 PhoneNumber = user.PhoneNumber,
                 ContactName = user.Email + "_" + user.PhoneNumber,
-                PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration)
+                PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration),
+                IsSocialLogin = false                
             };
 
 
@@ -735,7 +855,7 @@ namespace Matrimony.Service.User
                                join ui in _context.UserInfo.Where(ub => 
                                ub.GenderId.Equals(searchCritria.Gender) 
                                && castIds != null && castIds.Contains(ub.CasteId.ToString()) 
-                               && religionIds != null && religionIds.Contains(ub.Religion.ToString()))
+                               && religionIds != null && religionIds.Contains(ub.ReligionId.ToString()))
                                on u.Id equals ui.UserId into user_basic
                                from ub in user_basic.DefaultIfEmpty()
                                //join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image

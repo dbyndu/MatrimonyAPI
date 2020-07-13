@@ -23,7 +23,5 @@ namespace Matrimony.Data.Entities
         public bool? LifeStyleOptional { get; set; }
         public bool? PreferenceMandatory { get; set; }
         public bool? PreferenceOptional { get; set; }
-
-        public virtual User User { get; set; }
     }
 }

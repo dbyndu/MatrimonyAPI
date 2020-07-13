@@ -110,6 +110,28 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         [Authorize]
+        [Route("register/socialLogin")]
+        public ActionResult LoginSocialUser(UserModel userModel)
+        {
+            var response = _userService.LoginSocialUser(userModel);
+            var userResposne = response as UserModelResponse;
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            if (userResposne != null)
+            {
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
+            }
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
+        }
+        [HttpPost]
+        [Authorize]
         [Route("register/short-register")]
         public ActionResult CreateNewUser(UserShortRegister userShortRegister)
             {
@@ -130,7 +152,28 @@ namespace MatrimonyAPI.Controllers
                 return Ok(APIResponse.CreateResponse(token, response));
             }
         }
-
+        [HttpPost]
+        [Authorize]
+        [Route("register/social-login")]
+        public ActionResult CreateNewUserSocialLogin(UserRegister userRegister)
+        {
+            var response = _userService.CreateSocialUser(userRegister);
+            var userResposne = response as UserModelResponse;
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            if (userResposne != null)
+            {
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
+            }
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
+        }
         [HttpPost]
         //Needs to be changed to Authorize
         [Authorize]

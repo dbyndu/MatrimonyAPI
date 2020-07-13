@@ -12,5 +12,6 @@ namespace Matrimony.Model.User
         public string Password { get; set; }
 
         public int? Gender { get; set; }
+
     }
 }
