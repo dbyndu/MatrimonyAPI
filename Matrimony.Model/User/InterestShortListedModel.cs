@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace Matrimony.Data.Entities
+namespace Matrimony.Model.User
 {
-    public partial class InterestShortListed
+    public class InterestShortListedModel
     {
         public long Id { get; set; }
         public int UserId { get; set; }
@@ -13,6 +14,5 @@ namespace Matrimony.Data.Entities
         public DateTime? ShortListedDateTime { get; set; }
         public bool IsInterestAccepted { get; set; }
         public bool IsInterestRejected { get; set; }
-        public int? ShortListedBy { get; set; }
     }
 }

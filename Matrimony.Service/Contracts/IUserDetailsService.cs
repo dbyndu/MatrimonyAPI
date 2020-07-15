@@ -28,5 +28,8 @@ namespace Matrimony.Service.Contracts
 
         Response SaveChatInvite(int senderID, int receiverID);
         Task<Response> InterestOrShortListed(int userId, int interestUserId, string mode, int isRemoved, int isRejected);
+        Task<Response> GetInterestShortListed(int id, int interestedId);
+        Task<Response> GetNotificationData(int userId);
+        Response UpdateNotification(int id);
     }
 }

@@ -16,6 +16,7 @@ namespace Matrimony.Data
         {
             //additional config
             modelBuilder.Entity<ProfileDisplayData>().HasNoKey();
+            modelBuilder.Entity<NotificationData>().HasNoKey();
         }
         public ProfileDisplayData GetProfileDisplayDataAsync(int id)
         {
@@ -39,6 +40,26 @@ namespace Matrimony.Data
 
             // Info.  
             return data;
+        }
+        public async Task<List<NotificationData>> GetNotificationDataAsync(int id)
+        {
+            // Initialization.  
+            List<NotificationData> list = new List<NotificationData>();
+
+            try
+            {
+                // Processing.  
+                string sqlQuery = "dbo.GetAllNotifications @userId = {0}, @IsAll = 1";
+
+                list = await this.Set<NotificationData>().FromSqlRaw(sqlQuery, id).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // Info.  
+            return list;
         }
 
     }
