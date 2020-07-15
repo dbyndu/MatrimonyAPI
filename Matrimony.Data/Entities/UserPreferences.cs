@@ -25,7 +25,5 @@ namespace Matrimony.Data.Entities
         public string Specialization { get; set; }
         public int? AnnualIncome { get; set; }
         public bool? IsAccepted { get; set; }
-
-        public virtual User User { get; set; }
     }
 }

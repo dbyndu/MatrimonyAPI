@@ -12,7 +12,7 @@ namespace Matrimony.Service.Contracts
     {
         Response GetUserDetails();
         Response GetOneUserDetails(string user);
-
+        Response CreateSocialUser(UserRegister user);
         Response CreateNewUser(UserShortRegister user);
         Response Register(Object obj, string type);
         Response GetImages(int userId, int width, int height, string mode);
@@ -22,6 +22,8 @@ namespace Matrimony.Service.Contracts
         Response GetUserDetails(int userId, int viewedId);
 
         Response LoginUser(UserShortRegister user);
+
+        Response LoginSocialUser(UserModel user);
 
         Response GetUserPreferences(int userId);
         Response GetProfileDisplayData(int userId);
