@@ -269,6 +269,30 @@ namespace MatrimonyAPI.Controllers
             var response = await _userService.InterestOrShortListed(userId, interestUserId, mode, isRemoved, isRejected);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+        [HttpGet]
+        [Authorize]
+        [Route("interest-shortlisted/{userId}/{interestUserId}")]
+        public async Task<IActionResult> GetInterestShortListed(int userId, int interestUserId)
+        {
+            var response = await _userService.GetInterestShortListed(userId, interestUserId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("notification/{userId}")]
+        public async Task<IActionResult> GetNotificationData(int userId)
+        {
+            var response = await _userService.GetNotificationData(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("notification/Id/{id}")]
+        public ActionResult UpdateNotificationData(int id)
+        {
+            var response = _userService.UpdateNotification(id);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
         [Route("user-list/{mode}")]

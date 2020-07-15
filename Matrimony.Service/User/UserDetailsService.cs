@@ -106,7 +106,7 @@ namespace Matrimony.Service.User
         }
         public Response GetUserDetails(int userId, int viewedId)
         {
-            InsertUpdateRecentlyViewed(userId, viewedId);
+            InsertUpdateRecentlyViewed(userId, viewedId);        
             return GetUserDetails(viewedId);
         }
         public Response GetUserDetails(int id)
@@ -440,184 +440,207 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
         }
+        public async Task<Response> GetInterestShortListed(int id, int interestedId)
+        {
+            var errors = new List<Error>();
+            Data.Entities.InterestShortListed objInterestShortListed = new Data.Entities.InterestShortListed();
+            var query = _context.InterestShortListed.Where(i => (i.UserId.Equals(id) && i.InterestedUserId.Equals(interestedId))
+                                  || (i.UserId.Equals(interestedId) && i.InterestedUserId.Equals(id))).DefaultIfEmpty();
+            objInterestShortListed = await query.FirstOrDefaultAsync();
+            if (objInterestShortListed == null || objInterestShortListed.Id == 0)
+            {
+                errors.Add(new Error("Err102", "No record found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains list Of interest");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, objInterestShortListed);
+        }
         private UserModel GetUserInformation(int id)
         {
             UserModel returnValue = new UserModel();
-            returnValue = (from u in _context.User
-                           join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
-                           from ub in user_basic.DefaultIfEmpty()
-                           join usLife in _context.UserLifeStyle on u.Id equals usLife.UserId into user_Life
-                           from userLife in user_Life.DefaultIfEmpty()
-                           join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
-                           from preference in user_pref.DefaultIfEmpty()
-                           //join uperc in _context.UserProfileCompletion on u.Id equals uperc.UserId into user_perc
-                           //from userpercentage in user_perc.DefaultIfEmpty()
-                           where u.Id.Equals(id)
-                           select new UserModel
-                           {
-                               ID = u.Id,
-                               Email = u.Email,
-                               FirstName = u.FirstName,
-                               LastName = u.LastName,
-                               MiddleNmae = u.MiddleNmae,
-                               PhoneNumber = u.PhoneNumber,
-                               ProfileCreatedForId = u.ProfileCreatedForId,
-                               PercentageComplete = u.PercentageComplete,
-                               ContactName = u.ContactName,
-                               UserBasicInfo = new UserBasicInformation
-                               {
-                                   Id = ub.Id,
-                                   UserId = ub.UserId,
-                                   GenderId = ub.GenderId,
-                                   Dob = ub.Dob,
-                                   MaritalStatusId = ub.MaritalStatusId,
-                                   Height = ub.Height,
-                                   Weight = ub.Weight,
-                                   BodyTypeId = ub.BodyTypeId,
-                                   ComplexionId = ub.ComplexionId,
-                                   IsDisability = ub.IsDisability,
-                                   Dosh = ub.Dosh,
-                                   Manglik = ub.Manglik,
-                                   Horoscope = ub.Horoscope,
-                                   BloodGroupId = ub.BloodGroupId,
-                                   ReligionId = ub.ReligionId,
-                                   CasteId = ub.CasteId,
-                                   MotherTongueId = ub.MotherTongueId,
-                                   ComunityId = ub.ComunityId,
-                                   Gothra = ub.Gothra,
-                                   CountryId = ub.CountryId,
-                                   CitizenshipId = ub.CitizenshipId,
-                                   StateId = ub.StateId,
-                                   CityId = ub.CityId,
-                                   GrewUpIn = ub.GrewUpIn,
-                                   Origin = ub.Origin,
-                                   Pin = ub.Pin,
-                                   About = ub.About
-                               },
-                               //UserProfileCompletion = new UserPercentageComplete
-                               //{
-                               //    Id = userpercentage.Id,
-                               //    UserId = userpercentage.UserId,
-                               //    About = userpercentage.About == null ? false : (bool)userpercentage.About,
-                               //    BasicDetails = userpercentage.BasicDetailsMandatory == null ? false : (bool)userpercentage.BasicDetailsMandatory,
-                               //    Career = userpercentage.CareerMandatory == null ? false : (bool)userpercentage.CareerMandatory,
-                               //    BasicRegister = userpercentage.ShortRegisterMandatory == null ? false : (bool)userpercentage.ShortRegisterMandatory,
-                               //    Family = userpercentage.FamilyMandatory == null ? false : (bool)userpercentage.FamilyMandatory,
-                               //    LifeStyle = userpercentage.LifeStyleMandatory == null ? false : (bool)userpercentage.LifeStyleMandatory,
-                               //    PhotoUpload = userpercentage.PhotoUpload == null ? false : (bool)userpercentage.PhotoUpload,
-                               //    Preference = userpercentage.PreferenceMandatory == null ? false : (bool)userpercentage.PreferenceMandatory,
-                               //    Register = userpercentage.RegisterMandatory == null? false : (bool)userpercentage.RegisterMandatory,
-                               //    Religion = userpercentage.ReligionMandatory == null? false : (bool)userpercentage.ReligionMandatory
-                               //},
-                               UserFamilyInfo = new UserFamilyInformationModel
-                               {
-                                   Id = ub.Id,
-                                   UserId = ub.UserId,
-                                   FatherStatusId = ub.FatherStatusId,
-                                   MotherStatusId = ub.MotherStatusId,
-                                   NativePlace = ub.NativePlace,
-                                   FamilyLocation = ub.FamilyLocation,
-                                   MarriedSiblingMale = ub.MarriedSiblingMale,
-                                   NotMarriedSiblingMale = ub.NotMarriedSiblingMale,
-                                   MarriedSiblingFemale = ub.MarriedSiblingFemale,
-                                   NotMarriedSiblingFemale = ub.NotMarriedSiblingFemale,
-                                   FamilyTypeId = ub.FamilyTypeId,
-                                   FamilyValuesId = ub.FamilyValuesId,
-                                   FamilyIncomeId = ub.FamilyIncomeId
-                               },
-                               UserCareerInfo = new UserEducationCareerModel
-                               {
-                                   Id = ub.Id,
-                                   UserId = ub.UserId,
-                                   HighestQualificationId = ub.HighestQualificationId,
-                                   HighestSpecializationId = ub.HighestSpecializationId,
-                                   SecondaryQualificationId = ub.SecondaryQualificationId,
-                                   SecondarySpecializationId = ub.SecondarySpecializationId,
-                                   Institution = ub.Institution,
-                                   University = ub.University,
-                                   WorkingSectorId = ub.WorkingSectorId,
-                                   WorkDesignationId = ub.WorkDesignationId,
-                                   EmployerId = ub.EmployerId,
-                                   AnualIncomeId = ub.AnualIncomeId,
-                                   IsDisplayIncome = ub.IsDisplayIncome
-                               },
-                               UserLifeStyle = new UserLifeStyleModel
-                               {
-                                   Id = userLife.Id,
-                                   UserId = userLife.UserId,
-                                   DietId = userLife.DietId,
-                                   Hobies = userLife.Hobies,
-                                   SmokingId = userLife.SmokingId,
-                                   ChildrenChoiceId = userLife.ChildrenChoiceId,
-                                   WeadingStyleId = userLife.WeadingStyleId,
-                                   DrinkingId = userLife.DrinkingId,
-                                   HouseLivingInId = userLife.HouseLivingInId,
-                                   OwnCar = userLife.OwnCar,
-                                   OwnPet = userLife.OwnPet,
-                                   Interests = userLife.Interests,
-                                   Musics = userLife.Musics,
-                                   Books = userLife.Books,
-                                   Movies = userLife.Movies,
-                                   Fitness = userLife.Fitness,
-                                   Cuisines = userLife.Cuisines
-                               },
-                               //UserLifeStyle = _context.UserLifeStyle.Where(i=>i.UserId.Equals(id)).FirstOrDefault().Select(userLife=> new UserLifeStyleModel
-                               //{
-                               //    Id = userLife.Id,
-                               //    UserId = userLife.UserId,
-                               //    DietId = userLife.DietId,
-                               //    Hobies = userLife.Hobies,
-                               //    SmokingId = userLife.SmokingId,
-                               //    ChildrenChoiceId = userLife.ChildrenChoiceId,
-                               //    WeadingStyleId = userLife.WeadingStyleId,
-                               //    DrinkingId = userLife.DrinkingId,
-                               //    HouseLivingInId = userLife.HouseLivingInId,
-                               //    OwnCar = userLife.OwnCar,
-                               //    OwnPet = userLife.OwnPet,
-                               //    Interests = userLife.Interests,
-                               //    Musics = userLife.Musics,
-                               //    Books = userLife.Books,
-                               //    Movies = userLife.Movies,
-                               //    Fitness = userLife.Fitness,
-                               //    Cuisines = userLife.Cuisines
-                               //}),
-                               UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
-                               {
-                                   Id = u.Id,
-                                   UserId = u.UserId,
-                                   ImageString = "data:" + u.ContentType + ";base64," + Convert.ToBase64String(u.Image), // ImageResizer((byte[])u.Image, width, height)
-                                   IsProfilePicture = u.IsProfilePicture
-                               }).ToList(),
-                               UserPreference = _mapper.Map<UserPreferenceModel>(preference)
-
-                           }).FirstOrDefault();
-
-            if(returnValue != null)
+            try
             {
-                var userpercentage = _context.UserProfileCompletion.FirstOrDefault(x => x.UserId == returnValue.ID);
-                if(userpercentage != null)
+                returnValue = (from u in _context.User
+                               join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
+                               from ub in user_basic.DefaultIfEmpty()
+                               join usLife in _context.UserLifeStyle on u.Id equals usLife.UserId into user_Life
+                               from userLife in user_Life.DefaultIfEmpty()
+                               join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
+                               from preference in user_pref.DefaultIfEmpty()
+                               where u.Id.Equals(id)
+                               select new UserModel
+                               {
+                                   ID = u.Id,
+                                   Email = u.Email,
+                                   FirstName = u.FirstName,
+                                   LastName = u.LastName,
+                                   MiddleNmae = u.MiddleNmae,
+                                   PhoneNumber = u.PhoneNumber,
+                                   ProfileCreatedForId = u.ProfileCreatedForId,
+                                   PercentageComplete = u.PercentageComplete,
+                                   ContactName = u.ContactName,
+                                   UserBasicInfo = new UserBasicInformation
+                                   {
+                                       Id = ub.Id,
+                                       UserId = ub.UserId,
+                                       GenderId = ub.GenderId,
+                                       Dob = ub.Dob,
+                                       MaritalStatusId = ub.MaritalStatusId,
+                                       Height = ub.Height,
+                                       Weight = ub.Weight,
+                                       BodyTypeId = ub.BodyTypeId,
+                                       ComplexionId = ub.ComplexionId,
+                                       IsDisability = ub.IsDisability,
+                                       Dosh = ub.Dosh,
+                                       Manglik = ub.Manglik,
+                                       Horoscope = ub.Horoscope,
+                                       BloodGroupId = ub.BloodGroupId,
+                                       ReligionId = ub.ReligionId,
+                                       CasteId = ub.CasteId,
+                                       MotherTongueId = ub.MotherTongueId,
+                                       ComunityId = ub.ComunityId,
+                                       Gothra = ub.Gothra,
+                                       CountryId = ub.CountryId,
+                                       CitizenshipId = ub.CitizenshipId,
+                                       StateId = ub.StateId,
+                                       CityId = ub.CityId,
+                                       GrewUpIn = ub.GrewUpIn,
+                                       Origin = ub.Origin,
+                                       Pin = ub.Pin,
+                                       About = ub.About
+                                   },
+                                   //UserProfileCompletion = new UserPercentageComplete
+                                   //{
+                                   //    Id = userpercentage.Id,
+                                   //    UserId = userpercentage.UserId,
+                                   //    About = userpercentage.About == null ? false : (bool)userpercentage.About,
+                                   //    BasicDetails = userpercentage.BasicDetailsMandatory == null ? false : (bool)userpercentage.BasicDetailsMandatory,
+                                   //    Career = userpercentage.CareerMandatory == null ? false : (bool)userpercentage.CareerMandatory,
+                                   //    BasicRegister = userpercentage.ShortRegisterMandatory == null ? false : (bool)userpercentage.ShortRegisterMandatory,
+                                   //    Family = userpercentage.FamilyMandatory == null ? false : (bool)userpercentage.FamilyMandatory,
+                                   //    LifeStyle = userpercentage.LifeStyleMandatory == null ? false : (bool)userpercentage.LifeStyleMandatory,
+                                   //    PhotoUpload = userpercentage.PhotoUpload == null ? false : (bool)userpercentage.PhotoUpload,
+                                   //    Preference = userpercentage.PreferenceMandatory == null ? false : (bool)userpercentage.PreferenceMandatory,
+                                   //    Register = userpercentage.RegisterMandatory == null? false : (bool)userpercentage.RegisterMandatory,
+                                   //    Religion = userpercentage.ReligionMandatory == null? false : (bool)userpercentage.ReligionMandatory
+                                   //},
+                                   UserFamilyInfo = new UserFamilyInformationModel
+                                   {
+                                       Id = ub.Id,
+                                       UserId = ub.UserId,
+                                       FatherStatusId = ub.FatherStatusId,
+                                       MotherStatusId = ub.MotherStatusId,
+                                       NativePlace = ub.NativePlace,
+                                       FamilyLocation = ub.FamilyLocation,
+                                       MarriedSiblingMale = ub.MarriedSiblingMale,
+                                       NotMarriedSiblingMale = ub.NotMarriedSiblingMale,
+                                       MarriedSiblingFemale = ub.MarriedSiblingFemale,
+                                       NotMarriedSiblingFemale = ub.NotMarriedSiblingFemale,
+                                       FamilyTypeId = ub.FamilyTypeId,
+                                       FamilyValuesId = ub.FamilyValuesId,
+                                       FamilyIncomeId = ub.FamilyIncomeId
+                                   },
+                                   UserCareerInfo = new UserEducationCareerModel
+                                   {
+                                       Id = ub.Id,
+                                       UserId = ub.UserId,
+                                       HighestQualificationId = ub.HighestQualificationId,
+                                       HighestSpecializationId = ub.HighestSpecializationId,
+                                       SecondaryQualificationId = ub.SecondaryQualificationId,
+                                       SecondarySpecializationId = ub.SecondarySpecializationId,
+                                       Institution = ub.Institution,
+                                       University = ub.University,
+                                       WorkingSectorId = ub.WorkingSectorId,
+                                       WorkDesignationId = ub.WorkDesignationId,
+                                       EmployerId = ub.EmployerId,
+                                       AnualIncomeId = ub.AnualIncomeId,
+                                       IsDisplayIncome = ub.IsDisplayIncome
+                                   },
+                                   UserLifeStyle = new UserLifeStyleModel
+                                   {
+                                       Id = userLife.Id,
+                                       UserId = userLife.UserId,
+                                       DietId = userLife.DietId,
+                                       Hobies = userLife.Hobies,
+                                       SmokingId = userLife.SmokingId,
+                                       ChildrenChoiceId = userLife.ChildrenChoiceId,
+                                       WeadingStyleId = userLife.WeadingStyleId,
+                                       DrinkingId = userLife.DrinkingId,
+                                       HouseLivingInId = userLife.HouseLivingInId,
+                                       OwnCar = userLife.OwnCar,
+                                       OwnPet = userLife.OwnPet,
+                                       Interests = userLife.Interests,
+                                       Musics = userLife.Musics,
+                                       Books = userLife.Books,
+                                       Movies = userLife.Movies,
+                                       Fitness = userLife.Fitness,
+                                       Cuisines = userLife.Cuisines
+                                   },
+                                   //UserLifeStyle = _context.UserLifeStyle.Where(i=>i.UserId.Equals(id)).FirstOrDefault().Select(userLife=> new UserLifeStyleModel
+                                   //{
+                                   //    Id = userLife.Id,
+                                   //    UserId = userLife.UserId,
+                                   //    DietId = userLife.DietId,
+                                   //    Hobies = userLife.Hobies,
+                                   //    SmokingId = userLife.SmokingId,
+                                   //    ChildrenChoiceId = userLife.ChildrenChoiceId,
+                                   //    WeadingStyleId = userLife.WeadingStyleId,
+                                   //    DrinkingId = userLife.DrinkingId,
+                                   //    HouseLivingInId = userLife.HouseLivingInId,
+                                   //    OwnCar = userLife.OwnCar,
+                                   //    OwnPet = userLife.OwnPet,
+                                   //    Interests = userLife.Interests,
+                                   //    Musics = userLife.Musics,
+                                   //    Books = userLife.Books,
+                                   //    Movies = userLife.Movies,
+                                   //    Fitness = userLife.Fitness,
+                                   //    Cuisines = userLife.Cuisines
+                                   //}),
+                                   UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
+                                   {
+                                       Id = u.Id,
+                                       UserId = u.UserId,
+                                       ImageString = "data:" + u.ContentType + ";base64," + Convert.ToBase64String(u.Image), // ImageResizer((byte[])u.Image, width, height)
+                                       IsProfilePicture = u.IsProfilePicture
+                                   }).ToList(),
+                                   UserPreference = _mapper.Map<UserPreferenceModel>(preference)
+
+                               }).FirstOrDefault();
+
+                if (returnValue != null)
                 {
-                    returnValue.UserProfileCompletion = new UserPercentageComplete()
+                    var userpercentage = _context.UserProfileCompletion.FirstOrDefault(x => x.UserId == returnValue.ID);
+                    if (userpercentage != null)
                     {
-                        Id = userpercentage.Id,
-                        UserId = userpercentage.UserId,
-                        About = userpercentage.About == null ? false : (bool)userpercentage.About,
-                        BasicDetails = userpercentage.BasicDetailsMandatory == null ? false : (bool)userpercentage.BasicDetailsMandatory,
-                        Career = userpercentage.CareerMandatory == null ? false : (bool)userpercentage.CareerMandatory,
-                        BasicRegister = userpercentage.ShortRegisterMandatory == null ? false : (bool)userpercentage.ShortRegisterMandatory,
-                        Family = userpercentage.FamilyMandatory == null ? false : (bool)userpercentage.FamilyMandatory,
-                        LifeStyle = userpercentage.LifeStyleMandatory == null ? false : (bool)userpercentage.LifeStyleMandatory,
-                        PhotoUpload = userpercentage.PhotoUpload == null ? false : (bool)userpercentage.PhotoUpload,
-                        Preference = userpercentage.PreferenceMandatory == null ? false : (bool)userpercentage.PreferenceMandatory,
-                        Register = userpercentage.RegisterMandatory == null ? false : (bool)userpercentage.RegisterMandatory,
-                        Religion = userpercentage.ReligionMandatory == null ? false : (bool)userpercentage.ReligionMandatory
-                    };
+                        returnValue.UserProfileCompletion = new UserPercentageComplete()
+                        {
+                            Id = userpercentage.Id,
+                            UserId = userpercentage.UserId,
+                            About = userpercentage.About == null ? false : (bool)userpercentage.About,
+                            BasicDetails = userpercentage.BasicDetailsMandatory == null ? false : (bool)userpercentage.BasicDetailsMandatory,
+                            Career = userpercentage.CareerMandatory == null ? false : (bool)userpercentage.CareerMandatory,
+                            BasicRegister = userpercentage.ShortRegisterMandatory == null ? false : (bool)userpercentage.ShortRegisterMandatory,
+                            Family = userpercentage.FamilyMandatory == null ? false : (bool)userpercentage.FamilyMandatory,
+                            LifeStyle = userpercentage.LifeStyleMandatory == null ? false : (bool)userpercentage.LifeStyleMandatory,
+                            PhotoUpload = userpercentage.PhotoUpload == null ? false : (bool)userpercentage.PhotoUpload,
+                            Preference = userpercentage.PreferenceMandatory == null ? false : (bool)userpercentage.PreferenceMandatory,
+                            Register = userpercentage.RegisterMandatory == null ? false : (bool)userpercentage.RegisterMandatory,
+                            Religion = userpercentage.ReligionMandatory == null ? false : (bool)userpercentage.ReligionMandatory
+                        };
+                    }
+
                 }
-                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
             return returnValue;
         }
-
+    
         private UserModel GetUserInformation(string userEmail)
         {
             UserModel returnValue = new UserModel();
@@ -666,7 +689,21 @@ namespace Matrimony.Service.User
 
             return returnValue;
         }
-
+        public async Task<Response> GetNotificationData(int userId)
+        {
+            var errors = new List<Error>();
+            var data = await _context.GetNotificationDataAsync(userId);
+            if (data == null || data.Count == 0)
+            {
+                errors.Add(new Error("Err102", "No data found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, data);
+        }
         public Response GetProfileDisplayData(int userId)
         {
             var errors = new List<Error>();
@@ -737,7 +774,7 @@ namespace Matrimony.Service.User
                                    CreatedDate = u.CreatedDate,
                                    interest.IsInterestAccepted,
                                    interest.IsInterestRejected,
-                                   interest.IsShortListed,
+                                   IsShortListed = interest.IsShortListed && (interest.ShortListedBy.Equals(searchCritria.UserId) || interest.ShortListedBy.Equals(0)),
                                    IsInterestSent = (interest.Id > 0 && !interest.IsInterestRejected) ? true : false,
                                    IsInterestReceived = (interest.InterestedUserId > 0 && interest.InterestedUserId.Equals(searchCritria.UserId)) ? true : false
                                });
@@ -1133,6 +1170,43 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
+        }
+
+        public Response UpdateNotification(int id)
+        {
+            int stat = 0;
+            var errors = new List<Error>();
+
+            var notification = _context.Notification.Where(n => n.Id.Equals(id)).FirstOrDefault();
+            try
+            {
+                if (notification != null)
+                {
+                    notification.IsRead = true;
+                    notification.IsSeen = true;
+                    _context.Update<Matrimony.Data.Entities.Notification>(notification);
+                    stat = _context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if (stat == 0)
+            {
+                errors.Add(new Error("Err102", "Can not update notification."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Updated Successfully");
+            if (!errors.Any())
+            {
+
+                return new AnonymousResponse(metadata, stat);
+            }
+            else
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+
         }
 
         public Response GetImages(int userId, int width, int height, string mode)
@@ -2129,13 +2203,26 @@ namespace Matrimony.Service.User
         private async Task<int> InsertUpdateInterestShortList(int userId, int interestUserId, string mode, int isRemoved, int isRejected)// mode =I(Interest) Or S(ShortListed)
         {
             int outPutResult = 0;
-            Matrimony.Data.Entities.InterestShortListed interest = _context.InterestShortListed.Where(i => i.UserId.Equals(userId) && i.InterestedUserId.Equals(interestUserId)).FirstOrDefault();
+            Matrimony.Data.Entities.InterestShortListed interest = _context.InterestShortListed.Where(i => (i.UserId.Equals(userId) && i.InterestedUserId.Equals(interestUserId))
+            || (i.UserId.Equals(interestUserId) && i.InterestedUserId.Equals(userId))).FirstOrDefault();            
             if (interest == null)
             {
                 interest = new Data.Entities.InterestShortListed();
                 interest.UserId = userId;
                 interest.InterestedUserId = interestUserId;
                 interest.InterestDateTime = DateTime.Now;
+                _context.InterestShortListed.Add(interest);
+
+                //Notificatio
+                Data.Entities.Notification notification = new Data.Entities.Notification
+                {
+                    SenderId = userId,
+                    ReceiverId = interestUserId,
+                    NotificationTypeId = 1, //Interest
+                    NotificationSubTypeId = 1, //Receive
+                    CreatedDateTime = DateTime.Now                    
+                };
+                _context.Notification.Add(notification);
             }
             else
             {
@@ -2143,31 +2230,55 @@ namespace Matrimony.Service.User
                 {
                     if (isRemoved.Equals(1))
                         _context.Remove<Matrimony.Data.Entities.InterestShortListed>(interest);
-                    else if(isRejected.Equals(1))
-                        interest.IsInterestRejected = true;
                     else
-                        interest.IsInterestAccepted = true;
+                    {
+                        if (isRejected.Equals(1))
+                            interest.IsInterestRejected = true;
+                        else
+                        {
+                            interest.IsInterestAccepted = true;
+                            //Notificatio
+                            Data.Entities.Notification notification = new Data.Entities.Notification
+                            {
+                                SenderId = interest.InterestedUserId,
+                                ReceiverId = interest.UserId,
+                                NotificationTypeId = 1, //Interest
+                                NotificationSubTypeId = 2, //Accept
+                                CreatedDateTime = DateTime.Now
+                            };
+                            _context.Notification.Add(notification);
+                        }
+                        _context.Update<Matrimony.Data.Entities.InterestShortListed>(interest);
+                    }
                 }
                 else if (mode.Equals("S"))
                 {
                     if (isRemoved.Equals(1))
-                        interest.IsShortListed = false;
+                    {
+                        interest.ShortListedBy = GetShortListedBy(interest.ShortListedBy, userId, interest.UserId, interest.InterestedUserId, isRemoved);
+                        interest.IsShortListed = (interest.ShortListedBy == null) ? false : true;
+                    }
                     else
+                    {
                         interest.IsShortListed = true;
-                    interest.ShortListedDateTime = DateTime.Now;
+                        interest.ShortListedDateTime = DateTime.Now;
+                        interest.ShortListedBy = GetShortListedBy(interest.ShortListedBy, userId, interest.UserId, interest.InterestedUserId, isRemoved);
+                        //Notificatio
+                        Data.Entities.Notification notification = new Data.Entities.Notification
+                        {
+                            SenderId = userId,
+                            ReceiverId = interestUserId,
+                            NotificationTypeId = 2, //ShortListed
+                            NotificationSubTypeId = 1, //ShortListed
+                            CreatedDateTime = DateTime.Now
+                        };
+                        _context.Notification.Add(notification);
+                    }
+                    _context.Update<Matrimony.Data.Entities.InterestShortListed>(interest);
                 }
             }
             try
             {
-                if (interest.Id > 0)
-                {
-                    _context.Update<Matrimony.Data.Entities.InterestShortListed>(interest);
-                }
-                else
-                {
-                    _context.InterestShortListed.Add(interest);
-                }
-
                 outPutResult = await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -2175,6 +2286,27 @@ namespace Matrimony.Service.User
                 throw ex;
             }
             return outPutResult;
+        }
+
+        private int? GetShortListedBy(int? shortListedBy, int userId, int senderId, int recevierId, int isRemoved)
+        {
+            int? res = null;
+            if(shortListedBy == null)
+            {
+                res = userId;
+            }
+            else if (shortListedBy == 0)
+            {
+                if (userId.Equals(senderId))
+                    res = recevierId;
+                else
+                    res = senderId;
+            }
+            else if(shortListedBy > 0 && isRemoved.Equals(0))
+            {
+                res = 0;
+            }
+            return res;
         }
         public void populateAllSizeImages()
         {

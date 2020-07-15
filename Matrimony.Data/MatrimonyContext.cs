@@ -21,6 +21,7 @@ namespace Matrimony.Data
         public virtual DbSet<InterestShortListed> InterestShortListed { get; set; }
         public virtual DbSet<MasterFieldValue> MasterFieldValue { get; set; }
         public virtual DbSet<MasterTableMetadata> MasterTableMetadata { get; set; }
+        public virtual DbSet<Notification> Notification { get; set; }
         public virtual DbSet<Message> Message { get; set; }
         public virtual DbSet<MessageRoom> MessageRoom { get; set; }
         public virtual DbSet<RecentlyViewed> RecentlyViewed { get; set; }
@@ -90,6 +91,15 @@ namespace Matrimony.Data
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false);
+            });
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasIndex(e => new { e.ReceiverId, e.IsSeen, e.CreatedDateTime })
+                    .HasName("IX_Notification_NonClustered");
+
+                entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+
+                entity.Property(e => e.SeenDateTime).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Message>(entity =>
