@@ -21,5 +21,7 @@ namespace Matrimony.Model.User
         public string SocialId { get; set; }
         public int? ProviderId { get; set; }
         public int? genderId { get; set; }
+        public bool? IsMobileVerified { get; set; }
+        public bool? IsEmailVerified { get; set; }
     }
 }

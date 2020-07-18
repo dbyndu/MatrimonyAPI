@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Matrimony.Model.Common;
 using Matrimony_Model.Common;
 using static Matrimony.Helper.EnumManager;
+using System.Net.Mail;
+using System.Net;
 
 namespace Matrimony.Service.User
 {
@@ -482,6 +484,8 @@ namespace Matrimony.Service.User
                                    ProfileCreatedForId = u.ProfileCreatedForId,
                                    PercentageComplete = u.PercentageComplete,
                                    ContactName = u.ContactName,
+                                   IsMobileVerified = u.IsMobileVerified,
+                                   IsEmailVerified = u.IsEmailVerified,
                                    UserBasicInfo = new UserBasicInformation
                                    {
                                        Id = ub.Id,
@@ -704,6 +708,115 @@ namespace Matrimony.Service.User
             }
             return new AnonymousResponse(metadata, data);
         }
+        private int GenerateVerificationCode()
+        {
+            int _min = 1000;
+            int _max = 9999;
+            Random _rdm = new Random();
+            return _rdm.Next(_min, _max);
+        }
+
+        private void SendEmail(string toEmail, string emailSubject, string body)
+        {
+            MailMessage msg = new MailMessage();
+            msg.From = new MailAddress("mmatrimama@gmail.com");
+            msg.To.Add(toEmail);
+            msg.Subject = emailSubject;
+            msg.Body = body;
+
+            SmtpClient smt = new SmtpClient();
+            smt.UseDefaultCredentials = false;
+            smt.Host = "smtp.gmail.com";
+            System.Net.NetworkCredential ntwd = new NetworkCredential();
+            ntwd.UserName = "mmatrimama@gmail.com"; //Your Email ID  
+            ntwd.Password = "softanbees@1234"; // Your Password  
+            
+            smt.Credentials = ntwd;
+            smt.Port = 587;
+            smt.EnableSsl = true;
+            smt.Send(msg);
+        }
+
+        public Response VerfiyEmailCode(int userId, string emailCode)
+        {
+            int outPutResult = 0;
+            var errors = new List<Error>();
+            var dbAuth = _context.UserVerification.FirstOrDefault(u => u.UserId == userId);
+            if (dbAuth != null)
+            {
+                try
+                {
+                    if(dbAuth.EmailVerificationCode == int.Parse(emailCode) && dbAuth.EmailCodeGenDateTime > DateTime.Now.AddMinutes(-30))
+                    {
+                        var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+                        dbUser.IsEmailVerified = true;
+                        _context.User.Update(dbUser);
+                        outPutResult = _context.SaveChanges();
+                    }
+                    else
+                    {
+                        errors.Add(new Error("Err107", "You Have Entered Wrong Code."));
+                    }
+                }
+                catch(Exception ex)
+                {
+                    errors.Add(new Error("Err107", "You Have Entered Wrong Code."));
+                }
+            }
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Some Error Occured."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, outPutResult);
+        }
+        public Response GenerateEmailCode(int userId)
+        {
+            int outPutResult = 0;
+            var errors = new List<Error>();
+            var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+            try
+            {
+                int Code = this.GenerateVerificationCode();
+                SendEmail(dbUser.Email, "Your Verfication Code for Matrimama Site!", "One Time Code : " + Code);
+
+                var dbAuth = _context.UserVerification.FirstOrDefault(x => x.UserId == userId);
+                if (dbAuth == null)
+                {
+                    dbAuth = new Data.Entities.UserVerification();
+                    dbAuth.UserId = userId;
+                    dbAuth.EmailVerificationCode = Code;
+                    dbAuth.EmailCodeGenDateTime = DateTime.Now;
+                    _context.UserVerification.Add(dbAuth);
+
+                }
+                else
+                {
+                    dbAuth.EmailVerificationCode = Code;
+                    dbAuth.EmailCodeGenDateTime = DateTime.Now;
+                    _context.UserVerification.Update(dbAuth);
+                }
+                outPutResult = _context.SaveChanges();
+            }
+            catch(Exception ex){
+            }
+            
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Some Error Occured."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, outPutResult);
+        }
+
         public Response GetProfileDisplayData(int userId)
         {
             var errors = new List<Error>();
@@ -1983,6 +2096,8 @@ namespace Matrimony.Service.User
                                 
                         }
                     }
+                    if (!string.IsNullOrEmpty(dbUser.Email) && dbUser.Email != user.Email)
+                        dbUser.IsEmailVerified = false;
                     dbUser.Id = user.ID;
                     dbUser.FirstName = user.FirstName;
                     dbUser.MiddleNmae = user.MiddleNmae;

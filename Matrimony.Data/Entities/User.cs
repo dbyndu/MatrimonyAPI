@@ -20,5 +20,7 @@ namespace Matrimony.Data.Entities
         public bool? IsSocialLogin { get; set; }
         public string SocialId { get; set; }
         public int? ProviderId { get; set; }
+        public bool? IsMobileVerified { get; set; }
+        public bool? IsEmailVerified { get; set; }
     }
 }

@@ -33,5 +33,7 @@ namespace Matrimony.Service.Contracts
         Task<Response> GetInterestShortListed(int id, int interestedId);
         Task<Response> GetNotificationData(int userId);
         Response UpdateNotification(int id);
+        Response GenerateEmailCode(int userId);
+        Response VerfiyEmailCode(int userId,string emailCode);
     }
 }
