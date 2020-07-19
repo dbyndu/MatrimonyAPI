@@ -390,11 +390,19 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpGet]
-       // [Authorize]//Needs to be changed to Authorize
-        [Route("send-otp-sms")]
-        public ActionResult SendOTPSMS()
+        [Authorize]//Needs to be changed to Authorize
+        [Route("send-otp-sms/{userId}")]
+        public ActionResult SendOTPSMS(int userId)
         {
-            var response = _userService.SendOTPSMS();
+            var response = _userService.SendOTPSMS(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("verify-mobile/{userId}/{mobileCode}")]
+        public ActionResult VerifyMobile(int userId, string mobileCode)
+        {
+            var response = _userService.VerfiyOTPSMS(userId, mobileCode);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
     }

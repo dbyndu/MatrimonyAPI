@@ -35,6 +35,7 @@ namespace Matrimony.Service.Contracts
         Response UpdateNotification(int id);
         Response GenerateEmailCode(int userId);
         Response VerfiyEmailCode(int userId,string emailCode);
-        Response SendOTPSMS();
+        Response SendOTPSMS(int userId);
+        Response VerfiyOTPSMS(int userId, string smsOtp);
     }
 }
