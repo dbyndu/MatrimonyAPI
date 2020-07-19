@@ -372,6 +372,23 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.GetProfileDisplayData(userId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+
+        [HttpGet]
+        [Authorize]
+        [Route("get-email-code/{userId}")]
+        public ActionResult GetEmailCode(int userId)
+        {
+            var response = _userService.GenerateEmailCode(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("verify-email/{userId}/{emailCode}")]
+        public ActionResult VerifyEmail(int userId,string emailCode)
+        {
+            var response = _userService.VerfiyEmailCode(userId,emailCode);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
         [HttpGet]
        // [Authorize]//Needs to be changed to Authorize
         [Route("send-otp-sms")]

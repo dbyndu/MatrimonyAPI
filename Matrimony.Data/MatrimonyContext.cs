@@ -21,9 +21,9 @@ namespace Matrimony.Data
         public virtual DbSet<InterestShortListed> InterestShortListed { get; set; }
         public virtual DbSet<MasterFieldValue> MasterFieldValue { get; set; }
         public virtual DbSet<MasterTableMetadata> MasterTableMetadata { get; set; }
-        public virtual DbSet<Notification> Notification { get; set; }
         public virtual DbSet<Message> Message { get; set; }
         public virtual DbSet<MessageRoom> MessageRoom { get; set; }
+        public virtual DbSet<Notification> Notification { get; set; }
         public virtual DbSet<RecentlyViewed> RecentlyViewed { get; set; }
         public virtual DbSet<States> States { get; set; }
         public virtual DbSet<User> User { get; set; }
@@ -32,6 +32,7 @@ namespace Matrimony.Data
         public virtual DbSet<UserLifeStyle> UserLifeStyle { get; set; }
         public virtual DbSet<UserPreferences> UserPreferences { get; set; }
         public virtual DbSet<UserProfileCompletion> UserProfileCompletion { get; set; }
+        public virtual DbSet<UserVerification> UserVerification { get; set; }
 
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //        {
@@ -92,15 +93,6 @@ namespace Matrimony.Data
                     .HasMaxLength(100)
                     .IsUnicode(false);
             });
-            modelBuilder.Entity<Notification>(entity =>
-            {
-                entity.HasIndex(e => new { e.ReceiverId, e.IsSeen, e.CreatedDateTime })
-                    .HasName("IX_Notification_NonClustered");
-
-                entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
-
-                entity.Property(e => e.SeenDateTime).HasColumnType("datetime");
-            });
 
             modelBuilder.Entity<Message>(entity =>
             {
@@ -123,7 +115,7 @@ namespace Matrimony.Data
 
             modelBuilder.Entity<MessageRoom>(entity =>
             {
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
 
                 entity.Property(e => e.DateTimeLogged).HasColumnType("datetime");
 
@@ -136,6 +128,13 @@ namespace Matrimony.Data
                     .IsUnicode(false);
 
                 entity.Property(e => e.UpdateDateTime).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.Property(e => e.CreatedDateTime).HasColumnType("datetime");
+
+                entity.Property(e => e.SeenDateTime).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<RecentlyViewed>(entity =>
@@ -268,6 +267,13 @@ namespace Matrimony.Data
                 entity.Property(e => e.Specialization).HasMaxLength(50);
 
                 entity.Property(e => e.State).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<UserVerification>(entity =>
+            {
+                entity.Property(e => e.EmailCodeGenDateTime).HasColumnType("datetime");
+
+                entity.Property(e => e.MobileCodeGenDateTime).HasColumnType("datetime");
             });
 
             OnModelCreatingPartial(modelBuilder);
