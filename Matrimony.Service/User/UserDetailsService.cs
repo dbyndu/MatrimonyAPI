@@ -16,6 +16,8 @@ using Matrimony_Model.Common;
 using static Matrimony.Helper.EnumManager;
 using System.Net.Mail;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Matrimony.Service.User
 {
@@ -23,6 +25,8 @@ namespace Matrimony.Service.User
     {
         private MatrimonyContext _context;
         private readonly IMapper _mapper;
+        private const string URL = "http://bulksms.matrixbizz.com/app/smsapisr/index.php";
+        private string urlParameters = "?key=35EC66A47B44DF&campaign=9526&routeid=100642&type=text&contacts={0}&senderid=MATDEM&msg={1}";
         public UserDetailsService(MatrimonyContext context, IMapper mapper)
         {
             _context = context;
@@ -885,11 +889,15 @@ namespace Matrimony.Service.User
                                    ReligionId = ub.ReligionId ?? 0,
                                    MotherTongueId = ub.MotherTongueId ?? 0,
                                    CreatedDate = u.CreatedDate,
+                                   InterestedUser1 = interest.UserId,
+                                   InterestedUser2 = interest.InterestedUserId,
                                    interest.IsInterestAccepted,
                                    interest.IsInterestRejected,
                                    IsShortListed = interest.IsShortListed && (interest.ShortListedBy.Equals(searchCritria.UserId) || interest.ShortListedBy.Equals(0)),
                                    IsInterestSent = (interest.Id > 0 && !interest.IsInterestRejected) ? true : false,
-                                   IsInterestReceived = (interest.InterestedUserId > 0 && interest.InterestedUserId.Equals(searchCritria.UserId)) ? true : false
+                                   IsInterestReceived = (interest.InterestedUserId > 0 && interest.InterestedUserId.Equals(searchCritria.UserId)) ? true : false,
+                                   interest.InterestDateTime,
+                                   interest.ShortListedDateTime
                                });
             var queryTemp = querySearch;
             if (!string.IsNullOrEmpty(searchCritria.Caste))
@@ -939,18 +947,21 @@ namespace Matrimony.Service.User
                                      v.ReligionId,
                                      v.MotherTongueId,
                                      v.CreatedDate,
+                                     v.InterestedUser1,
+                                     v.InterestedUser2,
                                      v.IsInterestAccepted,
                                      v.IsInterestRejected,
                                      v.IsShortListed,
                                      v.IsInterestSent,
-                                     v.IsInterestReceived
+                                     v.IsInterestReceived,
+                                     v.InterestDateTime,
+                                     v.ShortListedDateTime
                                  });
                         //querySearch = queryRecentlyViewed.Where(u => u.CreatedDate > DateTime.Now.AddDays(-100));
                         break;
                     case "interested":
-                        querySearch = (from v in queryTemp
-                                       join interest in _context.InterestShortListed.Where(i=> i.UserId.Equals(searchCritria.UserId) && i.IsInterestRejected.Equals(false)) on v.Id equals interest.InterestedUserId
-                                       orderby interest.IsInterestAccepted, interest.InterestDateTime descending
+                        querySearch = (from v in queryTemp.Where(i => (i.InterestedUser2.Equals(searchCritria.UserId) && i.IsInterestAccepted.Equals(true)) || i.InterestedUser1.Equals(searchCritria.UserId))
+                                       orderby v.IsInterestAccepted, v.InterestDateTime descending
                                        select new
                                        {
                                            Id = v.Id,
@@ -969,11 +980,47 @@ namespace Matrimony.Service.User
                                            v.ReligionId,
                                            v.MotherTongueId,
                                            v.CreatedDate,
+                                           v.InterestedUser1,
+                                           v.InterestedUser2,
                                            v.IsInterestAccepted,
                                            v.IsInterestRejected,
                                            v.IsShortListed,
                                            v.IsInterestSent,
-                                           v.IsInterestReceived
+                                           v.IsInterestReceived,
+                                           v.InterestDateTime,
+                                           v.ShortListedDateTime
+                                       });
+                        break;
+                    case "shortlisted":
+                        querySearch = (from v in queryTemp.Where(i => (i.InterestedUser2.Equals(searchCritria.UserId) || i.InterestedUser1.Equals(searchCritria.UserId)) && i.IsShortListed.Equals(true))
+                                       orderby v.ShortListedDateTime descending
+                                       select new
+                                       {
+                                           Id = v.Id,
+                                           v.Name,
+                                           v.Age,
+                                           v.Height,
+                                           v.CasteId,
+                                           v.HighestQualificationId,
+                                           v.HighestSpecializationId,
+                                           v.WorkDesignationId,
+                                           v.State,
+                                           v.City,
+                                           Url = "",
+                                           v.ImageString,
+                                           v.GenderId,
+                                           v.ReligionId,
+                                           v.MotherTongueId,
+                                           v.CreatedDate,
+                                           v.InterestedUser1,
+                                           v.InterestedUser2,
+                                           v.IsInterestAccepted,
+                                           v.IsInterestRejected,
+                                           v.IsShortListed,
+                                           v.IsInterestSent,
+                                           v.IsInterestReceived,
+                                           v.InterestDateTime,
+                                           v.ShortListedDateTime
                                        });
                         break;
                     default:
@@ -982,8 +1029,11 @@ namespace Matrimony.Service.User
             }
 
             var lstUsers = querySearch.ToList();
-            if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
-                lstUsers = lstUsers.Where(u => u.Age >= searchCritria.AgeFrom && u.Age <= searchCritria.AgeTo ).ToList();
+            if (string.IsNullOrEmpty(mode) || mode.ToLower().Equals("newmatch"))
+            {
+                if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
+                    lstUsers = lstUsers.Where(u => u.Age >= searchCritria.AgeFrom && u.Age <= searchCritria.AgeTo).ToList();
+            }
             if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
             {
                 errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
@@ -1378,6 +1428,88 @@ namespace Matrimony.Service.User
             return new UserPreferenceResponse(metadata, preference);
         }
         
+        public Response SendOTPSMS(int userId)
+        {
+            var errors = new List<Error>();
+            int outPutResult = 0;
+            string res = string.Empty;
+            try 
+            {
+                var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+                string number = dbUser.PhoneNumber;
+                int code = this.GenerateVerificationCode();
+                string msg = string.Concat(code, " is the one time code to verify your mobile number for Matrimama site.");
+                res = IvokeSMSAPI(number, msg);
+                var dbAuth = _context.UserVerification.FirstOrDefault(x => x.UserId == userId);
+                if (dbAuth == null)
+                {
+                    dbAuth = new Data.Entities.UserVerification();
+                    dbAuth.UserId = userId;
+                    dbAuth.MobileVerificationCode = code;
+                    dbAuth.MobileCodeGenDateTime = DateTime.Now;
+                    _context.UserVerification.Add(dbAuth);
+
+                }
+                else
+                {
+                    dbAuth.MobileVerificationCode = code;
+                    dbAuth.MobileCodeGenDateTime = DateTime.Now;
+                    _context.UserVerification.Update(dbAuth);
+                }
+                outPutResult = _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if(string.IsNullOrEmpty(res) || outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "No otp sent. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains OTP sent response");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, outPutResult);
+        }
+        public Response VerfiyOTPSMS(int userId, string smsOtp)
+        {
+            int outPutResult = 0;
+            var errors = new List<Error>();
+            var dbAuth = _context.UserVerification.FirstOrDefault(u => u.UserId == userId);
+            if (dbAuth != null)
+            {
+                try
+                {
+                    if (dbAuth.MobileVerificationCode == int.Parse(smsOtp) && dbAuth.MobileCodeGenDateTime > DateTime.Now.AddMinutes(-30))
+                    {
+                        var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+                        dbUser.IsMobileVerified = true;
+                        _context.User.Update(dbUser);
+                        outPutResult = _context.SaveChanges();
+                    }
+                    else
+                    {
+                        errors.Add(new Error("Err107", "You Have Entered Wrong Code."));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(new Error("Err107", "You Have Entered Wrong Code."));
+                }
+            }
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Some Error Occured."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, outPutResult);
+        }
         private static bool GetProfileCompletionPercentage(bool? incomingValue)
         {
             bool returnValue = false;
@@ -2421,6 +2553,36 @@ namespace Matrimony.Service.User
             {
                 res = 0;
             }
+            return res;
+        }
+        private string IvokeSMSAPI(string number, string msg) 
+        {
+            string res = string.Empty;
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri(URL);
+            var urlParam = string.Format(urlParameters, number, msg);
+            // Add an Accept header for JSON format.
+            client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+            // List data response.
+            HttpResponseMessage response = client.GetAsync(urlParam).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
+            if (response.IsSuccessStatusCode)
+            {
+                // Parse the response body.
+                res = response.Content.ReadAsStringAsync().Result;  //Make sure to add a reference to System.Net.Http.Formatting.dll
+               
+            }
+            else
+            {
+                // res = Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
+                res = string.Empty;
+            }
+
+            //Make any other calls using HttpClient here.
+
+            //Dispose once all HttpClient calls are complete. This is not necessary if the containing object will be disposed of; for example in this case the HttpClient instance will be disposed automatically when the application terminates so the following call is superfluous.
+            client.Dispose();
+
             return res;
         }
         public void populateAllSizeImages()
