@@ -372,5 +372,13 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.GetProfileDisplayData(userId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+        [HttpGet]
+       // [Authorize]//Needs to be changed to Authorize
+        [Route("send-otp-sms")]
+        public ActionResult SendOTPSMS()
+        {
+            var response = _userService.SendOTPSMS();
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
     }
 }

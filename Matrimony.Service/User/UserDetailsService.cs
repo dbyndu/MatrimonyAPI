@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 using Matrimony.Model.Common;
 using Matrimony_Model.Common;
 using static Matrimony.Helper.EnumManager;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Matrimony.Service.User
 {
@@ -21,6 +23,8 @@ namespace Matrimony.Service.User
     {
         private MatrimonyContext _context;
         private readonly IMapper _mapper;
+        private const string URL = "http://bulksms.matrixbizz.com/app/smsapisr/index.php";
+        private string urlParameters = "?key=35EC66A47B44DF&campaign=9526&routeid=100642&type=text&contacts=8335833314&senderid=MATDEM&msg=Hello+People%2C+have+a+great+day";
         public UserDetailsService(MatrimonyContext context, IMapper mapper)
         {
             _context = context;
@@ -1265,6 +1269,29 @@ namespace Matrimony.Service.User
             return new UserPreferenceResponse(metadata, preference);
         }
         
+        public Response SendOTPSMS()
+        {
+            var errors = new List<Error>();
+            string res = string.Empty;
+            try 
+            {
+                res = IvokeSMSAPI();
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new Error("Err101", ex.Message));
+            }
+            if(string.IsNullOrEmpty(res))
+            {
+                errors.Add(new Error("Err102", "No otp sent. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains OTP sent response");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, res);
+        }
         private static bool GetProfileCompletionPercentage(bool? incomingValue)
         {
             bool returnValue = false;
@@ -2306,6 +2333,34 @@ namespace Matrimony.Service.User
             {
                 res = 0;
             }
+            return res;
+        }
+        private string IvokeSMSAPI() 
+        {
+            string res = string.Empty;
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri(URL);
+            // Add an Accept header for JSON format.
+            client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+            // List data response.
+            HttpResponseMessage response = client.GetAsync(urlParameters).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
+            if (response.IsSuccessStatusCode)
+            {
+                // Parse the response body.
+                res = response.Content.ReadAsStringAsync().Result;  //Make sure to add a reference to System.Net.Http.Formatting.dll
+               
+            }
+            else
+            {
+                Console.WriteLine("{0} ({1})", (int)response.StatusCode, response.ReasonPhrase);
+            }
+
+            //Make any other calls using HttpClient here.
+
+            //Dispose once all HttpClient calls are complete. This is not necessary if the containing object will be disposed of; for example in this case the HttpClient instance will be disposed automatically when the application terminates so the following call is superfluous.
+            client.Dispose();
+
             return res;
         }
         public void populateAllSizeImages()
