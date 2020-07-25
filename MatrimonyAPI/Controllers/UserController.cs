@@ -328,6 +328,15 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
+        [HttpPost]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("profile/quotient")]
+        public ActionResult CheckProfileQuotient(SendChatModel model)
+        {
+            var response = _userService.GetProfileQuotient(model.SenderId, model.RevceiverId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
         [HttpGet]
         [AllowAnonymous]
         [Route("register/images/userID/{userId}/width/{width}/height/{height}/mode/{mode}")]

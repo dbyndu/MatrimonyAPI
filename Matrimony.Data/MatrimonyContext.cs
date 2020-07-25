@@ -274,6 +274,10 @@ namespace Matrimony.Data
                 entity.Property(e => e.EmailCodeGenDateTime).HasColumnType("datetime");
 
                 entity.Property(e => e.MobileCodeGenDateTime).HasColumnType("datetime");
+
+                entity.Property(e => e.ProfileLoginLogged).HasColumnType("datetime");
+
+                entity.Property(e => e.ProfileLogoutLogged).HasColumnType("datetime");
             });
 
             OnModelCreatingPartial(modelBuilder);

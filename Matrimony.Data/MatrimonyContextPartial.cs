@@ -17,6 +17,7 @@ namespace Matrimony.Data
             //additional config
             modelBuilder.Entity<ProfileDisplayData>().HasNoKey();
             modelBuilder.Entity<NotificationData>().HasNoKey();
+            modelBuilder.Entity<UserMatchPercent>().HasNoKey();
         }
         public ProfileDisplayData GetProfileDisplayDataAsync(int id)
         {
@@ -60,6 +61,30 @@ namespace Matrimony.Data
 
             // Info.  
             return list;
+        }
+
+        public UserMatchPercent GetMatchPercent(int SenderId, int ReceiverId)
+        {
+            // Initialization.  
+            UserMatchPercent data = new UserMatchPercent();
+
+            try
+            {
+                // Processing.  
+                var senderParam = new SqlParameter("@senderUserId", SenderId);
+                var receiverParam = new SqlParameter("@receiverUserId", ReceiverId);
+
+                string sqlQuery = "dbo.GetProfileQuotient @senderUserId = {0}, @receiverUserId = {1}";
+
+                data = this.Set<UserMatchPercent>().FromSqlRaw(sqlQuery, SenderId, ReceiverId).AsEnumerable().FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                data = new UserMatchPercent();
+            }
+
+            // Info.  
+            return data;
         }
 
     }
