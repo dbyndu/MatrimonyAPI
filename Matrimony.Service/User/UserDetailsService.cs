@@ -18,6 +18,8 @@ using System.Net.Mail;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace Matrimony.Service.User
 {
@@ -74,6 +76,7 @@ namespace Matrimony.Service.User
                     errors.Add(new Error("Err201", "Chat Can not initate"));
                 }
             }
+            LogUserTime(senderID, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Chat Initate Response");
             if (errors.Any())
             {
@@ -144,6 +147,7 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
             }
+            LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of User.");
             if (errors.Any())
             {
@@ -177,7 +181,7 @@ namespace Matrimony.Service.User
                 var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
                 if (!errors.Any())
                 {
-                    //var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                    LogUserTime(alreadyInsertedUser.ID, DateTime.UtcNow, null).ConfigureAwait(false);
                     return new UserModelResponse(metadata, alreadyInsertedUser);
                 }
                 else
@@ -218,6 +222,7 @@ namespace Matrimony.Service.User
                 if (!errors.Any())
                 {
                     //var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                    LogUserTime(alreadyInsertedUser.ID, DateTime.UtcNow, null).ConfigureAwait(false);
                     return new UserModelResponse(metadata, alreadyInsertedUser);
                 }
                 else
@@ -249,7 +254,7 @@ namespace Matrimony.Service.User
                     var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains User Details Of User");
                     if (!errors.Any())
                     {
-                        //var insertedUser = GetUserInformation(alreadyInsertedUser.ID);
+                        LogUserTime(alreadyInsertedUser.ID, DateTime.UtcNow, null).ConfigureAwait(false);
                         return new UserModelResponse(metadata, alreadyInsertedUser);
                     }
                     else
@@ -336,6 +341,7 @@ namespace Matrimony.Service.User
             if (!errors.Any())
             {
                 var insertedUser = GetUserInformation(user.Email);
+                LogUserTime(insertedUser.ID, DateTime.UtcNow, null).ConfigureAwait(false);
                 return new UserModelResponse(metadata, insertedUser);
             }
             else
@@ -439,6 +445,7 @@ namespace Matrimony.Service.User
             if (!errors.Any())
             {
                 var insertedUser = GetUserInformation(user.Email);
+                LogUserTime(insertedUser.ID, DateTime.UtcNow, null).ConfigureAwait(false);
                 return new UserModelResponse(metadata, insertedUser);
             }
             else
@@ -462,6 +469,7 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
+            LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
             return new AnonymousResponse(metadata, objInterestShortListed);
         }
         private UserModel GetUserInformation(int id)
@@ -706,6 +714,7 @@ namespace Matrimony.Service.User
                 errors.Add(new Error("Err102", "No data found. Verify user entitlements."));
             }
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             if (errors.Any())
             {
                 return new ErrorResponse(metadata, errors);
@@ -767,6 +776,7 @@ namespace Matrimony.Service.User
                     errors.Add(new Error("Err107", "You Have Entered Wrong Code."));
                 }
             }
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             if (outPutResult == 0)
             {
                 errors.Add(new Error("Err102", "Some Error Occured."));
@@ -778,6 +788,37 @@ namespace Matrimony.Service.User
             }
             return new AnonymousResponse(metadata, outPutResult);
         }
+
+        public async Task<int> LogUserTime(int userId, DateTime? loginTime, DateTime? logoutTime)
+        {
+            try
+            {
+                using(SqlConnection con = new SqlConnection(_context.Database.GetDbConnection().ConnectionString))
+                {
+                    con.Open();
+                    using(SqlCommand cmd = con.CreateCommand())
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.CommandText = "[dbo].[LogUserTimeStamp]";
+                        var loginTimeParam = loginTime.HasValue ? new SqlParameter("@loginDate", loginTime) :
+                        new SqlParameter("@loginDate", DBNull.Value);
+                        var logoutTimeParam = logoutTime.HasValue ? new SqlParameter("@logoutDate", logoutTime) :
+                            new SqlParameter("@logoutDate", DBNull.Value);
+                        var userIdParam = new SqlParameter("@userId", userId);
+                        cmd.Parameters.Add(userIdParam);
+                        cmd.Parameters.Add(loginTimeParam);
+                        cmd.Parameters.Add(logoutTimeParam);
+                        await cmd.ExecuteNonQueryAsync();
+                    }
+                }
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }            
+        }
+
         public Response GenerateEmailCode(int userId)
         {
             int outPutResult = 0;
@@ -808,7 +849,7 @@ namespace Matrimony.Service.User
             }
             catch(Exception ex){
             }
-            
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             if (outPutResult == 0)
             {
                 errors.Add(new Error("Err102", "Some Error Occured."));
@@ -819,6 +860,19 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
             return new AnonymousResponse(metadata, outPutResult);
+        }
+
+        public Response GetProfileQuotient(int SenderId, int ReceiverId)
+        {
+            var errors = new List<Error>();
+            var data = _context.GetMatchPercent(SenderId, ReceiverId);
+            LogUserTime(SenderId, DateTime.UtcNow, null).ConfigureAwait(false);
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains user profile pic");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, data);
         }
 
         public Response GetProfileDisplayData(int userId)
@@ -845,6 +899,7 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err102", "No image found. Verify user entitlements."));
             }
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains user profile pic");
             if (errors.Any())
             {
@@ -1268,6 +1323,7 @@ namespace Matrimony.Service.User
                 //return new UserModelResponse(metadata, insertedUser);
                 //var insertedUser = _context.User.Where(x => x.Id == userId).FirstOrDefault();
                 UserModel userModel = GetUserInformation(userId);
+                LogUserTime(userModel.ID, DateTime.UtcNow, DateTime.UtcNow).ConfigureAwait(false);
                 if (isUserOtherCareer)
                 {
                     userModel.UserCareerInfo.EmployerId = otherCareerID == 0 ? userModel.UserCareerInfo.EmployerId : otherCareerID;
@@ -1299,7 +1355,7 @@ namespace Matrimony.Service.User
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Image Of User");
             if (!errors.Any())
             {
-
+                LogUserTime(userId, DateTime.UtcNow, DateTime.UtcNow).ConfigureAwait(false);
                 return new AnonymousResponse(metadata, stat);
             }
             else
@@ -1326,7 +1382,7 @@ namespace Matrimony.Service.User
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains InterestOrShortListed Of User");
             if (!errors.Any())
             {
-
+                LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
                 return new AnonymousResponse(metadata, stat);
             }
             else
@@ -1387,6 +1443,7 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err102", "Can not update notification."));
             }
+            LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Updated Successfully");
             if (!errors.Any())
             {
@@ -1423,6 +1480,7 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err102", "No image found. Verify user entitlements."));
             }
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Images Of User");
             if (errors.Any())
             {
@@ -1448,6 +1506,7 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err102", "No data found. Verify user entitlements."));
             }
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains preference Of User");
             if (errors.Any())
             {
@@ -1490,7 +1549,8 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err101", ex.Message));
             }
-            if(string.IsNullOrEmpty(res) || outPutResult == 0)
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(res) || outPutResult == 0)
             {
                 errors.Add(new Error("Err102", "No otp sent. Verify user entitlements."));
             }
@@ -1527,6 +1587,7 @@ namespace Matrimony.Service.User
                     errors.Add(new Error("Err107", "You Have Entered Wrong Code."));
                 }
             }
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             if (outPutResult == 0)
             {
                 errors.Add(new Error("Err102", "Some Error Occured."));

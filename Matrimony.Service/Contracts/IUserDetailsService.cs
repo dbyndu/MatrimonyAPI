@@ -37,6 +37,8 @@ namespace Matrimony.Service.Contracts
         Response VerfiyEmailCode(int userId,string emailCode);
         Response SendOTPSMS(int userId);
         Response VerfiyOTPSMS(int userId, string smsOtp);
+        Task<int> LogUserTime(int userId, DateTime? loginTime, DateTime? logoutTime);
+        Response GetProfileQuotient(int SenderId, int ReceiverId);
         Task<Response> GetTopPanelCounts(int userId, int mode);
         Response GetSearchedProfileList(int userId, int genderId, string searchQuery);
     }

@@ -11,5 +11,7 @@ namespace Matrimony.Data.Entities
         public int? MobileVerificationCode { get; set; }
         public DateTime? EmailCodeGenDateTime { get; set; }
         public DateTime? MobileCodeGenDateTime { get; set; }
+        public DateTime? ProfileLoginLogged { get; set; }
+        public DateTime? ProfileLogoutLogged { get; set; }
     }
 }
