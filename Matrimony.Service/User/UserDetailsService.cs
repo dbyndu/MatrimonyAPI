@@ -1390,7 +1390,35 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
         }
+        public Response GetSearchedProfileList(int userId, int genderId, string searchQuery)
+        {
+            var errors = new List<Error>();
 
+            var querySearch = (from u in _context.User.Where(u => !u.Id.Equals(userId) && u.FirstName.ToLower().StartsWith(searchQuery.ToLower()))
+                               join ui in _context.UserInfo.Where(u => !u.GenderId.Equals(genderId)) on u.Id equals ui.UserId into user_basic
+                               from ub in user_basic.DefaultIfEmpty()
+                               join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
+                               from img in user_image.DefaultIfEmpty()
+                               select new
+                               {
+                                   Id = u.Id,
+                                   Name = string.Concat(u.FirstName ?? "", " ", u.MiddleNmae ?? "", " ", u.LastName ?? ""),                               
+                                   ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType +
+                                   ";base64," + Convert.ToBase64String(img.Image40X40) : "",
+                                   GenderId = ub.GenderId ?? 0
+                               });
+            var listUsers = querySearch.ToList();//.Where(q => q.Name.StartsWith(searchQuery)).ToList();
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains InterestOrShortListed Of User");
+            if (!errors.Any())
+            {
+
+                return new AnonymousResponse(metadata, listUsers);
+            }
+            else
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+        }
         public Response UpdateNotification(int id)
         {
             int stat = 0;
@@ -1570,6 +1598,12 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
             return new AnonymousResponse(metadata, outPutResult);
+        }
+        public async Task<Response> GetTopPanelCounts(int userId, int mode)
+        {
+            int count = await GetCounts(userId, mode);
+            var metadata = new Metadata(true, Guid.NewGuid().ToString(), "Response Contains count");
+            return new AnonymousResponse(metadata, count);
         }
         private static bool GetProfileCompletionPercentage(bool? incomingValue)
         {
@@ -2646,6 +2680,34 @@ namespace Matrimony.Service.User
 
             return res;
         }
+        private async Task<int> GetCounts(int userId, int mode)// ShortListed = 1, Interested = 2, Recently Viewed = 3
+        {
+            int count = 0;
+            try
+            {
+                switch (mode)
+                {
+                    case 1:
+                        count = await _context.InterestShortListed.Where(i => i.ShortListedBy.Equals(userId) ||
+                        (i.UserId.Equals(userId) && i.ShortListedBy.Equals(0)) && i.IsInterestRejected.Equals(0)).CountAsync();
+                        break;
+                    case 2:
+                        count = await _context.InterestShortListed.Where(i => i.UserId.Equals(userId) || 
+                        (i.InterestedUserId.Equals(userId) && i.IsInterestAccepted.Equals(true)) && i.IsInterestRejected.Equals(false)).CountAsync();
+                        break;
+                    case 3:
+                        count = await _context.RecentlyViewed.Where(r => r.UserId.Equals(userId) && r.ViewDateTime > DateTime.Now.AddDays(-30)).CountAsync();
+                        break;
+                    default:
+                        break;
+                }
+                return count;
+            }
+            catch(Exception ex) 
+            {
+                return 0;
+            }
+        }         
         public void populateAllSizeImages()
         {
 

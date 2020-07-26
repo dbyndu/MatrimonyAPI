@@ -293,6 +293,14 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.UpdateNotification(id);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+        [HttpGet]
+        [Authorize]
+        [Route("counts/{userId}/{mode}")]
+        public async Task<IActionResult> GetTopPanelCounts(int userId, int mode)
+        {
+            var response = await _userService.GetTopPanelCounts(userId, mode);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
         [Route("user-list/{mode}")]
@@ -308,6 +316,14 @@ namespace MatrimonyAPI.Controllers
         public ActionResult GestUser(int id)
         {
             var response = _userService.GetUserDetails(id);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("user-search/{id}/{genderId}/{searchText}")]
+        public ActionResult GetSearchedProfileList(int id, int genderId, string searchText)
+        {
+            var response = _userService.GetSearchedProfileList(id, genderId, searchText);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpGet]
