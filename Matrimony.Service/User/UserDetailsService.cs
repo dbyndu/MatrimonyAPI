@@ -1395,7 +1395,7 @@ namespace Matrimony.Service.User
             var errors = new List<Error>();
 
             var querySearch = (from u in _context.User.Where(u => !u.Id.Equals(userId) && u.FirstName.ToLower().StartsWith(searchQuery.ToLower()))
-                               join ui in _context.UserInfo.Where(u => !u.GenderId.Equals(genderId)) on u.Id equals ui.UserId into user_basic
+                               join ui in _context.UserInfo.Where(u => u.GenderId.Equals(genderId)) on u.Id equals ui.UserId into user_basic
                                from ub in user_basic.DefaultIfEmpty()
                                join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
                                from img in user_image.DefaultIfEmpty()
