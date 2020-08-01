@@ -28,7 +28,7 @@ namespace Matrimony.Service.User
         private MatrimonyContext _context;
         private readonly IMapper _mapper;
         private const string URL = "http://bulksms.matrixbizz.com/app/smsapisr/index.php";
-        private string urlParameters = "?key=35EC66A47B44DF&campaign=9526&routeid=100642&type=text&contacts={0}&senderid=MATDEM&msg={1}";
+        private string urlParameters = "?key=25F2550A2A302B&campaign=10015&routeid=100642&type=text&contacts={0}&senderid=MATRIMAMA&msg={1}";
         public UserDetailsService(MatrimonyContext context, IMapper mapper)
         {
             _context = context;
