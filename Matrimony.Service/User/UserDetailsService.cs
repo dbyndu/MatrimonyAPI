@@ -615,7 +615,7 @@ namespace Matrimony.Service.User
                                    //    Fitness = userLife.Fitness,
                                    //    Cuisines = userLife.Cuisines
                                    //}),
-                                   UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new UserImage
+                                   UserImages = _context.UserImage.Where(i => i.UserId.Equals(id)).Select(u => new Model.User.UserImage
                                    {
                                        Id = u.Id,
                                        UserId = u.UserId,
@@ -723,8 +723,8 @@ namespace Matrimony.Service.User
         }
         private int GenerateVerificationCode()
         {
-            int _min = 1000;
-            int _max = 9999;
+            int _min = 100000;
+            int _max = 999999;
             Random _rdm = new Random();
             return _rdm.Next(_min, _max);
         }
@@ -818,16 +818,134 @@ namespace Matrimony.Service.User
                 return 0;
             }            
         }
+        public Response SendEnquiry(UserEnquiry userEnquiry)
+        {
+            var errors = new List<Error>();
+            try
+            {
+                var emailBody = "User Name : " + userEnquiry.FullName + " . User Email : " + userEnquiry.EmailId + " . User PhoneNumber : " + userEnquiry.PhoneNumber;
+                SendEmail("contact@softanbees.com", "User Enquiry Form", emailBody);
+            }catch(Exception ex)
+            {
+                errors.Add(new Error("Err102", "Some Error Occurred"));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Enquiry Email Sent");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, HttpStatusCode.Accepted);
+        }
+
+        public Response ForgetPassword(UserForgetPassword forgotUserDetails)
+        {
+            int outPutResult = 0;
+            var errors = new List<Error>();
+            string smsResponse =string.Empty;
+            if(forgotUserDetails.ModelStatus == "CheckUser")
+            {
+                var dbUser = _context.User.FirstOrDefault(u => u.Email == forgotUserDetails.EmailId || u.PhoneNumber == forgotUserDetails.PhoneNumber);
+                if (dbUser != null)
+                {
+                    if (!string.IsNullOrEmpty(forgotUserDetails.EmailId))
+                        outPutResult = SendEmailCode(dbUser.Id, dbUser, " Your Verfication Code for Password Reset In Matrimama Site!", "One Time Code : ");
+                    else
+                        outPutResult = SendSMSCode(dbUser.Id, dbUser, " Your Verfication Code for Password Reset In Matrimama Site!", ref smsResponse);
+                    if (outPutResult > 0)
+                    {
+                        forgotUserDetails.PhoneNumber = dbUser.PhoneNumber;
+                        forgotUserDetails.EmailId = dbUser.Email;
+                        forgotUserDetails.UserId = dbUser.Id;
+                    }
+                    else 
+                    {
+                        errors.Add(new Error("Err102", "OTP was not sent"));
+                    }
+                }
+                else
+                {
+                    errors.Add(new Error("Err101", "No User Found.."));
+                }
+            }
+            else if (forgotUserDetails.ModelStatus == "CheckCode")
+            {
+                var dbAuth = _context.UserVerification.FirstOrDefault(u => u.UserId == forgotUserDetails.UserId);
+                if (dbAuth != null)
+                { 
+                    if((dbAuth.EmailVerificationCode == int.Parse(forgotUserDetails.VerficationCode) && dbAuth.EmailCodeGenDateTime  > DateTime.Now.AddMinutes(-30)) ||
+                        (dbAuth.MobileVerificationCode== int.Parse(forgotUserDetails.VerficationCode) && dbAuth.MobileCodeGenDateTime > DateTime.Now.AddMinutes(-30)))
+                    {
+                        forgotUserDetails.UserId = dbAuth.UserId;
+                        forgotUserDetails.ModelStatus = "CodeVerified";
+                        outPutResult = 1;
+                    }
+                }
+                else
+                {
+                    errors.Add(new Error("Err102", "OTP was invalid"));
+                }
+            }
+            else if (forgotUserDetails.ModelStatus == "NewPassword")
+            {
+                var dbUser = _context.User.FirstOrDefault(u => u.Id == forgotUserDetails.UserId);
+                if(dbUser!=null && !string.IsNullOrEmpty(dbUser.Password))
+                {
+                    dbUser.Password = forgotUserDetails.NewPassword;
+                    _context.User.Update(dbUser);
+                    outPutResult = _context.SaveChanges();
+                    if(outPutResult == 1)
+                    {
+                        forgotUserDetails.ModelStatus = "PasswordChanged";
+                    }
+                }
+                else
+                {
+                    errors.Add(new Error("Err102", "OTP was invalid"));
+                }
+            }
+            else
+            {
+
+            }
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Some Error Occurred"));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains ForgotUserData");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, forgotUserDetails);
+
+        }
 
         public Response GenerateEmailCode(int userId)
         {
             int outPutResult = 0;
             var errors = new List<Error>();
             var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+            outPutResult = SendEmailCode(userId, dbUser, "Your Verfication Code for Matrimama Site!", "One Time Code : ");
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Email was not Sent.."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, outPutResult);
+        }
+
+        private int SendEmailCode(int userId, Data.Entities.User dbUser, string EmailHeader, string EmailBody)
+        {
+            int outPutResult = 0;
             try
             {
                 int Code = this.GenerateVerificationCode();
-                SendEmail(dbUser.Email, "Your Verfication Code for Matrimama Site!", "One Time Code : " + Code);
+                SendEmail(dbUser.Email, EmailHeader, EmailBody + Code);
 
                 var dbAuth = _context.UserVerification.FirstOrDefault(x => x.UserId == userId);
                 if (dbAuth == null)
@@ -847,19 +965,12 @@ namespace Matrimony.Service.User
                 }
                 outPutResult = _context.SaveChanges();
             }
-            catch(Exception ex){
-            }
-            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
-            if (outPutResult == 0)
+            catch (Exception ex)
             {
-                errors.Add(new Error("Err102", "Some Error Occured."));
+                outPutResult = 0;
             }
-            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains notification");
-            if (errors.Any())
-            {
-                return new ErrorResponse(metadata, errors);
-            }
-            return new AnonymousResponse(metadata, outPutResult);
+
+            return outPutResult;
         }
 
         public Response GetProfileQuotient(int SenderId, int ReceiverId)
@@ -886,7 +997,7 @@ namespace Matrimony.Service.User
             //                       ";base64," + GenericHelper.ResizeImage((byte[])img.Image, 40, 40, "Resize") : "",
             //    });
             //var img = queryImg.FirstOrDefault();
-            ProfileDisplayData displayData = new ProfileDisplayData
+            Model.User.ProfileDisplayData displayData = new Model.User.ProfileDisplayData
             {
                 ProfileImageString = !string.IsNullOrEmpty(data.ContentType) ? "data:" + data.ContentType +
                                    ";base64," + Convert.ToBase64String(data.ProfileDisplayPicture) : "",
@@ -1185,7 +1296,7 @@ namespace Matrimony.Service.User
                         userId = userFamily.UserId;
                         break;
                     case "UserImage":
-                        UserImage userImage = (UserImage)obj;
+                        Model.User.UserImage userImage = (Model.User.UserImage)obj;
                         if (userImage.ImageTitle != string.Empty)
                             mandatory = true;
                         else
@@ -1460,11 +1571,11 @@ namespace Matrimony.Service.User
         public Response GetImages(int userId, int width, int height, string mode)
         {
             var errors = new List<Error>();
-            IQueryable<UserImage> IQueryImages = null;
-            List<UserImage> lstImages = new List<UserImage>();
+            IQueryable<Model.User.UserImage> IQueryImages = null;
+            List<Model.User.UserImage> lstImages = new List<Model.User.UserImage>();
             try
             {
-                IQueryImages = _context.UserImage.Where(i => i.UserId == userId).Select(u => new UserImage
+                IQueryImages = _context.UserImage.Where(i => i.UserId == userId).Select(u => new Model.User.UserImage
                 {
                     Id = u.Id,
                     UserId = u.UserId,
@@ -1520,12 +1631,29 @@ namespace Matrimony.Service.User
             var errors = new List<Error>();
             int outPutResult = 0;
             string res = string.Empty;
-            try 
+            var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+            outPutResult = SendSMSCode(userId, dbUser, " is the one time code to verify your mobile number for Matrimama site.", ref res);
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(res) || outPutResult == 0)
             {
-                var dbUser = _context.User.FirstOrDefault(u => u.Id == userId);
+                errors.Add(new Error("Err102", "No otp sent. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains OTP sent response");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, outPutResult);
+        }
+
+        private int SendSMSCode(int userId, Data.Entities.User dbUser, string smsMsg, ref string res)
+        {
+            int outPutResult = 0;
+            try
+            {
                 string number = dbUser.PhoneNumber;
                 int code = this.GenerateVerificationCode();
-                string msg = string.Concat(code, " is the one time code to verify your mobile number for Matrimama site.");
+                string msg = string.Concat(code, smsMsg);
                 res = IvokeSMSAPI(number, msg);
                 var dbAuth = _context.UserVerification.FirstOrDefault(x => x.UserId == userId);
                 if (dbAuth == null)
@@ -1547,20 +1675,11 @@ namespace Matrimony.Service.User
             }
             catch (Exception ex)
             {
-                errors.Add(new Error("Err101", ex.Message));
+                outPutResult = 0;
             }
-            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
-            if (string.IsNullOrEmpty(res) || outPutResult == 0)
-            {
-                errors.Add(new Error("Err102", "No otp sent. Verify user entitlements."));
-            }
-            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains OTP sent response");
-            if (errors.Any())
-            {
-                return new ErrorResponse(metadata, errors);
-            }
-            return new AnonymousResponse(metadata, outPutResult);
+            return outPutResult;
         }
+
         public Response VerfiyOTPSMS(int userId, string smsOtp)
         {
             int outPutResult = 0;
@@ -1658,7 +1777,7 @@ namespace Matrimony.Service.User
             return outPutResult;
         }
 
-        private int InsertUpdateUserImage(UserImage userImg)
+        private int InsertUpdateUserImage(Model.User.UserImage userImg)
         {
             int outPutResult = 0;
             Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()

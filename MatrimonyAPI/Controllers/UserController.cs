@@ -398,6 +398,22 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
+        [HttpPost]
+        [Route("forget-password")]
+        public ActionResult ForgetPassword(UserForgetPassword forgotPassword)
+        {
+            var response = _userService.ForgetPassword(forgotPassword);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpPost]
+        [Route("send-enquiryEmail")]
+        public ActionResult EmailEnquiry(UserEnquiry enquiryForm)
+        {
+            var response = _userService.SendEnquiry(enquiryForm);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
         [HttpGet]
         [Authorize]
         [Route("get-email-code/{userId}")]
