@@ -28,7 +28,7 @@ namespace Matrimony.Service.User
         private MatrimonyContext _context;
         private readonly IMapper _mapper;
         private const string URL = "http://bulksms.matrixbizz.com/app/smsapisr/index.php";
-        private string urlParameters = "?key=35EC66A47B44DF&campaign=9526&routeid=100642&type=text&contacts={0}&senderid=MATDEM&msg={1}";
+        private string urlParameters = "?key=25F2550A2A302B&campaign=10015&routeid=100642&type=text&contacts={0}&senderid=MATRIMAMA&msg={1}";
         public UserDetailsService(MatrimonyContext context, IMapper mapper)
         {
             _context = context;
@@ -1054,6 +1054,8 @@ namespace Matrimony.Service.User
                                    GenderId = ub.GenderId ?? 0,
                                    ReligionId = ub.ReligionId ?? 0,
                                    MotherTongueId = ub.MotherTongueId ?? 0,
+                                   ub.MaritalStatusId,
+                                   ub.AnualIncomeId,
                                    CreatedDate = u.CreatedDate,
                                    InterestedUser1 = interest.UserId,
                                    InterestedUser2 = interest.InterestedUserId,
@@ -1083,7 +1085,15 @@ namespace Matrimony.Service.User
                 string[] mtIds = searchCritria.MotherTongue.Split(',');
                 querySearch = querySearch.Where(u => mtIds.Contains(u.MotherTongueId.ToString()));
             }
-
+            if (!string.IsNullOrEmpty(searchCritria.MaritalStatus))
+            {
+                string[] mariStat = searchCritria.MaritalStatus.Split(',');
+                querySearch = querySearch.Where(u => mariStat.Contains(u.MaritalStatusId.ToString()));
+            }
+            if (searchCritria.AnnualIncome != null && searchCritria.AnnualIncome > 0)
+            {
+                querySearch = querySearch.Where(u => u.AnualIncomeId.Equals(searchCritria.AnnualIncome));
+            }
             if (!string.IsNullOrEmpty(mode))
             {
                 switch (mode.ToLower())
@@ -1112,6 +1122,8 @@ namespace Matrimony.Service.User
                                      v.GenderId,
                                      v.ReligionId,
                                      v.MotherTongueId,
+                                     v.MaritalStatusId,
+                                     v.AnualIncomeId,
                                      v.CreatedDate,
                                      v.InterestedUser1,
                                      v.InterestedUser2,
@@ -1145,6 +1157,8 @@ namespace Matrimony.Service.User
                                            v.GenderId,
                                            v.ReligionId,
                                            v.MotherTongueId,
+                                           v.MaritalStatusId,
+                                           v.AnualIncomeId,
                                            v.CreatedDate,
                                            v.InterestedUser1,
                                            v.InterestedUser2,
@@ -1177,6 +1191,8 @@ namespace Matrimony.Service.User
                                            v.GenderId,
                                            v.ReligionId,
                                            v.MotherTongueId,
+                                           v.MaritalStatusId,
+                                           v.AnualIncomeId,
                                            v.CreatedDate,
                                            v.InterestedUser1,
                                            v.InterestedUser2,
@@ -1199,6 +1215,8 @@ namespace Matrimony.Service.User
             {
                 if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
                     lstUsers = lstUsers.Where(u => u.Age >= searchCritria.AgeFrom && u.Age <= searchCritria.AgeTo).ToList();
+                if (searchCritria.HeightFrom > 0 && searchCritria.HeightTo > 0)
+                    lstUsers = lstUsers.Where(u => u.Height >= searchCritria.HeightFrom && u.Age <= searchCritria.HeightTo).ToList();
             }
             if (lstUsers == null || Convert.ToInt32(lstUsers.Count) == 0)
             {
@@ -2808,7 +2826,7 @@ namespace Matrimony.Service.User
                 {
                     case 1:
                         count = await _context.InterestShortListed.Where(i => i.ShortListedBy.Equals(userId) ||
-                        (i.UserId.Equals(userId) && i.ShortListedBy.Equals(0)) && i.IsInterestRejected.Equals(0)).CountAsync();
+                        (i.UserId.Equals(userId) && i.ShortListedBy.Equals(0)) || (i.InterestedUserId.Equals(userId) && i.ShortListedBy.Equals(0))).CountAsync();
                         break;
                     case 2:
                         count = await _context.InterestShortListed.Where(i => i.UserId.Equals(userId) || 
