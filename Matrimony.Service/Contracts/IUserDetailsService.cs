@@ -28,7 +28,7 @@ namespace Matrimony.Service.Contracts
         Response GetUserPreferences(int userId);
         Response GetProfileDisplayData(int userId);
 
-        Response SaveChatInvite(int senderID, int receiverID);
+        Response SaveChatInvite(int senderID, int receiverID, int mode);
         Task<Response> InterestOrShortListed(int userId, int interestUserId, string mode, int isRemoved, int isRejected);
         Task<Response> GetInterestShortListed(int id, int interestedId);
         Task<Response> GetNotificationData(int userId);
@@ -45,5 +45,6 @@ namespace Matrimony.Service.Contracts
         Response GetSearchedProfileList(int userId, int genderId, string searchQuery);
 
         Response SendEnquiry(UserEnquiry userEnquiry);
+        Task<Response> GetMessageRoomDetails(int id, int interestedId);
     }
 }
