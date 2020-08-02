@@ -34,6 +34,8 @@ namespace Matrimony.Service.Contracts
         Task<Response> GetNotificationData(int userId);
         Response UpdateNotification(int id);
         Response GenerateEmailCode(int userId);
+
+        Response ForgetPassword(UserForgetPassword forgotUserDetails);
         Response VerfiyEmailCode(int userId,string emailCode);
         Response SendOTPSMS(int userId);
         Response VerfiyOTPSMS(int userId, string smsOtp);
@@ -41,5 +43,7 @@ namespace Matrimony.Service.Contracts
         Response GetProfileQuotient(int SenderId, int ReceiverId);
         Task<Response> GetTopPanelCounts(int userId, int mode);
         Response GetSearchedProfileList(int userId, int genderId, string searchQuery);
+
+        Response SendEnquiry(UserEnquiry userEnquiry);
     }
 }
