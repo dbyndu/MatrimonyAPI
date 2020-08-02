@@ -28,7 +28,7 @@ namespace Matrimony.Service.User
         private MatrimonyContext _context;
         private readonly IMapper _mapper;
         private const string URL = "http://bulksms.matrixbizz.com/app/smsapisr/index.php";
-        private string urlParameters = "?key=25F2550A2A302B&campaign=10015&routeid=100642&type=text&contacts={0}&senderid=MATRIMAMA&msg={1}";
+        private string urlParameters = "?key=35EC66A47B44DF&campaign=9526&routeid=100642&type=text&contacts={0}&senderid=MATDEM&msg={1}";
         public UserDetailsService(MatrimonyContext context, IMapper mapper)
         {
             _context = context;
@@ -49,40 +49,60 @@ namespace Matrimony.Service.User
             return new UserModelResponse(metadata, model);
         }
 
-        public Response SaveChatInvite(int senderID , int receiverID)
+        public Response SaveChatInvite(int senderID , int receiverID, int mode = 0)// 1=  Reject/Delete
         {
             var errors = new List<Error>();
             int returnValue = 0;
-            Matrimony.Data.Entities.MessageRoom insertedRecord = new Data.Entities.MessageRoom();
-            if (!_context.MessageRoom.Any(item=>(item.SenderId == senderID.ToString() && item.ReceiverId == receiverID.ToString())
-            || (item.ReceiverId == senderID.ToString() && item.SenderId == receiverID.ToString())))
+            //Matrimony.Data.Entities.MessageRoom insertedRecord = new Data.Entities.MessageRoom();
+            Data.Entities.MessageRoom mr = _context.MessageRoom.Where(item => (item.SenderId == senderID.ToString() && item.ReceiverId == receiverID.ToString())
+            || (item.ReceiverId == senderID.ToString() && item.SenderId == receiverID.ToString())).FirstOrDefault();
+            if (mr == null)
             {
                 Matrimony.Data.Entities.MessageRoom messageRoom = new Data.Entities.MessageRoom()
                 {
                     SenderId = senderID.ToString(),
                     ReceiverId = receiverID.ToString(),
-                    DateTimeLogged = DateTime.Now
+                    DateTimeLogged = DateTime.Now,
+                    IsAccepted = false,
+                    IsChatActive = false
                 };
+                _context.MessageRoom.Add(messageRoom);
+            }
+            else
+            {
+                if (mode.Equals(0))
+                {
+                    mr.UpdateDateTime = DateTime.Now;
+                    mr.IsAccepted = true;
+                    mr.IsChatActive = true;
+                    _context.Update<Matrimony.Data.Entities.MessageRoom>(mr);
+                }
+                else
+                {
+                    _context.Remove<Matrimony.Data.Entities.MessageRoom>(mr);
+                }
+            }
                 try
                 {
-                    _context.MessageRoom.Add(messageRoom);
+                   
                     returnValue = _context.SaveChanges();
-                    insertedRecord = _context.MessageRoom.FirstOrDefault(item => item.SenderId == senderID.ToString()
-                    && item.ReceiverId == receiverID.ToString());
+                   // insertedRecord = _context.MessageRoom.FirstOrDefault(item => item.SenderId == senderID.ToString()
+                   // && item.ReceiverId == receiverID.ToString());
                 }
                 catch (Exception ex)
                 {
                     returnValue = -1;
                     errors.Add(new Error("Err201", "Chat Can not initate"));
                 }
-            }
+           
             LogUserTime(senderID, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains Chat Initate Response");
             if (errors.Any())
             {
                 return new ErrorResponse(metadata, errors);
             }
-            return new GenericOkResponse<Matrimony.Data.Entities.MessageRoom>(metadata, insertedRecord);
+            return new AnonymousResponse(metadata, returnValue);
+            //return new AnonymousResponse<Matrimony.Data.Entities.MessageRoom>(metadata, insertedRecord);
 
         }
         public Response GetUserDetails()
@@ -469,8 +489,28 @@ namespace Matrimony.Service.User
             {
                 return new ErrorResponse(metadata, errors);
             }
-            LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
+            await LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
             return new AnonymousResponse(metadata, objInterestShortListed);
+        }
+        public async Task<Response> GetMessageRoomDetails(int id, int interestedId)
+        {
+            var errors = new List<Error>();
+            Data.Entities.MessageRoom objMessageRoom = new Data.Entities.MessageRoom();
+            var query = _context.MessageRoom.Where(item => (item.SenderId == interestedId.ToString() && item.ReceiverId == id.ToString())
+           || (item.ReceiverId == interestedId.ToString() && item.SenderId == id.ToString())).DefaultIfEmpty();
+            objMessageRoom = await query.FirstOrDefaultAsync();
+           
+            if (objMessageRoom == null)
+            {
+                errors.Add(new Error("Err102", "No record found. Verify user entitlements."));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains list Of room");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            await LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
+            return new AnonymousResponse(metadata, objMessageRoom);
         }
         private UserModel GetUserInformation(int id)
         {
@@ -1211,7 +1251,7 @@ namespace Matrimony.Service.User
             }
 
             var lstUsers = querySearch.ToList();
-            if (string.IsNullOrEmpty(mode) || mode.ToLower().Equals("newmatch"))
+            if (string.IsNullOrEmpty(mode) || mode.ToLower().Equals("undefined") || mode.ToLower().Equals("newmatch"))//undefined
             {
                 if (searchCritria.AgeFrom > 0 && searchCritria.AgeTo > 0)
                     lstUsers = lstUsers.Where(u => u.Age >= searchCritria.AgeFrom && u.Age <= searchCritria.AgeTo).ToList();

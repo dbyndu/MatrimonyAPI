@@ -279,6 +279,14 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpGet]
         [Authorize]
+        [Route("chat-room/{userId}/{interestUserId}")]
+        public async Task<IActionResult> GetMessageRoomDetails(int userId, int interestUserId)
+        {
+            var response = await _userService.GetMessageRoomDetails(userId, interestUserId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
         [Route("notification/{userId}")]
         public async Task<IActionResult> GetNotificationData(int userId)
         {
@@ -340,7 +348,7 @@ namespace MatrimonyAPI.Controllers
         [Route("chat/send-chat-invite")]
         public ActionResult SaveInvite(SendChatModel model)
         {
-            var response = _userService.SaveChatInvite(model.SenderId, model.RevceiverId);
+            var response = _userService.SaveChatInvite(model.SenderId, model.RevceiverId, model.mode);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 

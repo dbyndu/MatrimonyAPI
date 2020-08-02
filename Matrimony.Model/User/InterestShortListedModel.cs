@@ -14,5 +14,6 @@ namespace Matrimony.Model.User
         public DateTime? ShortListedDateTime { get; set; }
         public bool IsInterestAccepted { get; set; }
         public bool IsInterestRejected { get; set; }
+        public int? ShortListedBy { get; set; }
     }
 }

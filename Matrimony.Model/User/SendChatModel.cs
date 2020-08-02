@@ -8,6 +8,6 @@ namespace Matrimony.Model.User
     {
         public int SenderId { get; set; }
         public int RevceiverId { get; set; }
-
+        public int mode { get; set; }
     }
 }

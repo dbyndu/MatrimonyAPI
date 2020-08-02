@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace Matrimony.Data.Entities
+namespace Matrimony.Model.User
 {
-    public partial class MessageRoom
+    public class MessageRoomModel
     {
         public Guid Id { get; set; }
         public string SenderId { get; set; }
