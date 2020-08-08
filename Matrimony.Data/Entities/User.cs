@@ -22,5 +22,7 @@ namespace Matrimony.Data.Entities
         public int? ProviderId { get; set; }
         public bool? IsMobileVerified { get; set; }
         public bool? IsEmailVerified { get; set; }
+        public string PhoneCountryCode { get; set; }
+        public bool? IsActive { get; set; }
     }
 }
