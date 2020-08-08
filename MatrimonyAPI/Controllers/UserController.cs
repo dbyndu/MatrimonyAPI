@@ -413,6 +413,13 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.ForgetPassword(forgotPassword);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+        [HttpPost]
+        [Route("change-password")]
+        public ActionResult ChangePasswordHideProfile(UserChangePassword changePassword)
+        {
+            var response = _userService.ChangePassword(changePassword);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
 
         [HttpPost]
         [Route("send-enquiryEmail")]

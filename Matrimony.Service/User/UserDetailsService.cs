@@ -180,7 +180,7 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             var alreadyInsertedUser = (from u in _context.User.Where(x => (x.Email == user.Email)
-                                       && x.SocialId == user.SocialId)
+                                       && x.SocialId == user.SocialId && x.IsActive == true)
                                        join ui in _context.UserInfo on u.Id equals ui.UserId
                                        join p in _context.UserPreferences on u.Id equals p.UserId into up
                                        from pref in up.DefaultIfEmpty()
@@ -220,7 +220,7 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             var alreadyInsertedUser = (from u in _context.User.Where(x => (x.Email == user.Email)
-                                       && x.Password == user.Password)
+                                       && x.Password == user.Password && x.IsActive == true)
                                        join ui in _context.UserInfo on u.Id equals ui.UserId
                                        join p in _context.UserPreferences on u.Id equals p.UserId into up
                                        from pref in up.DefaultIfEmpty()
@@ -253,7 +253,7 @@ namespace Matrimony.Service.User
             else
             {
                 alreadyInsertedUser = (from u in _context.User.Where(x => (x.PhoneNumber == user.Email)
-                                       && x.Password == user.Password)
+                                       && x.Password == user.Password && x.IsActive == true)
                                        join ui in _context.UserInfo on u.Id equals ui.UserId
                                        join p in _context.UserPreferences on u.Id equals p.UserId into up
                                        from pref in up.DefaultIfEmpty()
@@ -313,7 +313,8 @@ namespace Matrimony.Service.User
                 PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration),
                 IsSocialLogin = true,
                 FirstName = user.FirstName,
-                LastName = user.LastName
+                LastName = user.LastName,
+                IsActive = true
             };
 
 
@@ -389,7 +390,9 @@ namespace Matrimony.Service.User
                 PhoneNumber = user.PhoneNumber,
                 ContactName = user.Email + "_" + user.PhoneNumber,
                 PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration),
-                IsSocialLogin = false                
+                IsSocialLogin = false,
+                IsActive = true
+                
             };
 
 
@@ -524,7 +527,7 @@ namespace Matrimony.Service.User
                                from userLife in user_Life.DefaultIfEmpty()
                                join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
                                from preference in user_pref.DefaultIfEmpty()
-                               where u.Id.Equals(id)
+                               where u.Id.Equals(id) && u.IsActive.HasValue && u.IsActive == true
                                select new UserModel
                                {
                                    ID = u.Id,
@@ -700,7 +703,7 @@ namespace Matrimony.Service.User
         private UserModel GetUserInformation(string userEmail)
         {
             UserModel returnValue = new UserModel();
-            returnValue = _context.User.Where(x => x.Email == userEmail).Select(u => new UserModel
+            returnValue = _context.User.Where(x => x.Email == userEmail && x.IsActive == true).Select(u => new UserModel
             {
                 ID = u.Id,
                 Email = u.Email,
@@ -875,6 +878,97 @@ namespace Matrimony.Service.User
                 return new ErrorResponse(metadata, errors);
             }
             return new AnonymousResponse(metadata, HttpStatusCode.Accepted);
+        }
+
+        public Response ChangePassword (UserChangePassword userChangePassword)
+        {
+            int outPutResult = 0;
+            var errors = new List<Error>();
+
+            if(userChangePassword.ModelStatus == "ChangePassword")
+            {
+                var dbUser = _context.User.FirstOrDefault(u => u.Id == userChangePassword.UserId && u.Password== userChangePassword.OldPassword);
+                if(dbUser != null)
+                {
+                    if (dbUser.IsSocialLogin.HasValue && (bool)dbUser.IsSocialLogin)
+                    {
+                        if(dbUser.ProviderId == 1)
+                            userChangePassword.ModelStatus = "FacebookSocialLogin";
+                        else
+                            userChangePassword.ModelStatus = "GoogleSocialLogin";
+                        outPutResult = 1;
+                    }
+                    else
+                    {
+                        if(userChangePassword.OldPassword == userChangePassword.NewPassword)
+                        {
+                            userChangePassword.ModelStatus = "SamePassword";
+                            outPutResult = 1;
+                        }
+                        else
+                        {
+                            try
+                            {
+                                dbUser.Password = userChangePassword.NewPassword;
+                                _context.User.Update(dbUser);
+                                outPutResult = _context.SaveChanges();
+                                if (outPutResult == 1)
+                                    userChangePassword.ModelStatus = "PasswordChanged";
+                            }
+                            catch(Exception ex)
+                            {
+                                outPutResult = 0;
+                            }
+                            
+                        }
+                    }
+                }
+                else
+                {
+                    dbUser = _context.User.FirstOrDefault(u => u.Id == userChangePassword.UserId);
+                    if (dbUser != null && dbUser.IsSocialLogin.HasValue && (bool)dbUser.IsSocialLogin)
+                    {
+                        if (dbUser.ProviderId == 1)
+                            userChangePassword.ModelStatus = "FacebookSocialLogin";
+                        else
+                            userChangePassword.ModelStatus = "GoogleSocialLogin";
+                        outPutResult = 1;
+                    }
+                    else
+                    {
+                        outPutResult = 1;
+                        userChangePassword.ModelStatus = "InvalidUser";
+                    }
+                }
+            }
+            else if (userChangePassword.ModelStatus == "HideDeleteProfile")
+            {
+                var dbUser = _context.User.FirstOrDefault(u => u.Id == userChangePassword.UserId);
+                if(dbUser != null)
+                {
+                    dbUser.IsActive = false;
+                    _context.User.Update(dbUser);
+                    outPutResult = _context.SaveChanges();
+                    if (outPutResult == 1)
+                        userChangePassword.ModelStatus = "ProfileHide";
+                }
+                else
+                {
+                    outPutResult = 0;
+                    userChangePassword.ModelStatus = "InvalidUser";
+                }
+
+            }
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Some Error Occurred"));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains ForgotUserData");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, userChangePassword);
         }
 
         public Response ForgetPassword(UserForgetPassword forgotUserDetails)

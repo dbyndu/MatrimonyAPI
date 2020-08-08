@@ -13,4 +13,12 @@ namespace Matrimony.Model.User
         public string VerficationCode { get; set; }
         public string ModelStatus { get; set; }
     }
+
+    public class UserChangePassword
+    {
+        public int UserId { get; set; }
+        public string OldPassword { get; set; }
+        public string NewPassword { get; set; }
+        public string ModelStatus { get; set; }
+    }
 }

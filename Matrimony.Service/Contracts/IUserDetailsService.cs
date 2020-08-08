@@ -46,5 +46,7 @@ namespace Matrimony.Service.Contracts
 
         Response SendEnquiry(UserEnquiry userEnquiry);
         Task<Response> GetMessageRoomDetails(int id, int interestedId);
+
+        Response ChangePassword(UserChangePassword userChangePassword);
     }
 }
