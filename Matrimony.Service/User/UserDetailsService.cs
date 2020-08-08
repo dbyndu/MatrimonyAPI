@@ -877,6 +877,69 @@ namespace Matrimony.Service.User
             return new AnonymousResponse(metadata, HttpStatusCode.Accepted);
         }
 
+        public Response ChangePassword (UserChangePassword userChangePassword)
+        {
+            int outPutResult = 0;
+            var errors = new List<Error>();
+
+            if(userChangePassword.ModelStatus == "ChangePassword")
+            {
+                var dbUser = _context.User.FirstOrDefault(u => u.Id == userChangePassword.UserId && u.Password== userChangePassword.OldPassword);
+                if(dbUser != null)
+                {
+                    if (dbUser.IsSocialLogin.HasValue && (bool)dbUser.IsSocialLogin)
+                    {
+                        userChangePassword.ModelStatus = "SocialLogin";
+                    }
+                    else
+                    {
+                        if(userChangePassword.OldPassword == userChangePassword.NewPassword)
+                        {
+                            userChangePassword.ModelStatus = "SamePassword";
+                        }
+                        else
+                        {
+                            try
+                            {
+                                dbUser.Password = userChangePassword.NewPassword;
+                                _context.User.Update(dbUser);
+                                outPutResult = _context.SaveChanges();
+                                if (outPutResult == 1)
+                                    userChangePassword.ModelStatus = "PasswordChanged";
+                            }
+                            catch(Exception ex)
+                            {
+                                outPutResult = 0;
+                            }
+                            
+                        }
+                    }
+                }
+                else
+                {
+                    dbUser = _context.User.FirstOrDefault(u => u.Id == userChangePassword.UserId);
+                    if (dbUser != null && dbUser.IsSocialLogin.HasValue && (bool)dbUser.IsSocialLogin)
+                    {
+                        userChangePassword.ModelStatus = "SocialLogin";
+                    }
+                    else
+                    {
+                        userChangePassword.ModelStatus = "InvalidUser";
+                    }
+                }
+            }
+            if (outPutResult == 0)
+            {
+                errors.Add(new Error("Err102", "Some Error Occurred"));
+            }
+            var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains ForgotUserData");
+            if (errors.Any())
+            {
+                return new ErrorResponse(metadata, errors);
+            }
+            return new AnonymousResponse(metadata, userChangePassword);
+        }
+
         public Response ForgetPassword(UserForgetPassword forgotUserDetails)
         {
             int outPutResult = 0;
