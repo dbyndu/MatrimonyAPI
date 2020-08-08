@@ -1072,10 +1072,13 @@ namespace Matrimony.Service.User
                                from state in user_state.DefaultIfEmpty()
                                join ci in _context.Cities on ub.CityId equals ci.Id into user_city
                                from city in user_city.DefaultIfEmpty()
+                               from chatInfo in _context.MessageRoom.Where(i => (Convert.ToInt32(i.SenderId.Trim()).Equals(searchCritria.UserId) && Convert.ToInt32(i.ReceiverId.Trim()).Equals(ub.UserId))
+                               || (Convert.ToInt32(i.SenderId.Trim()).Equals(ub.UserId) && Convert.ToInt32(i.ReceiverId.Trim()).Equals(searchCritria.UserId))).DefaultIfEmpty()
                                from interest in _context.InterestShortListed.Where(i=> (i.UserId.Equals(searchCritria.UserId) && i.InterestedUserId.Equals(ub.UserId)) 
-                               || (i.UserId.Equals(ub.UserId) && i.InterestedUserId.Equals(searchCritria.UserId))).DefaultIfEmpty() 
-                               //on ub.UserId equals inter.InterestedUserId into user_interest
-                               //from interest in user_interest.DefaultIfEmpty()
+                               || (i.UserId.Equals(ub.UserId) && i.InterestedUserId.Equals(searchCritria.UserId))).DefaultIfEmpty()
+                               
+                                   //on ub.UserId equals inter.InterestedUserId into user_interest
+                                   //from interest in user_interest.DefaultIfEmpty()
                                select new
                                {
                                    Id = u.Id,
@@ -1105,7 +1108,10 @@ namespace Matrimony.Service.User
                                    IsInterestSent = (interest.Id > 0 && !interest.IsInterestRejected) ? true : false,
                                    IsInterestReceived = (interest.InterestedUserId > 0 && interest.InterestedUserId.Equals(searchCritria.UserId)) ? true : false,
                                    interest.InterestDateTime,
-                                   interest.ShortListedDateTime
+                                   interest.ShortListedDateTime,
+                                   chatInfo.SenderId,
+                                   chatInfo.ReceiverId,
+                                   chatInfo.IsAccepted
                                });
             var queryTemp = querySearch;
             if (!string.IsNullOrEmpty(searchCritria.Caste))
@@ -1173,7 +1179,10 @@ namespace Matrimony.Service.User
                                      v.IsInterestSent,
                                      v.IsInterestReceived,
                                      v.InterestDateTime,
-                                     v.ShortListedDateTime
+                                     v.ShortListedDateTime,
+                                     v.SenderId,
+                                     v.ReceiverId,
+                                     v.IsAccepted
                                  });
                         //querySearch = queryRecentlyViewed.Where(u => u.CreatedDate > DateTime.Now.AddDays(-100));
                         break;
@@ -1208,7 +1217,10 @@ namespace Matrimony.Service.User
                                            v.IsInterestSent,
                                            v.IsInterestReceived,
                                            v.InterestDateTime,
-                                           v.ShortListedDateTime
+                                           v.ShortListedDateTime,
+                                           v.SenderId,
+                                           v.ReceiverId,
+                                           v.IsAccepted
                                        });
                         break;
                     case "shortlisted":
@@ -1242,7 +1254,10 @@ namespace Matrimony.Service.User
                                            v.IsInterestSent,
                                            v.IsInterestReceived,
                                            v.InterestDateTime,
-                                           v.ShortListedDateTime
+                                           v.ShortListedDateTime,
+                                           v.SenderId,
+                                           v.ReceiverId,
+                                           v.IsAccepted
                                        });
                         break;
                     default:
@@ -1928,7 +1943,7 @@ namespace Matrimony.Service.User
                 {
                     string base64String = img.ImageString.Split(',')[1];
                     byte[] imageBytes = Convert.FromBase64String(base64String);
-                    byte[] imageBytesBlur = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 0, 0, "Blur"));
+                    byte[] imageBytesBlur = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 1, 1, "Blur"));
                     byte[] imageBytes250X250 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 300, 300, "Resize"));
                     byte[] imageBytes40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 40, 40, "Resize"));
 
