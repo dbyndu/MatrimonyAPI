@@ -868,6 +868,10 @@ namespace Matrimony.Service.User
             try
             {
                 var emailBody = "User Name : " + userEnquiry.FullName + " . User Email : " + userEnquiry.EmailId + " . User PhoneNumber : " + userEnquiry.PhoneNumber;
+                if (!string.IsNullOrEmpty(userEnquiry.EmailMessage))
+                {
+                    emailBody += " <br/> " + " Message : " + userEnquiry.EmailMessage; 
+                }
                 SendEmail("contact@softanbees.com", "User Enquiry Form", emailBody);
             }catch(Exception ex)
             {
