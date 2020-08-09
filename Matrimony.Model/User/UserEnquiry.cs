@@ -9,5 +9,7 @@ namespace Matrimony.Model.User
         public string FullName { get; set; }
         public string PhoneNumber { get; set; }
         public string EmailId { get; set; }
+
+        public string EmailMessage { get; set; }
     }
 }
