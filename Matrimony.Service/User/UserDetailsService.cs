@@ -135,7 +135,8 @@ namespace Matrimony.Service.User
         }
         public Response GetUserDetails(int userId, int viewedId)
         {
-            InsertUpdateRecentlyViewed(userId, viewedId);        
+            InsertUpdateRecentlyViewed(userId, viewedId);
+            LogUserTime(userId, DateTime.UtcNow, null).ConfigureAwait(false);
             return GetUserDetails(viewedId);
         }
         public Response GetUserDetails(int id)
@@ -167,7 +168,7 @@ namespace Matrimony.Service.User
             {
                 errors.Add(new Error("Err102", "No user found. Verify user entitlements."));
             }
-            LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
+            //LogUserTime(id, DateTime.UtcNow, null).ConfigureAwait(false);
             var metadata = new Metadata(!errors.Any(), Guid.NewGuid().ToString(), "Response Contains List of User.");
             if (errors.Any())
             {
@@ -1161,7 +1162,7 @@ namespace Matrimony.Service.User
              
             var errors = new List<Error>();
             Random rnd = new Random();
-            var querySearch = (from u in _context.User.Where(u => !u.Id.Equals(searchCritria.UserId))
+            var querySearch = (from u in _context.User.Where(u => !u.Id.Equals(searchCritria.UserId) && u.IsActive.Equals(true))
                                join ui in _context.UserInfo on u.Id equals ui.UserId into user_basic
                                from ub in user_basic.DefaultIfEmpty()
                                join uimg in _context.UserImage.Where(i => i.IsProfilePicture.Equals(true)) on u.Id equals uimg.UserId into user_image
@@ -1209,7 +1210,9 @@ namespace Matrimony.Service.User
                                    interest.ShortListedDateTime,
                                    chatInfo.SenderId,
                                    chatInfo.ReceiverId,
-                                   chatInfo.IsAccepted
+                                   chatInfo.IsAccepted,
+                                   u.IsEmailVerified,
+                                   u.IsMobileVerified
                                });
             var queryTemp = querySearch;
             if (!string.IsNullOrEmpty(searchCritria.Caste))
@@ -1280,7 +1283,9 @@ namespace Matrimony.Service.User
                                      v.ShortListedDateTime,
                                      v.SenderId,
                                      v.ReceiverId,
-                                     v.IsAccepted
+                                     v.IsAccepted,
+                                     v.IsEmailVerified,
+                                     v.IsMobileVerified
                                  });
                         //querySearch = queryRecentlyViewed.Where(u => u.CreatedDate > DateTime.Now.AddDays(-100));
                         break;
@@ -1318,7 +1323,9 @@ namespace Matrimony.Service.User
                                            v.ShortListedDateTime,
                                            v.SenderId,
                                            v.ReceiverId,
-                                           v.IsAccepted
+                                           v.IsAccepted,
+                                           v.IsEmailVerified,
+                                           v.IsMobileVerified
                                        });
                         break;
                     case "shortlisted":
@@ -1355,7 +1362,9 @@ namespace Matrimony.Service.User
                                            v.ShortListedDateTime,
                                            v.SenderId,
                                            v.ReceiverId,
-                                           v.IsAccepted
+                                           v.IsAccepted,
+                                           v.IsEmailVerified,
+                                           v.IsMobileVerified
                                        });
                         break;
                     default:
