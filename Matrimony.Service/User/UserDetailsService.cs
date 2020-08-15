@@ -191,7 +191,7 @@ namespace Matrimony.Service.User
                                            Email = u.Email,
                                            FirstName = u.FirstName,
                                            LastName = u.LastName,
-                                           PhoneNumber = u.PhoneNumber,
+                                           PhoneNumber = u.CompletePhoneNumber,
                                            CreatedDate = u.CreatedDate,
                                            ContactName = u.ContactName,
                                            genderId = ui.GenderId,
@@ -231,7 +231,7 @@ namespace Matrimony.Service.User
                                            Email = u.Email,
                                            FirstName = u.FirstName,
                                            LastName = u.LastName,
-                                           PhoneNumber = u.PhoneNumber,
+                                           PhoneNumber = u.CompletePhoneNumber,
                                            CreatedDate = u.CreatedDate,
                                            ContactName = u.ContactName,
                                            genderId = ui.GenderId,
@@ -253,7 +253,7 @@ namespace Matrimony.Service.User
             }
             else
             {
-                alreadyInsertedUser = (from u in _context.User.Where(x => (x.PhoneNumber == user.Email)
+                alreadyInsertedUser = (from u in _context.User.Where(x => (x.PhoneNumber == user.PhoneNumber && x.PhoneCountryCode == user.CountryCode)
                                        && x.Password == user.Password && x.IsActive == true)
                                        join ui in _context.UserInfo on u.Id equals ui.UserId
                                        join p in _context.UserPreferences on u.Id equals p.UserId into up
@@ -264,7 +264,7 @@ namespace Matrimony.Service.User
                                            Email = u.Email,
                                            FirstName = u.FirstName,
                                            LastName = u.LastName,
-                                           PhoneNumber = u.PhoneNumber,
+                                           PhoneNumber = u.CompletePhoneNumber,
                                            CreatedDate = u.CreatedDate,
                                            ContactName = u.ContactName,
                                            genderId = ui.GenderId,
@@ -376,7 +376,7 @@ namespace Matrimony.Service.User
         {
             var errors = new List<Error>();
             int outPutResult = 0;
-            int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email || x.PhoneNumber == user.PhoneNumber).Count();
+            int alreadyInsertedUser = _context.User.Where(x => x.Email == user.Email || (x.PhoneNumber == user.PhoneNumber && x.PhoneCountryCode == user.CountryCode)).Count();
             if (alreadyInsertedUser > 0)
             {
                 errors.Add(new Error("Err105", "User Already Added.."));
@@ -390,6 +390,7 @@ namespace Matrimony.Service.User
                 ProfileCreatedForId = user.ProfileCreatedForId,
                 PhoneNumber = user.PhoneNumber,
                 ContactName = user.Email + "_" + user.PhoneNumber,
+                PhoneCountryCode = user.CountryCode,
                 PercentageComplete = UserCompletionPercentage.GetUserCompletionPercentage(UserCompletionPercentage.ShortRegistration),
                 IsSocialLogin = false,
                 IsActive = true
@@ -536,7 +537,7 @@ namespace Matrimony.Service.User
                                    FirstName = u.FirstName,
                                    LastName = u.LastName,
                                    MiddleNmae = u.MiddleNmae,
-                                   PhoneNumber = u.PhoneNumber,
+                                   PhoneNumber = u.CompletePhoneNumber,
                                    ProfileCreatedForId = u.ProfileCreatedForId,
                                    PercentageComplete = u.PercentageComplete,
                                    ContactName = u.ContactName,
@@ -710,7 +711,7 @@ namespace Matrimony.Service.User
                 Email = u.Email,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
-                PhoneNumber = u.PhoneNumber,
+                PhoneNumber = u.CompletePhoneNumber,
                 CreatedDate = u.CreatedDate,
                 ContactName = u.ContactName,
                 ProfileCreatedForId = u.ProfileCreatedForId
@@ -983,7 +984,7 @@ namespace Matrimony.Service.User
             string smsResponse =string.Empty;
             if(forgotUserDetails.ModelStatus == "CheckUser")
             {
-                var dbUser = _context.User.FirstOrDefault(u => u.Email == forgotUserDetails.EmailId || u.PhoneNumber == forgotUserDetails.PhoneNumber);
+                var dbUser = _context.User.FirstOrDefault(u => u.Email == forgotUserDetails.EmailId || (u.CompletePhoneNumber == forgotUserDetails.PhoneNumber));
                 if (dbUser != null)
                 {
                     if (!string.IsNullOrEmpty(forgotUserDetails.EmailId))
@@ -992,7 +993,7 @@ namespace Matrimony.Service.User
                         outPutResult = SendSMSCode(dbUser.Id, dbUser, " Your Verfication Code for Password Reset In Matrimama Site!", ref smsResponse);
                     if (outPutResult > 0)
                     {
-                        forgotUserDetails.PhoneNumber = dbUser.PhoneNumber;
+                        forgotUserDetails.PhoneNumber = dbUser.CompletePhoneNumber;
                         forgotUserDetails.EmailId = dbUser.Email;
                         forgotUserDetails.UserId = dbUser.Id;
                     }
@@ -1831,7 +1832,7 @@ namespace Matrimony.Service.User
             int outPutResult = 0;
             try
             {
-                string number = dbUser.PhoneNumber;
+                string number = "+" + dbUser.CompletePhoneNumber;
                 int code = this.GenerateVerificationCode();
                 string msg = string.Concat(code, smsMsg);
                 res = IvokeSMSAPI(number, msg);
@@ -2624,6 +2625,8 @@ namespace Matrimony.Service.User
                     }
                     if (!string.IsNullOrEmpty(dbUser.Email) && dbUser.Email != user.Email)
                         dbUser.IsEmailVerified = false;
+                    if(!string.IsNullOrEmpty(dbUser.PhoneNumber) && dbUser.PhoneNumber != user.PhoneNumber)
+                        dbUser.IsMobileVerified = false;
                     dbUser.Id = user.ID;
                     dbUser.FirstName = user.FirstName;
                     dbUser.MiddleNmae = user.MiddleNmae;
