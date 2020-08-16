@@ -1190,7 +1190,9 @@ namespace Matrimony.Service.User
                                    ub.HighestSpecializationId,
                                    ub.WorkDesignationId,
                                    State = state.Name,
+                                   StateId = state.Id,
                                    City = city.Name,
+                                   CityId = city.Id,
                                    Url = "",
                                    ImageString = !string.IsNullOrEmpty(img.ContentType) ? "data:" + img.ContentType + 
                                    ";base64," + (searchCritria.UserId.Equals(0) ? Convert.ToBase64String(img.ImageBlur) : Convert.ToBase64String(img.Image250X250)) : "",
@@ -1221,13 +1223,24 @@ namespace Matrimony.Service.User
                 string[] castIds = searchCritria.Caste.Split(','); 
                 querySearch = querySearch.Where(u => castIds.Contains(u.CasteId.ToString()));
             }
-            if (searchCritria.Gender > 0)
-                querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));
-            if (!string.IsNullOrEmpty(searchCritria.Religion))
+            else if (!string.IsNullOrEmpty(searchCritria.Religion))
             {
                 string[] religionIds = searchCritria.Religion.Split(',');
                 querySearch = querySearch.Where(u => religionIds.Contains(u.ReligionId.ToString()));
             }
+            if (!string.IsNullOrEmpty(searchCritria.City))
+            {
+                string[] cityIds = searchCritria.City.Split(',');
+                querySearch = querySearch.Where(u => cityIds.Contains(u.CityId.ToString()));
+            }
+            else if (!string.IsNullOrEmpty(searchCritria.State))
+            {
+                string[] stateIds = searchCritria.State.Split(',');
+                querySearch = querySearch.Where(u => stateIds.Contains(u.StateId.ToString()));
+            }
+            if (searchCritria.Gender > 0)
+                querySearch = querySearch.Where(u => u.GenderId.Equals(searchCritria.Gender));
+            
             if (!string.IsNullOrEmpty(searchCritria.MotherTongue))
             {
                 string[] mtIds = searchCritria.MotherTongue.Split(',');
@@ -1264,7 +1277,9 @@ namespace Matrimony.Service.User
                                      v.HighestSpecializationId,
                                      v.WorkDesignationId,
                                      v.State,
+                                     v.StateId,
                                      v.City,
+                                     v.CityId,
                                      Url = "",
                                      v.ImageString,
                                      v.GenderId,
@@ -1304,7 +1319,9 @@ namespace Matrimony.Service.User
                                            v.HighestSpecializationId,
                                            v.WorkDesignationId,
                                            v.State,
+                                           v.StateId,
                                            v.City,
+                                           v.CityId,
                                            Url = "",
                                            v.ImageString,
                                            v.GenderId,
@@ -1343,7 +1360,9 @@ namespace Matrimony.Service.User
                                            v.HighestSpecializationId,
                                            v.WorkDesignationId,
                                            v.State,
+                                           v.StateId,
                                            v.City,
+                                           v.CityId,
                                            Url = "",
                                            v.ImageString,
                                            v.GenderId,
