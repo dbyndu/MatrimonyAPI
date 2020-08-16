@@ -19,6 +19,7 @@ namespace Matrimony.Model.User
         public string ImageTitle { get; set; }
         public string ContentType { get; set; }
         public bool? IsProfilePicture { get; set; }
+        public string CroppedImage { get; set; }
     }
 
     public class UserImagesUploadModel

@@ -2068,11 +2068,24 @@ namespace Matrimony.Service.User
 
                 userImgs.ForEach(img =>
                 {
+                    //byte[] imageBytesCropped = null;
+                    byte[] imageBytes250X250 = null;
+                    byte[] imageBytes40X40 = null;
                     string base64String = img.ImageString.Split(',')[1];
                     byte[] imageBytes = Convert.FromBase64String(base64String);
+                    if (!string.IsNullOrEmpty(img.CroppedImage)) {
+                        string base64StringCropped = img.CroppedImage?.Split(',')[1];
+                        //imageBytesCropped = Convert.FromBase64String(base64StringCropped);
+                        imageBytes250X250 = Convert.FromBase64String(base64StringCropped);
+                        imageBytes40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes250X250, 40, 40, "Resize"));
+                    }
+                    else
+                    {
+                        imageBytes250X250 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 300, 300, "Resize"));
+                        imageBytes40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 40, 40, "Resize"));
+                    }
                     byte[] imageBytesBlur = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 1, 1, "Blur"));
-                    byte[] imageBytes250X250 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 300, 300, "Resize"));
-                    byte[] imageBytes40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes, 40, 40, "Resize"));
+                    
 
                     Matrimony.Data.Entities.UserImage dbUserImage = new Data.Entities.UserImage()
                     {
