@@ -537,6 +537,7 @@ namespace Matrimony.Service.User
                                    FirstName = u.FirstName,
                                    LastName = u.LastName,
                                    MiddleNmae = u.MiddleNmae,
+                                   CountryCode = u.PhoneCountryCode,
                                    PhoneNumber = u.CompletePhoneNumber,
                                    ProfileCreatedForId = u.ProfileCreatedForId,
                                    PercentageComplete = u.PercentageComplete,
@@ -2677,6 +2678,12 @@ namespace Matrimony.Service.User
                         dbUser.IsEmailVerified = false;
                     if(!string.IsNullOrEmpty(dbUser.PhoneNumber) && dbUser.PhoneNumber != user.PhoneNumber)
                         dbUser.IsMobileVerified = false;
+                    if(!string.IsNullOrEmpty(dbUser.PhoneCountryCode) && !string.IsNullOrEmpty(user.CountryCode) && dbUser.PhoneCountryCode != user.CountryCode)
+                    {
+                        dbUser.IsMobileVerified = false;
+                        dbUser.PhoneCountryCode = user.CountryCode;
+                    }
+
                     dbUser.Id = user.ID;
                     dbUser.FirstName = user.FirstName;
                     dbUser.MiddleNmae = user.MiddleNmae;
