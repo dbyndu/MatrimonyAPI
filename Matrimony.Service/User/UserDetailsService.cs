@@ -2036,13 +2036,31 @@ namespace Matrimony.Service.User
                     var imageSetAsProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.IsProfilePicture.Equals(true)).FirstOrDefault();
                     if (imageSetAsProfPic != null)
                     {
-                        imageSetAsProfPic.IsProfilePicture = false;
+                        imageSetAsProfPic.IsProfilePicture = false;                       
                         _context.Update<Matrimony.Data.Entities.UserImage>(imageSetAsProfPic);
                     }
                     var imageToSetProfPic = _context.UserImage.Where(u => u.UserId.Equals(userId) && u.Id.Equals(userImgModel.profilePictureId)).FirstOrDefault();
                     if (imageToSetProfPic != null)
                     {
                         imageToSetProfPic.IsProfilePicture = true;
+                        //save crop image
+                        UserImage uimg = userImgModel.images.Where(i => i.Id.Equals(userImgModel.profilePictureId)).FirstOrDefault();
+                        if (uimg !=null)
+                        {
+                            if (!string.IsNullOrEmpty(userImgModel.images[0].CroppedImage))
+                            {
+                                byte[] imageBytes250X250 = null;
+                                byte[] imageBytes40X40 = null;
+                                var img = userImgModel.images[0];
+                                string base64StringCropped = img.CroppedImage?.Split(',')[1];
+                                //imageBytesCropped = Convert.FromBase64String(base64StringCropped);
+                                imageBytes250X250 = Convert.FromBase64String(base64StringCropped);
+                                imageBytes40X40 = Convert.FromBase64String(GenericHelper.ResizeImage(imageBytes250X250, 40, 40, "Resize"));
+                                imageToSetProfPic.Image250X250 = imageBytes250X250;
+                                imageToSetProfPic.Image40X40 = imageBytes40X40;
+                            }
+                            userImgModel.images.Remove(uimg);
+                        }
                         _context.Update<Matrimony.Data.Entities.UserImage>(imageToSetProfPic);
                     }
                 }
