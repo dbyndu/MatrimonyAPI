@@ -34,5 +34,9 @@ namespace Matrimony.Model.User
         public string Origin { get; set; }
         public long? Pin { get; set; }
         public string About { get; set; }
+        public string Country { get; set; }
+        public string State { get; set; }
+        public string City { get; set; }
+
     }
 }
