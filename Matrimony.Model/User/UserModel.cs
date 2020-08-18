@@ -28,6 +28,9 @@ namespace Matrimony.Model.User
         //public virtual ICollection<UserLifeStyleModel> UserLifeStyle { get; set; }
         //public virtual ICollection<UserLocationModel> UserLocation { get; set; }
 
+        public string PrefCountryName { get; set; }
+        public string PrefStateName { get; set; }
+        public string PrefCityName { get; set; }
 
     }
 }

@@ -529,6 +529,12 @@ namespace Matrimony.Service.User
                                from userLife in user_Life.DefaultIfEmpty()
                                join up in _context.UserPreferences on u.Id equals up.UserId into user_pref
                                from preference in user_pref.DefaultIfEmpty()
+                               join co in _context.Countries on ub.CountryId equals co.Id into user_country
+                               from country in user_country.DefaultIfEmpty()
+                               join s in _context.States on ub.StateId equals s.Id into user_state
+                               from state in user_state.DefaultIfEmpty()
+                               join ci in _context.Cities on ub.CityId equals ci.Id into user_city
+                               from city in user_city.DefaultIfEmpty()
                                where u.Id.Equals(id) && u.IsActive.HasValue && u.IsActive == true
                                select new UserModel
                                {
@@ -572,7 +578,10 @@ namespace Matrimony.Service.User
                                        GrewUpIn = ub.GrewUpIn,
                                        Origin = ub.Origin,
                                        Pin = ub.Pin,
-                                       About = ub.About
+                                       About = ub.About,
+                                       Country = country.Name,
+                                       State = state.Name,
+                                       City = city.Name
                                    },
                                    //UserProfileCompletion = new UserPercentageComplete
                                    //{
@@ -674,6 +683,27 @@ namespace Matrimony.Service.User
 
                 if (returnValue != null)
                 {
+                    //var prefLocations = from ci in _context.Cities
+                    //                    join s in _context.States on ci.StateId equals s.Id into pref_state
+                    //                    from ps in pref_state.DefaultIfEmpty()
+                    //                    join c in _context.Countries on ps.CountryId equals c.Id into pref_country
+                    //                    from pc in pref_country.DefaultIfEmpty()
+                    //                    where(returnValue.UserPreference.ci)
+                    if (!string.IsNullOrEmpty(returnValue.UserPreference.City))
+                    {
+                        string[] cityIds = returnValue.UserPreference.City.Split(',');
+                        returnValue.PrefCityName = string.Join(", ", _context.Cities.Where(c => cityIds.Contains(c.Id.ToString())).Select(c => c.Name).ToList());
+                    }
+                    if (!string.IsNullOrEmpty(returnValue.UserPreference.City))
+                    {
+                        string[] stateIds = returnValue.UserPreference.State.Split(',');
+                        returnValue.PrefStateName = string.Join(", ", _context.States.Where(c => stateIds.Contains(c.Id.ToString())).Select(c=> c.Name).ToList());
+                    }
+                    if (!string.IsNullOrEmpty(returnValue.UserPreference.Country))
+                    {
+                        string[] countryIds = returnValue.UserPreference.Country.Split(',');
+                        returnValue.PrefCountryName = string.Join(", ", _context.Countries.Where(c => countryIds.Contains(c.Id.ToString())).Select(c => c.Name).ToList());
+                    }
                     var userpercentage = _context.UserProfileCompletion.FirstOrDefault(x => x.UserId == returnValue.ID);
                     if (userpercentage != null)
                     {
