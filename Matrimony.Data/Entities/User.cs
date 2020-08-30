@@ -5,14 +5,6 @@ namespace Matrimony.Data.Entities
 {
     public partial class User
     {
-        public User()
-        {
-            UserImage = new HashSet<UserImage>();
-            UserInfo = new HashSet<UserInfo>();
-            UserLifeStyle = new HashSet<UserLifeStyle>();
-            UserPreferenceSetting = new HashSet<UserPreferenceSetting>();
-        }
-
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string MiddleNmae { get; set; }
@@ -24,10 +16,14 @@ namespace Matrimony.Data.Entities
         public DateTime? UpdatedDate { get; set; }
         public int ProfileCreatedForId { get; set; }
         public string ContactName { get; set; }
-
-        public virtual ICollection<UserImage> UserImage { get; set; }
-        public virtual ICollection<UserInfo> UserInfo { get; set; }
-        public virtual ICollection<UserLifeStyle> UserLifeStyle { get; set; }
-        public virtual ICollection<UserPreferenceSetting> UserPreferenceSetting { get; set; }
+        public int? PercentageComplete { get; set; }
+        public bool? IsSocialLogin { get; set; }
+        public string SocialId { get; set; }
+        public int? ProviderId { get; set; }
+        public bool? IsMobileVerified { get; set; }
+        public bool? IsEmailVerified { get; set; }
+        public string PhoneCountryCode { get; set; }
+        public bool? IsActive { get; set; }
+        public string CompletePhoneNumber { get; set; }
     }
 }

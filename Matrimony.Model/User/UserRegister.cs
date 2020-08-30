@@ -16,5 +16,12 @@ namespace Matrimony.Model.User
         [JsonIgnore]
         public DateTime? UpdatedDate { get; set; }
         public string ContactName { get; set; }
+        public int? PercentageComplete { get; set; }
+        public bool? IsSocialLogin { get; set; }
+        public string SocialId { get; set; }
+        public int? ProviderId { get; set; }
+        public int? genderId { get; set; }
+        public bool? IsMobileVerified { get; set; }
+        public bool? IsEmailVerified { get; set; }
     }
 }

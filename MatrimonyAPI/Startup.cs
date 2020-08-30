@@ -108,7 +108,10 @@ namespace MatrimonyAPI
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            //DefaultFilesOptions options = new DefaultFilesOptions();
+            //options.DefaultFileNames.Clear();
+            //options.DefaultFileNames.Add("swagger/index.html");
+            //app.UseDefaultFiles(options);
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -118,7 +121,7 @@ namespace MatrimonyAPI
             app.UseAuthorization();
             app.UseMvc();
 
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

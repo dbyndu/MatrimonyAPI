@@ -14,7 +14,8 @@ namespace Matrimony.Data.Entities
         public int? ImageOrder { get; set; }
         public bool? IsApproved { get; set; }
         public DateTime? CreatedDate { get; set; }
-
-        public virtual User User { get; set; }
+        public byte[] ImageBlur { get; set; }
+        public byte[] Image250X250 { get; set; }
+        public byte[] Image40X40 { get; set; }
     }
 }

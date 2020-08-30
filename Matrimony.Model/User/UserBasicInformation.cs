@@ -21,7 +21,7 @@ namespace Matrimony.Model.User
         public bool? Horoscope { get; set; }
         public int? BloodGroupId { get; set; }
         public int? ReligionId { get; set; }
-        public string Caste { get; set; }
+        public int? CasteId { get; set; }
         public int? MotherTongueId { get; set; }
         public int? ComunityId { get; set; }
         public string Gothra { get; set; }
@@ -34,5 +34,9 @@ namespace Matrimony.Model.User
         public string Origin { get; set; }
         public long? Pin { get; set; }
         public string About { get; set; }
+        public string Country { get; set; }
+        public string State { get; set; }
+        public string City { get; set; }
+
     }
 }

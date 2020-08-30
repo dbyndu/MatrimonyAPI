@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,11 +12,51 @@ namespace Matrimony.Helper
 {
     public static class GenericHelper
     {
+        public const string PROFILE_Self = "self";
+        public const string PROFILE_Son = "son";
+        public const string PROFILE_Daughter = "daughter";
+        public const string PROFILE_Brother = "brother";
+        public const string PROFILE_Sister = "sister";
+        public const string PROFILE_Relative_Friend = "relative/friend";
+        public const string PROFILE_Client_Marriage_Bureau = "client-marriage bureau";
+
+        public static string Gender(string userProfileValue)
+        {
+            string returnValue = string.Empty;
+            switch (userProfileValue.ToLower())
+            {
+                case PROFILE_Brother:
+                    returnValue = "male";
+                    break;
+                case PROFILE_Client_Marriage_Bureau:
+                    returnValue = string.Empty;
+                    break;
+                case PROFILE_Daughter:
+                    returnValue = "female";
+                    break;
+                case PROFILE_Relative_Friend:
+                    returnValue = string.Empty;
+                    break;
+                case PROFILE_Self:
+                    returnValue = string.Empty;
+                    break;
+                case PROFILE_Sister:
+                    returnValue = "female";
+                    break;
+                case PROFILE_Son:
+                    returnValue = "male";
+                    break;
+                default:
+                    returnValue = string.Empty;
+                    break;
+            }
+            return returnValue;
+        }
         public static int CalculateAge(DateTime dateOfBirth)
         {
             int age = 0;
             if (dateOfBirth != DateTime.MinValue)
-            {                
+            {
                 age = DateTime.Now.Year - dateOfBirth.Year;
                 if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
                     age = age - 1;
@@ -36,36 +77,66 @@ namespace Matrimony.Helper
             string resizedImageString = string.Empty;
             if (byteArray != null)
             {
+                Image img = ByteArrayToImage(byteArray);
                 if (width > 0 && height > 0)
                 {
-
-                    Image img = ByteArrayToImage(byteArray);
-                    //img.Mutate(x => x
-                    //.Resize(new ResizeOptions
-                    //{
-                    //    Size = new Size(width, height),
-                    //    Mode = ResizeMode.Max
-                    //})
-                    //.BoxBlur()); 
-                    if (string.IsNullOrEmpty(mode))
+                    switch (mode)
                     {
-                        img.Mutate(x => x
-                        .Resize(new ResizeOptions
-                        {
-                            Size = new Size(width, height),
-                            Mode = ResizeMode.Crop
-                        })
-                        );
-                    }
-                    else
-                        {
-                        img.Mutate(x => x
-                        .Resize(new ResizeOptions
-                        {
-                            Size = new Size(width, height),
-                            Mode = ResizeMode.Crop
-                        })
-                        );
+                        case "Resize":
+                            if (img.Height > height && img.Width > width)
+                                img.Mutate(x => x
+                            .Resize(new ResizeOptions
+                            {
+                                Size = new Size(width, height),
+                                Mode = ResizeMode.Crop
+                            })                         
+                            );
+                            break;
+                        case "Crop":
+                            int xa=0; int ya=0;
+                            if (img.Width > img.Height)
+                            {
+                                if (width < 150)
+                                { xa = 10; ya = 0; }
+                                else
+                                { xa = 30; ya = 10; }
+                            }
+                            else
+                            {
+                                if (height < 150)
+                                { xa = 0; ya = 10; }
+                                else
+                                { xa = 10; ya = 30; }
+                            }
+                            img.Mutate(x => x
+                            .Resize(new ResizeOptions
+                            {
+                                Size = new Size(width + 100, height + 100),
+                                Mode = ResizeMode.Max
+                            })
+                            );
+                            if (img.Height > img.Width)
+                                height = img.Width;
+                            else
+                                width = img.Height;
+                            if (img.Height > height && img.Width > width)
+                                img.Mutate(x => x.Crop(new Rectangle
+                                {
+                                    Height = height,
+                                    Width = width,
+                                    X = xa,
+                                    Y = ya
+                                })
+                          //.Resize(new ResizeOptions
+                          //{
+                          //    Size = new Size(width, height),
+                          //    Mode = ResizeMode.Crop
+                          //})
+                          );
+                            break;
+                        case "Blur":
+                            img.Mutate(x => x.BokehBlur());
+                            break;
                     }
                     using (MemoryStream ms = new MemoryStream())
                     {
@@ -75,22 +146,12 @@ namespace Matrimony.Helper
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(mode))
-                        resizedImageString = Convert.ToBase64String(byteArray);
-                    else
-                    {
-                        Image img = ByteArrayToImage(byteArray);
-                        img.Mutate(x => x.BokehBlur());
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            img.Save(ms, new JpegEncoder());
-                            resizedImageString = Convert.ToBase64String(ms.ToArray());
-                        }
-                    }
+                    resizedImageString = Convert.ToBase64String(byteArray);
                 }
             }
             return resizedImageString;
         }
+
     }
     public static class ConfigurationHelper
     {
@@ -273,6 +334,59 @@ namespace Matrimony.Helper
             var encrypted = Convert.FromBase64String(cipherText);
             var decriptedFromJavascript = DecryptStringFromBytes(encrypted, keybytes, iv);
             return decriptedFromJavascript;
+        }
+    }
+
+    public static class UserCompletionPercentage
+    {
+        public static Dictionary<string, int> PercentageValues;
+
+        public const string ShortRegistration = "ShortRegistration";
+        public const string Registration = "Registration";
+        public const string Image = "Image";
+        public const string BasicDetailsMandatory = "BasicDetailsMandatory";
+        public const string BasicDetailsOptional = "BasicDetailsOptional";
+        public const string ReligionCasteMandatory = "ReligionCasteMandatory";
+        public const string ReligionCasteOptional = "ReligionCasteOptional";
+        public const string CareerEducationMandatory = "CareerEducationMandatory";
+        public const string CareerEducationOptional = "CareerEducationOptional";
+        public const string FamilyDetailsMandatory = "FamilyDetailsMandatory";
+        public const string FamilyDetailsOptional = "FamilyDetailsOptional";
+        public const string About = "About";
+        public const string LifeStyleMandatory = "LifeStyleMandatory";
+        public const string LifeStyleOptional = "LifeStyleOptional";
+        public const string PreferenceMandatory = "PreferenceMandatory";
+        public const string PreferenceOptional = "PreferenceOptional";
+        public static int GetUserCompletionPercentage(string moduleName)
+        {
+            int returnValue = 0;
+            if(PercentageValues == null)
+            {
+                PercentageValues = new Dictionary<string, int>();
+                PercentageValues.Add(ShortRegistration, 10);
+                PercentageValues.Add(Registration, 10);
+                PercentageValues.Add(Image, 10);
+                PercentageValues.Add(BasicDetailsMandatory, 5);
+                PercentageValues.Add(BasicDetailsOptional, 5);
+                PercentageValues.Add(ReligionCasteMandatory, 5);
+                PercentageValues.Add(ReligionCasteOptional, 5);
+                PercentageValues.Add(CareerEducationMandatory, 5);
+                PercentageValues.Add(CareerEducationOptional, 5);
+                PercentageValues.Add(FamilyDetailsMandatory, 5);
+                PercentageValues.Add(FamilyDetailsOptional, 5);
+                PercentageValues.Add(About, 5);
+                PercentageValues.Add(LifeStyleMandatory, 5);
+                PercentageValues.Add(LifeStyleOptional, 5);
+                PercentageValues.Add(PreferenceMandatory, 10);
+                PercentageValues.Add(PreferenceOptional, 5);
+            }
+
+            if (PercentageValues.ContainsKey(moduleName))
+            {
+                returnValue = PercentageValues.GetValueOrDefault(moduleName, 0);
+            }
+            return returnValue;
+            
         }
     }
 }

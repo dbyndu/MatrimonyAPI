@@ -10,6 +10,6 @@ namespace Matrimony.Service.Contracts
         Response GetMasterDate();
         Response GetCountry();
         Response GetState(int countryId);
-        Response GetCity(int stateId);
+        Response GetCity(string stateIds);
     }
 }

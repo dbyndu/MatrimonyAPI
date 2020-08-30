@@ -86,7 +86,6 @@ namespace MatrimonyAPI.Controllers
             var token = _helper.GenerateToken(_jwtAuthentication.Value,"Srijit", "srijit.das@gmail.com","Admin");
             return Ok(APIResponse.CreateResponse(token,_userService.GetUserDetails()));
         }
-
         [HttpPost]
         [Authorize]
         [Route("register/login")]
@@ -109,7 +108,28 @@ namespace MatrimonyAPI.Controllers
                 return Ok(APIResponse.CreateResponse(token, response));
             }
         }
-
+        [HttpPost]
+        [Authorize]
+        [Route("register/socialLogin")]
+        public ActionResult LoginSocialUser(UserModel userModel)
+        {
+            var response = _userService.LoginSocialUser(userModel);
+            var userResposne = response as UserModelResponse;
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            if (userResposne != null)
+            {
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
+            }
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
+        }
         [HttpPost]
         [Authorize]
         [Route("register/short-register")]
@@ -132,7 +152,28 @@ namespace MatrimonyAPI.Controllers
                 return Ok(APIResponse.CreateResponse(token, response));
             }
         }
-
+        [HttpPost]
+        [Authorize]
+        [Route("register/social-login")]
+        public ActionResult CreateNewUserSocialLogin(UserRegister userRegister)
+        {
+            var response = _userService.CreateSocialUser(userRegister);
+            var userResposne = response as UserModelResponse;
+            var accessToken = _httpContextAccessor.HttpContext.Request.Headers["Authorization"];
+            var token = _helper.ValidateToken(_jwtAuthentication.Value, accessToken);
+            if (userResposne != null)
+            {
+                if (token != null)
+                {
+                    token = _helper.GenerateToken(_jwtAuthentication.Value, userResposne.Data.ID.ToString(), userResposne.Data.Email, "Admin");
+                }
+                return Ok(APIResponse.CreateResponse(token, userResposne));
+            }
+            else
+            {
+                return Ok(APIResponse.CreateResponse(token, response));
+            }
+        }
         [HttpPost]
         //Needs to be changed to Authorize
         [Authorize]
@@ -151,9 +192,17 @@ namespace MatrimonyAPI.Controllers
             var response = _userService.Register(userBasic, userBasic.GetType().Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
+
         [HttpPost]
-        //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
+        [Route("register/user-lifestyle")]
+        public ActionResult UpdateUserLifeStyle(UserLifeStyleModel userlifeStyle)
+        {
+            var response = _userService.Register(userlifeStyle, userlifeStyle.GetType().Name) as UserModelResponse;
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpPost]
+        [Authorize]
         [Route("register/user-education-carrer")]
         public ActionResult UpdateUserEducation(UserEducationCareerModel userEducationCareer)
         {
@@ -161,12 +210,19 @@ namespace MatrimonyAPI.Controllers
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
-        //Needs to be changed to Authorize
         [Authorize]
         [Route("register/user-religion")]
         public ActionResult UpdateUserReligion(UserReligionCasteModel userReligion)
         {
             var response = _userService.Register(userReligion, typeof(UserReligionCasteModel).Name) as UserModelResponse;
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpPost]
+        [Authorize]
+        [Route("register/user-preference")]
+        public ActionResult UpdateUserPreference(UserPreferenceModel userPreference)
+        {
+            var response = _userService.Register(userPreference, typeof(UserPreferenceModel).Name) as UserModelResponse;
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
         [HttpPost]
@@ -180,7 +236,7 @@ namespace MatrimonyAPI.Controllers
         }
         [HttpPost]
         //Needs to be changed to Authorize
-        [AllowAnonymous]
+        [Authorize]
         [Route("register/family-info")]
         public ActionResult UpdateUserFamilyInfo(UserFamilyInformationModel userFamily)
         {
@@ -190,8 +246,8 @@ namespace MatrimonyAPI.Controllers
 
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
-        [Route("register/images")]
-        public async Task<IActionResult> UploadImage(List<UserImage> images)
+        [Route("register/images/{userId}")]
+        public async Task<IActionResult> UploadImage(UserImagesUploadModel images, int userId)
         {
             //List<UserImage> userImages = new List<UserImage>();
             //images.ForEach(async img => {
@@ -201,16 +257,64 @@ namespace MatrimonyAPI.Controllers
             //});
             //UserImage userImg = (UserImage)await _imageHandler.UploadUserImage(file);
             //userImg.UserId = userId;
-            var response = await _userService.SaveImage(images);
+            var response = await _userService.SaveImage(images, userId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
 
         }
+        [HttpGet]
+        [Authorize]
+        [Route("interest-shortlisted/{userId}/{interestUserId}/{mode}/{isRemoved:int?}/{isRejected:int?}")]
+        public async Task<IActionResult> InterestOrShortListed(int userId, int interestUserId, string mode, int isRemoved = 0, int isRejected = 0)
+        {           
+            var response = await _userService.InterestOrShortListed(userId, interestUserId, mode, isRemoved, isRejected);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("interest-shortlisted/{userId}/{interestUserId}")]
+        public async Task<IActionResult> GetInterestShortListed(int userId, int interestUserId)
+        {
+            var response = await _userService.GetInterestShortListed(userId, interestUserId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("chat-room/{userId}/{interestUserId}")]
+        public async Task<IActionResult> GetMessageRoomDetails(int userId, int interestUserId)
+        {
+            var response = await _userService.GetMessageRoomDetails(userId, interestUserId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("notification/{userId}")]
+        public async Task<IActionResult> GetNotificationData(int userId)
+        {
+            var response = await _userService.GetNotificationData(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("notification/Id/{id}")]
+        public ActionResult UpdateNotificationData(int id)
+        {
+            var response = _userService.UpdateNotification(id);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("counts/{userId}/{mode}")]
+        public async Task<IActionResult> GetTopPanelCounts(int userId, int mode)
+        {
+            var response = await _userService.GetTopPanelCounts(userId, mode);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
         [HttpPost]
         [Authorize]//Needs to be changed to Authorize
-        [Route("user-list")]
-        public ActionResult GestUserList(SearchCritriaModel searchCritria)
+        [Route("user-list/{mode}")]
+        public ActionResult GestUserList(SearchCritriaModel searchCritria, string mode)
         {
-            var response = _userService.GestUserList(searchCritria);
+            var response = _userService.GestUserList(searchCritria, mode);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
@@ -220,6 +324,40 @@ namespace MatrimonyAPI.Controllers
         public ActionResult GestUser(int id)
         {
             var response = _userService.GetUserDetails(id);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("user-search/{id}/{genderId}/{searchText}")]
+        public ActionResult GetSearchedProfileList(int id, int genderId, string searchText)
+        {
+            var response = _userService.GetSearchedProfileList(id, genderId, searchText);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("user-details/{userId}/{viewedId}")]
+        public ActionResult GestUser(int userId, int viewedId)
+        {
+            var response = _userService.GetUserDetails(userId, viewedId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpPost]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("chat/send-chat-invite")]
+        public ActionResult SaveInvite(SendChatModel model)
+        {
+            var response = _userService.SaveChatInvite(model.SenderId, model.RevceiverId, model.mode);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpPost]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("profile/quotient")]
+        public ActionResult CheckProfileQuotient(SendChatModel model)
+        {
+            var response = _userService.GetProfileQuotient(model.SenderId, model.RevceiverId);
             return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
         }
 
@@ -251,5 +389,77 @@ namespace MatrimonyAPI.Controllers
 
         //    return new JwtSecurityTokenHandler().WriteToken(token);
         //}
+        [HttpGet]
+        [Authorize]
+        [Route("user-preference/{userId}")]
+        public ActionResult GetPreference(int userId)
+        {
+            var response = _userService.GetUserPreferences(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("user-profile-data/{userId}")]
+        public ActionResult GetProfileDisplayData(int userId)
+        {
+            var response = _userService.GetProfileDisplayData(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpPost]
+        [Route("forget-password")]
+        public ActionResult ForgetPassword(UserForgetPassword forgotPassword)
+        {
+            var response = _userService.ForgetPassword(forgotPassword);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpPost]
+        [Route("change-password")]
+        public ActionResult ChangePasswordHideProfile(UserChangePassword changePassword)
+        {
+            var response = _userService.ChangePassword(changePassword);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpPost]
+        [Route("send-enquiryEmail")]
+        public ActionResult EmailEnquiry(UserEnquiry enquiryForm)
+        {
+            var response = _userService.SendEnquiry(enquiryForm);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("get-email-code/{userId}")]
+        public ActionResult GetEmailCode(int userId)
+        {
+            var response = _userService.GenerateEmailCode(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("verify-email/{userId}/{emailCode}")]
+        public ActionResult VerifyEmail(int userId,string emailCode)
+        {
+            var response = _userService.VerfiyEmailCode(userId,emailCode);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]//Needs to be changed to Authorize
+        [Route("send-otp-sms/{userId}")]
+        public ActionResult SendOTPSMS(int userId)
+        {
+            var response = _userService.SendOTPSMS(userId);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
+        [HttpGet]
+        [Authorize]
+        [Route("verify-mobile/{userId}/{mobileCode}")]
+        public ActionResult VerifyMobile(int userId, string mobileCode)
+        {
+            var response = _userService.VerfiyOTPSMS(userId, mobileCode);
+            return Ok(APIResponse.CreateResponse(_jwtAuthentication.Value, _httpContextAccessor.HttpContext.Request, response));
+        }
     }
 }
